@@ -1,0 +1,237 @@
+KONEX MVP — Product Requirements Document (PRD)
+1. Product Overview
+
+Product Name: KONEX
+Objective: Build a web-based MVP that enables NFC tap → live professional profile → lead capture → basic analytics, without requiring a mobile app.
+
+Primary Outcome:
+Demonstrate end-to-end flow from physical KONEX Card interaction to digital identity and contact capture, suitable for pilots and investor demos.
+
+2. Core User Journeys
+A. Profile Owner (KONEX Card Holder)
+
+Creates an account (email magic link).
+
+Creates/edits their KONEX profile (name, role, company, photo, links).
+
+Receives a unique KONEX profile URL (encoded into NFC card).
+
+Views basic analytics (taps, leads captured).
+
+Receives email notifications when someone submits their contact.
+
+B. Visitor (Person Tapping Card)
+
+Taps NFC card or scans QR.
+
+Lands on KONEX profile page (mobile-optimised).
+
+Views profile info.
+
+Submits contact details via lead capture form (name, email, optional company).
+
+Gets confirmation message.
+
+3. Functional Requirements
+3.1 Authentication
+
+Email-based magic link login for profile owners.
+
+No login required for visitors.
+
+3.2 Profile Management
+
+Profile fields:
+
+Full name
+
+Job title
+
+Company
+
+Profile photo (upload)
+
+Bio (short text)
+
+Links: LinkedIn, email, phone, website
+
+Features:
+
+Create/edit profile
+
+Public profile page (read-only for visitors)
+
+Unique URL per profile: konex.app/u/{username_or_id}
+
+3.3 Lead Capture
+
+Visitor form fields:
+
+Name (required)
+
+Email (required)
+
+Company (optional)
+
+On submit:
+
+Save lead to database linked to profile owner
+
+Trigger email notification to profile owner
+
+Display success confirmation to visitor
+
+3.4 Analytics (Basic)
+
+For each profile owner:
+
+Total taps / page views
+
+Total leads captured
+
+Recent interactions (last 10 leads with timestamp)
+
+3.5 NFC & QR Integration
+
+Each profile has a unique URL that can be encoded into:
+
+NFC card
+
+QR code (display QR on profile admin page)
+
+No mobile app required.
+
+4. Non-Functional Requirements
+
+Mobile-first UI (majority of taps will be on phones)
+
+Fast load time (<2 seconds on 4G)
+
+Secure storage of user data (basic auth, HTTPS)
+
+GDPR-friendly: simple privacy notice on profile pages
+
+Scalable architecture (multi-tenant ready)
+
+5. Tech Stack (Preferred for Replit)
+
+Frontend: React / Next.js
+
+Backend: Node.js with Express (or Next.js API routes)
+
+Database: Firebase or Supabase (users, profiles, leads)
+
+Auth: Email magic link (Clerk, Firebase Auth, or custom)
+
+Email: Resend or SendGrid for lead notifications
+
+Hosting: Replit deployment
+
+6. Data Models
+User
+
+id
+
+email
+
+createdAt
+
+Profile
+
+id
+
+userId
+
+name
+
+title
+
+company
+
+photoUrl
+
+bio
+
+links (LinkedIn, email, phone, website)
+
+publicSlug
+
+createdAt
+
+Lead
+
+id
+
+profileId
+
+visitorName
+
+visitorEmail
+
+visitorCompany
+
+timestamp
+
+source (NFC / QR)
+
+Analytics (derived)
+
+profileId
+
+viewCount
+
+leadCount
+
+7. Pages / Screens
+Public
+
+/u/{slug} — Public KONEX profile page
+
+Lead capture modal/form
+
+Success confirmation
+
+Private (Profile Owner Dashboard)
+
+/login — Magic link auth
+
+/dashboard — Profile overview + analytics
+
+/dashboard/edit — Edit profile
+
+/dashboard/leads — View captured leads
+
+/dashboard/qr — Display QR code + profile URL
+
+8. Success Criteria (MVP)
+
+NFC tap loads profile in <2 seconds
+
+Profile owner can edit profile live
+
+Visitor can submit lead successfully
+
+Owner receives email notification
+
+Dashboard shows tap count + leads
+
+9. Out of Scope (for MVP)
+
+Payments / subscriptions
+
+Team management
+
+CRM integrations
+
+Advanced analytics
+
+Mobile app
+
+10. Delivery Timeline
+
+Target build time: 10–14 days
+Milestone: Working demo URL with 10–20 pilot users live
+
+11. Prompt for Replit AI (Optional Copy/Paste)
+
+Build a mobile-first web app called KONEX that allows users to create a public professional profile accessible via a unique URL (for NFC cards). Visitors can view the profile and submit their contact details. Profile owners can log in via email magic link, edit their profile, view basic analytics (page views and leads), and receive email notifications when leads are submitted. Use React/Next.js, Node.js APIs, Firebase/Supabase for data storage, and deploy on Replit.
