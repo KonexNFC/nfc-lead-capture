@@ -26,7 +26,10 @@ export function ProfilePreview({ profile, mock }: ProfilePreviewProps) {
     twitter: Twitter,
     instagram: Instagram,
     website: Globe,
-    email: Mail
+    email: Mail,
+    snapchat: Globe,
+    tiktok: Globe,
+    youtube: Globe
   };
 
   const links = (profile.links as Record<string, string>) || {};

@@ -36,11 +36,14 @@ export default function EditProfile() {
       bio: "",
       photoUrl: "",
       slug: "",
-      links: {
-        email: "",
-        linkedin: "",
-        website: "",
-      }
+        links: {
+          email: "",
+          linkedin: "",
+          website: "",
+          snapchat: "",
+          tiktok: "",
+          youtube: "",
+        }
     }
   });
 
@@ -54,7 +57,7 @@ export default function EditProfile() {
         bio: profile.bio || "",
         photoUrl: profile.photoUrl || "",
         slug: profile.slug,
-        links: (profile.links as Record<string, string>) || { email: "", linkedin: "", website: "" }
+        links: (profile.links as Record<string, string>) || { email: "", linkedin: "", website: "", snapchat: "", tiktok: "", youtube: "" }
       });
     }
   }, [profile, form]);
@@ -189,7 +192,7 @@ export default function EditProfile() {
                 <CardTitle>Links & Socials</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {['email', 'linkedin', 'website', 'twitter', 'instagram', 'github'].map((key) => (
+                {['email', 'linkedin', 'website', 'twitter', 'instagram', 'github', 'snapchat', 'tiktok', 'youtube'].map((key) => (
                   <FormField
                     key={key}
                     control={form.control}

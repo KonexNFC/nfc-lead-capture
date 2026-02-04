@@ -26,6 +26,9 @@ export const profiles = pgTable("profiles", {
     phone?: string;
     twitter?: string;
     instagram?: string;
+    snapchat?: string;
+    tiktok?: string;
+    youtube?: string;
   }>(),
   theme: text("theme").default("light"), // light, dark, custom
   views: integer("views").default(0),
