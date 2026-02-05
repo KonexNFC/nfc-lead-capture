@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { QrCode, Share2, Smartphone, Linkedin, Globe, CreditCard } from "lucide-react";
+import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette } from "lucide-react";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770263775271.png";
 
 export default function LandingPage() {
@@ -125,7 +125,7 @@ export default function LandingPage() {
                   desc: "Don't just share—connect. Visitors can easily share their contact info directly back to you."
                 },
                 {
-                  icon: CreditCard,
+                  icon: Palette,
                   title: "Fully Customizable",
                   desc: "Make it yours. Custom colors, links, photos, and branding to match your professional identity."
                 }

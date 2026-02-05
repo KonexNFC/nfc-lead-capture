@@ -83,3 +83,15 @@ The `shared/` directory contains code used by both frontend and backend:
 - Vite for frontend bundling with React plugin
 - esbuild for server bundling
 - TSX for TypeScript execution in development
+
+## Future Enhancements
+
+### Email Notifications (Not Yet Implemented)
+Email notifications for lead capture are not yet integrated. Currently, lead notifications are logged to the console:
+```
+[EMAIL MOCK] Notification to profile owner {userId}: New lead from {name} ({email})
+```
+To implement email notifications in the future:
+1. Set up Resend or SendGrid integration via Replit's connector system
+2. Replace the console.log in `server/routes.ts` lead submission handler with actual email sending
+3. Store the profile owner's email and send notifications when new leads are captured
