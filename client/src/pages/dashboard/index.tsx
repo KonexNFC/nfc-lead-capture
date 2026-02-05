@@ -80,7 +80,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16 border-2 border-primary/10">
             <AvatarImage 
-              src={profile.photoUrl ? (profile.photoUrl.startsWith('http') ? profile.photoUrl : `/objects/${profile.photoUrl}`) : undefined} 
+              src={profile.photoUrl ? (profile.photoUrl.startsWith('http') ? profile.photoUrl : `/objects/uploads/${profile.photoUrl}`) : undefined} 
               alt={profile.name}
               className="object-cover" 
             />
