@@ -87,6 +87,14 @@ export const api = {
       responses: {
         200: z.object({ available: z.boolean() }),
       },
+    },
+    uploadPhoto: {
+      method: 'POST' as const,
+      path: '/api/upload',
+      responses: {
+        200: z.object({ url: z.string() }),
+        400: errorSchemas.validation,
+      },
     }
   },
   leads: {

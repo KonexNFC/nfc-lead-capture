@@ -4,6 +4,7 @@ import { setupAuth, hashPassword } from "./auth";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 
 async function seedDatabase() {
   const existingUser = await storage.getUserByEmail("demo@konex.app");
@@ -54,12 +55,17 @@ async function seedDatabase() {
   }
 }
 
+import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   // Auth setup
   setupAuth(app);
+
+  // Register object storage routes
+  registerObjectStorageRoutes(app);
 
   // Seed DB
   seedDatabase().catch(console.error);

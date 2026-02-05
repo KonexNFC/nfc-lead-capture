@@ -10,8 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProfilePreview } from "@/components/profile-preview";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useUpload } from "@/hooks/use-upload";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Schema refinement for links jsonb validation
 const profileFormSchema = insertProfileSchema.extend({
@@ -26,6 +28,7 @@ export default function EditProfile() {
   const updateMutation = useUpdateProfile();
   const checkSlugMutation = useCheckSlug();
   const { toast } = useToast();
+  const { uploadFile, isUploading: isUploadingPhoto } = useUpload();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -62,6 +65,20 @@ export default function EditProfile() {
     }
   }, [profile, form]);
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const response = await uploadFile(file);
+      if (response) {
+        form.setValue("photoUrl", response.objectPath);
+        toast({
+          title: "Success",
+          description: "Photo uploaded successfully",
+        });
+      }
+    }
+  };
+
   const onSubmit = async (data: ProfileFormValues) => {
     // Only check slug if changed
     if (data.slug !== profile?.slug) {
@@ -95,17 +112,59 @@ export default function EditProfile() {
                 <CardTitle>Basic Info</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-center gap-6 mb-4">
+                  <Avatar className="h-20 w-20 border-2 border-primary/10">
+                    <AvatarImage src={watchedValues.photoUrl || undefined} className="object-cover" />
+                    <AvatarFallback className="text-xl bg-secondary font-display font-bold text-primary">
+                      {watchedValues.name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-2">
+                    <FormLabel>Profile Photo</FormLabel>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="relative"
+                        disabled={isUploadingPhoto}
+                      >
+                        {isUploadingPhoto ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Upload className="h-4 w-4 mr-2" />
+                        )}
+                        Upload Image
+                        <input
+                          type="file"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          accept="image/*"
+                          onChange={handlePhotoUpload}
+                        />
+                      </Button>
+                      {watchedValues.photoUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => form.setValue("photoUrl", "")}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">JPG, PNG or WebP. Max 5MB.</p>
+                  </div>
+                </div>
+
                 <FormField
                   control={form.control}
                   name="photoUrl"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Profile Photo URL</FormLabel>
+                    <FormItem className="hidden">
                       <FormControl>
-                        <Input placeholder="https://..." {...field} value={field.value || ''} />
+                        <Input {...field} value={field.value || ''} />
                       </FormControl>
-                      <FormDescription>Link to an image (Unsplash, etc.)</FormDescription>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
