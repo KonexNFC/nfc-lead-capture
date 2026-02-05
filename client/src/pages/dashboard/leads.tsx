@@ -2,7 +2,7 @@ import { useLeads } from "@/hooks/use-leads";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Mail, Download } from "lucide-react";
+import { Loader2, Mail, Download, Phone, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function LeadsPage() {
@@ -10,12 +10,14 @@ export default function LeadsPage() {
 
   const exportCSV = () => {
     if (!leads) return;
-    const headers = ["Name", "Email", "Company", "Note", "Date"];
+    const headers = ["Name", "Telephone", "WhatsApp", "Email", "Company", "Note", "Date"];
     const csvContent = [
       headers.join(","),
       ...leads.map(l => [
         `"${l.name}"`, 
-        `"${l.email}"`, 
+        `"${l.telephone || ''}"`,
+        `"${l.whatsapp || ''}"`,
+        `"${l.email || ''}"`, 
         `"${l.company || ''}"`, 
         `"${l.note || ''}"`, 
         new Date(l.createdAt!).toISOString()
@@ -53,7 +55,7 @@ export default function LeadsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
+                <TableHead>Contact</TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead>Note</TableHead>
                 <TableHead className="text-right">Date</TableHead>
@@ -68,13 +70,37 @@ export default function LeadsPage() {
                 </TableRow>
               ) : (
                 leads?.map((lead) => (
-                  <TableRow key={lead.id}>
+                  <TableRow key={lead.id} data-testid={`row-lead-${lead.id}`}>
                     <TableCell className="font-medium">{lead.name}</TableCell>
                     <TableCell>
-                      <a href={`mailto:${lead.email}`} className="flex items-center hover:underline text-primary">
-                        <Mail className="h-3 w-3 mr-1.5" />
-                        {lead.email}
-                      </a>
+                      <div className="flex flex-col gap-1">
+                        {lead.telephone && (
+                          <a href={`tel:${lead.telephone}`} className="flex items-center hover:underline text-foreground text-sm">
+                            <Phone className="h-3 w-3 mr-1.5 text-muted-foreground" />
+                            {lead.telephone}
+                          </a>
+                        )}
+                        {lead.whatsapp && lead.whatsapp !== lead.telephone && (
+                          <a 
+                            href={`https://wa.me/${lead.whatsapp.replace(/\D/g, '')}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center hover:underline text-green-600 dark:text-green-400 text-sm"
+                          >
+                            <MessageCircle className="h-3 w-3 mr-1.5" />
+                            WhatsApp
+                          </a>
+                        )}
+                        {lead.email && (
+                          <a href={`mailto:${lead.email}`} className="flex items-center hover:underline text-primary text-sm">
+                            <Mail className="h-3 w-3 mr-1.5" />
+                            {lead.email}
+                          </a>
+                        )}
+                        {!lead.telephone && !lead.whatsapp && !lead.email && (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>{lead.company || "-"}</TableCell>
                     <TableCell className="max-w-xs truncate text-muted-foreground">{lead.note || "-"}</TableCell>

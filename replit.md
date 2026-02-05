@@ -46,8 +46,8 @@ Key server components:
 
 Core tables:
 - `users`: Authentication (email, hashed password)
-- `profiles`: Digital business cards (name, title, company, bio, links, theme, slug)
-- `leads`: Captured contacts (name, email, company, note, source)
+- `profiles`: Digital business cards (name, title, company, bio, links, theme, slug, views)
+- `leads`: Captured contacts (name, telephone, whatsapp, email, company, note, source)
 
 ### Shared Code
 The `shared/` directory contains code used by both frontend and backend:
