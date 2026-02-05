@@ -12,7 +12,8 @@ import {
   Edit3, 
   ExternalLink, 
   Download,
-  Copy
+  Copy,
+  Eye
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -107,17 +108,31 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Stats Card */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Profile Views Card */}
         <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
+            <CardTitle className="text-sm font-medium">Profile Views</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{profile.views || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Total profile taps
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Leads Card */}
+        <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
             <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{leads?.length || 0}</div>
             <p className="text-xs text-muted-foreground">
-              Across all sources
+              Contacts captured
             </p>
             <div className="mt-4 pt-4 border-t border-border/50">
               <Link href="/dashboard/leads" className="text-sm text-primary hover:underline flex items-center">
