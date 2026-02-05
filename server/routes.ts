@@ -117,14 +117,14 @@ export async function registerRoutes(
 
   // Check slug availability
   app.get(api.profiles.checkSlug.path, async (req, res) => {
-    const { slug } = req.params;
+    const slug = req.params.slug as string;
     const profile = await storage.getProfileBySlug(slug);
     res.json({ available: !profile });
   });
 
   // Public Profile View
   app.get(api.profiles.getBySlug.path, async (req, res) => {
-    const { slug } = req.params;
+    const slug = req.params.slug as string;
     const profile = await storage.getProfileBySlug(slug);
     if (!profile) return res.status(404).json({ message: "Profile not found" });
     
