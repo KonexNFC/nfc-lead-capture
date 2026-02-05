@@ -50,7 +50,11 @@ export function ProfilePreview({ profile, mock }: ProfilePreviewProps) {
         <div className="px-6 flex-1 flex flex-col items-center -mt-16 relative z-10">
           <div className="p-1.5 bg-background rounded-full shadow-lg mb-4">
             <Avatar className="h-28 w-28 border-2 border-primary/10">
-              <AvatarImage src={profile.photoUrl || undefined} alt={profile.name} className="object-cover" />
+              <AvatarImage 
+                src={profile.photoUrl ? (profile.photoUrl.startsWith('http') ? profile.photoUrl : `/objects/${profile.photoUrl}`) : undefined} 
+                alt={profile.name} 
+                className="object-cover" 
+              />
               <AvatarFallback className="text-2xl bg-secondary font-display font-bold text-primary">
                 {profile.name.charAt(0)}
               </AvatarFallback>

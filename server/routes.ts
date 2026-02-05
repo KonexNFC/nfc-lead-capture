@@ -55,8 +55,6 @@ async function seedDatabase() {
   }
 }
 
-import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
-
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -89,12 +87,9 @@ export async function registerRoutes(
     const input = api.profiles.updateMine.input.parse(req.body);
 
     if (!profile) {
-      // Create with default slug if not provided? 
-      // For MVP assume user provides enough info or we handle it in frontend
       if (!input.slug) {
         return res.status(400).json({ message: "Slug is required for new profile" });
       }
-      // Ensure name is present for creation
       if (!input.name) {
          return res.status(400).json({ message: "Name is required for new profile" });
       }
@@ -104,16 +99,19 @@ export async function registerRoutes(
           ...input,
           userId: req.user.id,
           name: input.name,
-          slug: input.slug
+          slug: input.slug,
+          photoUrl: input.photoUrl ? input.photoUrl.replace(/^\/objects\//, '') : input.photoUrl
         });
         return res.json(profile);
       } catch (e) {
-        // Handle unique slug error
         return res.status(400).json({ message: "Slug might be taken" });
       }
     }
 
-    const updated = await storage.updateProfile(req.user.id, input);
+    const updated = await storage.updateProfile(req.user.id, {
+      ...input,
+      photoUrl: input.photoUrl ? input.photoUrl.replace(/^\/objects\//, '') : input.photoUrl
+    });
     res.json(updated);
   });
 
@@ -157,7 +155,6 @@ export async function registerRoutes(
       profileId: profile.id
     });
 
-    // TODO: Send email notification here (mock for MVP)
     console.log(`[EMAIL MOCK] Notification to profile owner ${profile.userId}: New lead from ${lead.name} (${lead.email})`);
 
     res.status(201).json(lead);
@@ -168,7 +165,7 @@ export async function registerRoutes(
     if (!req.isAuthenticated()) return res.sendStatus(401);
     
     const profile = await storage.getProfile(req.user.id);
-    if (!profile) return res.json([]); // No profile = no leads
+    if (!profile) return res.json([]);
 
     const leads = await storage.getLeadsByProfile(profile.id);
     res.json(leads);
@@ -185,7 +182,7 @@ export async function registerRoutes(
     
     res.json({
       totalLeads: leads.length,
-      recentLeads: leads.slice(0, 5), // Last 5
+      recentLeads: leads.slice(0, 5),
       totalViews: profile.views
     });
   });

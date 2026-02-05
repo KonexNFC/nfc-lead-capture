@@ -28,6 +28,12 @@ export default function PublicProfile() {
 
   return (
     <div className="min-h-screen bg-muted/20 flex flex-col items-center justify-center p-4">
+      {/* Header Branding (Mobile) */}
+      <div className="flex md:hidden items-center gap-2 mb-8 text-muted-foreground/40 font-display font-bold tracking-widest text-xs uppercase">
+        <CreditCard className="h-4 w-4" />
+        <span>KONEX</span>
+      </div>
+
       {/* Profile Card */}
       <ProfilePreview profile={profile} />
 

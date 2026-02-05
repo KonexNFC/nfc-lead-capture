@@ -76,9 +76,21 @@ export default function Dashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, {profile.name}.</p>
+        <div className="flex items-center gap-4">
+          <Avatar className="h-16 w-16 border-2 border-primary/10">
+            <AvatarImage 
+              src={profile.photoUrl ? (profile.photoUrl.startsWith('http') ? profile.photoUrl : `/objects/${profile.photoUrl}`) : undefined} 
+              alt={profile.name}
+              className="object-cover" 
+            />
+            <AvatarFallback className="text-xl bg-secondary font-display font-bold text-primary">
+              {profile.name.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-3xl font-display font-bold">Dashboard</h1>
+            <p className="text-muted-foreground">Welcome back, {profile.name}.</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={handleCopyLink}>

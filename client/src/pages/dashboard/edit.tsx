@@ -80,7 +80,7 @@ export default function EditProfile() {
       } catch (error) {
         toast({
           title: "Error",
-          description: "Failed to upload photo",
+          description: "Failed to upload photo. Please check your cloud budget.",
           variant: "destructive"
         });
       }
