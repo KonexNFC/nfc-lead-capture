@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette, Nfc, Eye, Users } from "lucide-react";
-import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770263775271.png";
+import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 
 export default function LandingPage() {
   return (
@@ -10,7 +10,7 @@ export default function LandingPage() {
       <nav className="w-full border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto invert dark:invert-0" />
+            <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto rounded" />
           </div>
           <div className="flex items-center gap-4">
             <Link href="/auth">

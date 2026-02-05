@@ -16,7 +16,7 @@ import { useMediaQuery } from "@/hooks/use-mobile";
 import { Loader2, Share2, Check, MessageCircle } from "lucide-react";
 import { SiFacebook, SiX, SiLinkedin, SiInstagram } from "react-icons/si";
 import { z } from "zod";
-import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770263775271.png";
+import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 
 const STORAGE_KEY_PREFIX = "konex_contact_";
 
