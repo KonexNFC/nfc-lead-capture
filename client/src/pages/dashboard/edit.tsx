@@ -68,12 +68,20 @@ export default function EditProfile() {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const response = await uploadFile(file);
-      if (response) {
-        form.setValue("photoUrl", response.objectPath);
+      try {
+        const response = await uploadFile(file);
+        if (response) {
+          form.setValue("photoUrl", response.objectPath);
+          toast({
+            title: "Success",
+            description: "Photo uploaded successfully",
+          });
+        }
+      } catch (error) {
         toast({
-          title: "Success",
-          description: "Photo uploaded successfully",
+          title: "Error",
+          description: "Failed to upload photo",
+          variant: "destructive"
         });
       }
     }
