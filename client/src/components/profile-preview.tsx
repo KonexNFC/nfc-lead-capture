@@ -17,9 +17,10 @@ import type { Profile } from "@shared/schema";
 interface ProfilePreviewProps {
   profile: Profile;
   mock?: boolean;
+  onSaveContact?: () => void;
 }
 
-export function ProfilePreview({ profile, mock }: ProfilePreviewProps) {
+export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewProps) {
   const socialIcons: Record<string, any> = {
     linkedin: Linkedin,
     github: Github,
@@ -51,7 +52,11 @@ export function ProfilePreview({ profile, mock }: ProfilePreviewProps) {
           <div className="p-1.5 bg-background rounded-full shadow-lg mb-4">
             <Avatar className="h-28 w-28 border-2 border-primary/10">
               <AvatarImage 
-                src={profile.photoUrl ? (profile.photoUrl.startsWith('http') ? profile.photoUrl : `/objects/uploads/${profile.photoUrl}`) : undefined} 
+                src={profile.photoUrl ? (
+                  profile.photoUrl.startsWith('http') ? profile.photoUrl : 
+                  profile.photoUrl.startsWith('/objects/') ? profile.photoUrl :
+                  `/objects/${profile.photoUrl}`
+                ) : undefined} 
                 alt={profile.name} 
                 className="object-cover" 
               />
@@ -108,7 +113,12 @@ export function ProfilePreview({ profile, mock }: ProfilePreviewProps) {
           </div>
           
           <div className="w-full pb-6 pt-2">
-            <Button className="w-full rounded-xl h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" size="lg">
+            <Button 
+              className="w-full rounded-xl h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" 
+              size="lg"
+              onClick={onSaveContact}
+              data-testid="button-save-contact"
+            >
               Save Contact
             </Button>
           </div>

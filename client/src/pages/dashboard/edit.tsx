@@ -122,7 +122,14 @@ export default function EditProfile() {
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-6 mb-4">
                   <Avatar className="h-20 w-20 border-2 border-primary/10">
-                    <AvatarImage src={watchedValues.photoUrl || undefined} className="object-cover" />
+                    <AvatarImage 
+                      src={watchedValues.photoUrl ? (
+                        watchedValues.photoUrl.startsWith('http') ? watchedValues.photoUrl :
+                        watchedValues.photoUrl.startsWith('/objects/') ? watchedValues.photoUrl :
+                        `/objects/${watchedValues.photoUrl}`
+                      ) : undefined} 
+                      className="object-cover" 
+                    />
                     <AvatarFallback className="text-xl bg-secondary font-display font-bold text-primary">
                       {watchedValues.name?.charAt(0) || "U"}
                     </AvatarFallback>

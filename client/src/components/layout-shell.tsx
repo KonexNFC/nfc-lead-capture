@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   UserCircle, 
   Users, 
+  Settings,
   LogOut, 
   Menu,
   X
@@ -26,6 +27,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'My Profile', href: '/dashboard/edit', icon: UserCircle },
     { name: 'Leads', href: '/dashboard/leads', icon: Users },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 
   const NavContent = () => (

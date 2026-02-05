@@ -190,5 +190,31 @@ export async function registerRoutes(
     });
   });
 
+  // === Site Settings (Public) ===
+  app.get("/api/public/settings/:key", async (req, res) => {
+    try {
+      const value = await storage.getSetting(req.params.key);
+      res.json({ value });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get setting" });
+    }
+  });
+
+  // === Admin Settings (Protected) ===
+  app.put("/api/settings/:key", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const { value } = req.body;
+      if (typeof value !== 'string') {
+        return res.status(400).json({ message: "Value must be a string" });
+      }
+      const setting = await storage.setSetting(req.params.key, value);
+      res.json(setting);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update setting" });
+    }
+  });
+
   return httpServer;
 }

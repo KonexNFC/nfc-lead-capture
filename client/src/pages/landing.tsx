@@ -1,23 +1,44 @@
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette } from "lucide-react";
+import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette, Nfc, Eye, Users } from "lucide-react";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770263775271.png";
 
 export default function LandingPage() {
+  const { data: bannerData } = useQuery<{ value: string | null }>({
+    queryKey: ['/api/public/settings/landing_banner'],
+  });
+
+  const bannerUrl = bannerData?.value;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Hero Banner */}
+      {bannerUrl && (
+        <div className="w-full h-48 md:h-64 relative overflow-hidden" data-testid="hero-banner">
+          <img 
+            src={bannerUrl.startsWith('http') ? bannerUrl : 
+              bannerUrl.startsWith('/objects/') ? bannerUrl :
+              `/objects/${bannerUrl}`} 
+            alt="KONEX Banner" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+        </div>
+      )}
+
       {/* Navbar */}
-      <nav className="w-full border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
+      <nav className={`w-full border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80 ${bannerUrl ? '-mt-16' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto invert dark:invert-0" />
           </div>
           <div className="flex items-center gap-4">
             <Link href="/auth">
-              <Button variant="ghost" className="font-medium">Log in</Button>
+              <Button variant="ghost" className="font-medium" data-testid="button-login">Log in</Button>
             </Link>
             <Link href="/auth?tab=register">
-              <Button className="font-semibold shadow-lg shadow-primary/20">Get Started</Button>
+              <Button className="font-semibold shadow-lg shadow-primary/20" data-testid="button-get-started">Get Started</Button>
             </Link>
           </div>
         </div>
@@ -49,8 +70,8 @@ export default function LandingPage() {
                     Create Your Card
                   </Button>
                 </Link>
-                <Link href="#features">
-                  <Button variant="outline" size="lg" className="h-14 px-8 rounded-full text-lg">
+                <Link href="#how-it-works">
+                  <Button variant="outline" size="lg" className="h-14 px-8 rounded-full text-lg" data-testid="button-how-it-works">
                     How it Works
                   </Button>
                 </Link>
@@ -100,6 +121,54 @@ export default function LandingPage() {
               {/* Decorative Elements */}
               <div className="absolute -top-10 -right-10 h-64 w-64 bg-primary/20 rounded-full blur-3xl -z-10 animate-pulse" />
               <div className="absolute -bottom-10 -left-10 h-64 w-64 bg-accent/20 rounded-full blur-3xl -z-10 animate-pulse delay-700" />
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <section id="how-it-works" className="py-24 bg-background border-b border-border/50">
+          <div className="max-w-7xl mx-auto px-4 md:px-6">
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <h2 className="text-3xl md:text-4xl font-display font-bold mb-4" data-testid="text-how-it-works-title">How It Works</h2>
+              <p className="text-muted-foreground text-lg">Three simple steps to revolutionize your networking</p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8 relative">
+              {/* Connector line for desktop */}
+              <div className="hidden md:block absolute top-16 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-primary via-accent to-purple-500" />
+              
+              {[
+                {
+                  step: 1,
+                  icon: Nfc,
+                  title: "Tap Your KONEX Card",
+                  desc: "Simply tap your NFC-enabled KONEX card on any modern smartphone. No app required for the recipient."
+                },
+                {
+                  step: 2,
+                  icon: Eye,
+                  title: "View Your Profile",
+                  desc: "Your stunning digital profile instantly appears. Showcase your bio, links, and contact details beautifully."
+                },
+                {
+                  step: 3,
+                  icon: Users,
+                  title: "Exchange Contact",
+                  desc: "Visitors share their info directly with you. Capture leads effortlessly and never lose a connection."
+                }
+              ].map((item, i) => (
+                <div key={i} className="relative flex flex-col items-center text-center" data-testid={`how-it-works-step-${item.step}`}>
+                  {/* Step number */}
+                  <div className="relative z-10 h-16 w-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-6 shadow-lg shadow-primary/25">
+                    <item.icon className="h-7 w-7 text-white" />
+                  </div>
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 bg-background px-2 text-sm font-bold text-muted-foreground">
+                    Step {item.step}
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">{item.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed max-w-xs">{item.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>

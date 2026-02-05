@@ -1,9 +1,10 @@
 import { db } from "./db";
 import {
-  users, profiles, leads,
+  users, profiles, leads, siteSettings,
   type User, type InsertUser,
   type Profile, type InsertProfile, type UpdateProfileRequest,
-  type Lead, type InsertLead
+  type Lead, type InsertLead,
+  type SiteSetting
 } from "@shared/schema";
 import { eq, desc, sql } from "drizzle-orm";
 
@@ -23,6 +24,10 @@ export interface IStorage {
   // Leads
   createLead(lead: InsertLead & { profileId: number }): Promise<Lead>;
   getLeadsByProfile(profileId: number): Promise<Lead[]>;
+
+  // Site Settings
+  getSetting(key: string): Promise<string | null>;
+  setSetting(key: string, value: string): Promise<SiteSetting>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -88,6 +93,26 @@ export class DatabaseStorage implements IStorage {
       .from(leads)
       .where(eq(leads.profileId, profileId))
       .orderBy(desc(leads.createdAt));
+  }
+
+  // Site Settings
+  async getSetting(key: string): Promise<string | null> {
+    const [setting] = await db.select().from(siteSettings).where(eq(siteSettings.key, key));
+    return setting?.value || null;
+  }
+
+  async setSetting(key: string, value: string): Promise<SiteSetting> {
+    const existing = await this.getSetting(key);
+    if (existing !== null) {
+      const [updated] = await db
+        .update(siteSettings)
+        .set({ value, updatedAt: new Date() })
+        .where(eq(siteSettings.key, key))
+        .returning();
+      return updated;
+    }
+    const [created] = await db.insert(siteSettings).values({ key, value }).returning();
+    return created;
   }
 }
 
