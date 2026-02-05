@@ -59,6 +59,17 @@ The `shared/` directory contains code used by both frontend and backend:
 - **Upload Flow**: Presigned URL pattern with Uppy dashboard
 - **Routes**: `/api/uploads/request-url` for presigned URLs, `/objects/uploads/:id` for serving
 
+### Contact Card & vCard
+After a visitor submits the lead capture form, they see an iOS-style contact card with:
+- Profile owner's info (name, title, company, phone)
+- Quick action buttons: Message (sms:), Call (tel:), WhatsApp (wa.me), Email (mailto:)
+- Social links: Facebook, X, LinkedIn, Instagram, TikTok
+- "Save Contact" button that downloads a vCard (.vcf) file
+
+Key files:
+- `client/src/lib/vcard.ts`: vCard 3.0 generation utility
+- `client/src/components/contact-card.tsx`: iOS-style contact card component
+
 ## External Dependencies
 
 ### Database
