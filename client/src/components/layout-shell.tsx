@@ -6,12 +6,12 @@ import {
   Users, 
   LogOut, 
   Menu,
-  X,
-  CreditCard
+  X
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770263775271.png";
 
 interface LayoutShellProps {
   children: React.ReactNode;
@@ -32,8 +32,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
     <div className="flex flex-col h-full">
       <div className="p-6 border-b border-border/50">
         <div className="flex items-center gap-2">
-          <CreditCard className="h-6 w-6 text-primary" />
-          <span className="font-display font-bold text-xl">KONEX</span>
+          <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto" />
         </div>
       </div>
       
@@ -85,8 +84,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-border z-40 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <CreditCard className="h-6 w-6 text-primary" />
-          <span className="font-display font-bold text-lg">KONEX</span>
+          <img src={konexLogo} alt="KONEX Logo" className="h-6 w-auto" />
         </div>
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
