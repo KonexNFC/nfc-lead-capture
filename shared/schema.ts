@@ -39,7 +39,9 @@ export const leads = pgTable("leads", {
   id: serial("id").primaryKey(),
   profileId: integer("profile_id").notNull(),
   name: text("name").notNull(),
-  email: text("email").notNull(),
+  email: text("email"),
+  telephone: text("telephone"),
+  whatsapp: text("whatsapp"),
   company: text("company"),
   note: text("note"),
   source: text("source").default("nfc"), // nfc, qr, direct

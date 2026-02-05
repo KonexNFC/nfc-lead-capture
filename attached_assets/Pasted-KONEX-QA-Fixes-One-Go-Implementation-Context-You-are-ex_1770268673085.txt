@@ -1,0 +1,120 @@
+KONEX QA Fixes (One-Go Implementation)
+
+Context:
+You are extending and fixing an existing NFC lead capture web app. The app currently displays a public profile page at /u/{slug} and includes a contact exchange form. Implement the following UX, functional, and conversion fixes without breaking existing functionality.
+
+⸻
+
+Objectives
+
+Upgrade the public profile experience to be investor-ready and conversion-optimised, and fix broken interactions.
+
+⸻
+
+Required Fixes & Enhancements
+
+1. Branding & Trust
+	•	Add KONEX logo + wordmark at the top of the public profile page.
+	•	Add a small trust line below the form:
+“Powered by KONEX · Secure contact exchange”
+
+⸻
+
+2. Above-the-Fold Clarity
+
+On /u/{slug} pages:
+	•	Add a hero line at the top:
+“Connect with {Profile Name}”
+	•	Add a subtext:
+“Share your contact details instantly.”
+
+⸻
+
+3. Exchange Contact Form (Fields + Channels)
+
+Update the “Exchange Contact” form to include:
+
+Required fields
+	•	Full Name
+	•	Telephone (phone number input with country code support)
+	•	WhatsApp (phone number input; can default to same as telephone with checkbox “Same as phone”)
+
+Validation
+	•	Name is required
+	•	At least one contact method (Telephone or WhatsApp) must be provided
+	•	Validate phone number format (basic validation is fine)
+
+On submit
+	•	Save the contact to the database linked to the profile owner
+	•	Show a success confirmation:
+“Thanks — your contact has been shared with {Profile Name}.”
+
+⸻
+
+4. Fix the Save Button (Critical Bug)
+
+The “Save” button currently does nothing.
+
+Fix required:
+	•	Wire the Save button to actually submit the form
+	•	Ensure:
+	•	Form validation runs
+	•	Data is persisted
+	•	Success or error state is shown
+
+If there is a client-side handler missing, implement it.
+If the backend endpoint is missing, create it.
+
+⸻
+
+5. Post-Submit Confirmation State
+
+After successful contact exchange:
+	•	Replace the form with a confirmation state:
+	•	Success message
+	•	Optional CTA:
+	•	“Connect on WhatsApp”
+	•	“Save contact”
+
+⸻
+
+6. Error Handling
+
+Add inline error states:
+	•	If submission fails, show:
+“Something went wrong. Please try again.”
+
+⸻
+
+7. Mobile UX Optimisation
+	•	Ensure the form is fully usable on mobile:
+	•	Large tap targets
+	•	Numeric keypad for phone/WhatsApp inputs
+	•	No horizontal scrolling
+
+⸻
+
+Technical Constraints
+	•	Do not remove existing lead capture logic; extend it.
+	•	Keep the /u/{slug} routing intact.
+	•	Use the existing stack and file structure.
+	•	Keep the app deployable on Replit.
+
+⸻
+
+Acceptance Criteria
+	•	KONEX branding visible on public profile page
+	•	“Connect with {Name}” hero text present
+	•	Exchange Contact form includes Name, Telephone, WhatsApp
+	•	Save button submits and persists data
+	•	User sees confirmation state on success
+	•	Errors are handled gracefully
+	•	Works on mobile (iOS & Android browsers)
+
+⸻
+
+Instruction to Replit AI
+
+Implement all changes above in one pass.
+Explain where code was added or modified.
+Do not break existing NFC deep-linking or routing.
