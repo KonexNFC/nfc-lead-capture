@@ -234,7 +234,7 @@ export function ContactCard({ profile, onClose }: ContactCardProps) {
       <div className="w-full max-w-sm space-y-3">
         <Button 
           size="lg" 
-          className="w-full h-14 text-base font-semibold shadow-lg"
+          className="w-full font-semibold shadow-lg"
           onClick={handleSaveContact}
           data-testid="button-save-contact"
         >
@@ -245,7 +245,7 @@ export function ContactCard({ profile, onClose }: ContactCardProps) {
           <Button 
             variant="outline" 
             size="lg"
-            className="w-full h-12"
+            className="w-full"
             onClick={onClose}
             data-testid="button-done"
           >

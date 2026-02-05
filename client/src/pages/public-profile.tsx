@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRoute } from "wouter";
 import { usePublicProfile } from "@/hooks/use-profiles";
 import { ProfilePreview } from "@/components/profile-preview";
+import { ContactCard } from "@/components/contact-card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger } from "@/components/ui/drawer";
@@ -13,10 +14,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { leadFormSchema } from "@shared/routes";
 import { useSubmitLead } from "@/hooks/use-leads";
 import { useMediaQuery } from "@/hooks/use-mobile";
-import { Loader2, Share2, Check, MessageCircle } from "lucide-react";
+import { Loader2, Share2 } from "lucide-react";
 import { SiFacebook, SiX, SiLinkedin, SiInstagram } from "react-icons/si";
 import { z } from "zod";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
+import type { Profile } from "@shared/schema";
 
 const STORAGE_KEY_PREFIX = "konex_contact_";
 
@@ -53,9 +55,8 @@ export default function PublicProfile() {
   if (!profile || error) return <div className="h-screen flex items-center justify-center text-muted-foreground" data-testid="text-profile-not-found">Profile not found</div>;
 
   const FormContent = isSubmitted ? (
-    <SuccessState 
-      profileName={profile.name} 
-      whatsapp={submittedData?.whatsapp}
+    <ContactCard 
+      profile={profile}
       onClose={handleClose}
     />
   ) : (
@@ -100,7 +101,7 @@ export default function PublicProfile() {
               <Share2 className="mr-2 h-5 w-5" />
               Exchange Contact
             </Button>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle data-testid="text-form-title">
                   {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
@@ -155,60 +156,6 @@ export default function PublicProfile() {
       <div className="fixed bottom-4 right-4 hidden md:flex items-center gap-2 text-xs text-muted-foreground/50">
         <img src={konexLogo} alt="KONEX" className="h-4 w-auto opacity-50" />
         <span>Powered by KONEX</span>
-      </div>
-    </div>
-  );
-}
-
-function SuccessState({ 
-  profileName, 
-  whatsapp, 
-  onClose 
-}: { 
-  profileName: string; 
-  whatsapp?: string;
-  onClose: () => void;
-}) {
-  const whatsappLink = whatsapp ? `https://wa.me/${whatsapp.replace(/\D/g, '')}` : null;
-
-  return (
-    <div className="flex flex-col items-center py-6 space-y-6" data-testid="success-state">
-      {/* Success Icon */}
-      <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-        <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
-      </div>
-
-      {/* Success Message */}
-      <div className="text-center space-y-2">
-        <h3 className="text-lg font-semibold" data-testid="text-success-message">
-          Thanks — your contact has been shared with {profileName}.
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          They'll be in touch soon.
-        </p>
-      </div>
-
-      {/* CTAs */}
-      <div className="flex flex-col sm:flex-row gap-3 w-full">
-        {whatsappLink && (
-          <Button 
-            variant="outline" 
-            className="flex-1 h-12"
-            onClick={() => window.open(whatsappLink, '_blank')}
-            data-testid="button-connect-whatsapp"
-          >
-            <MessageCircle className="mr-2 h-4 w-4" />
-            Connect on WhatsApp
-          </Button>
-        )}
-        <Button 
-          variant="default" 
-          className="flex-1 h-12"
-          onClick={onClose}
-          data-testid="button-done"
-        >
-          Done
-        </Button>
       </div>
     </div>
   );

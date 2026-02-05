@@ -15,11 +15,15 @@ export interface VCardData {
 }
 
 export function generateVCard(data: VCardData): string {
+  const nameParts = data.name.trim().split(/\s+/);
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.slice(1).join(' ') || '';
+  
   const lines: string[] = [
     'BEGIN:VCARD',
     'VERSION:3.0',
     `FN:${escapeVCardValue(data.name)}`,
-    `N:${escapeVCardValue(data.name)};;;;`,
+    `N:${escapeVCardValue(lastName)};${escapeVCardValue(firstName)};;;`,
   ];
 
   if (data.title) {
