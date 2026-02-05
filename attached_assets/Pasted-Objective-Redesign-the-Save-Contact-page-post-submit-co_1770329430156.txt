@@ -1,0 +1,151 @@
+Objective
+
+Redesign the Save Contact page / post-submit confirmation view to:
+	•	Look and behave like a native contact card
+	•	Pre-fill basic contact info automatically
+	•	Provide direct CTAs (Call, WhatsApp, Email, Website, Social)
+	•	Allow the user to save the contact to their device
+
+⸻
+
+Required UX & UI
+
+1. iOS-Style Contact Card Layout
+
+After a visitor submits the “Exchange Contact” form, show a contact card view with:
+
+Header
+	•	Contact name (e.g., “Top Secrets” / Profile Name)
+	•	Primary phone number (formatted with country code)
+	•	Optional profile avatar/logo
+	•	A verified-style indicator (optional)
+
+Action Buttons (Top Row)
+	•	Message (sms:)
+	•	Call (tel:)
+	•	WhatsApp (https://wa.me/)
+	•	Email (mailto:)
+
+Contact Details Section
+	•	Phone:
+	•	Website:
+	•	Facebook: 
+	•	X (formerly Twitter): handle
+	•	Instagram / TikTok (if available)
+
+Primary CTA Button
+	•	“Save Contact”
+	•	Secondary: “Create New Contact” (optional)
+
+Design should be:
+	•	Mobile-first
+	•	Card-based layout
+	•	Large tap targets
+	•	Clear hierarchy
+
+⸻
+
+2. Autofill / Pre-Fill Contact Info
+
+Pre-fill the contact card with:
+	•	Name (profile owner’s name / brand)
+	•	Phone number
+	•	WhatsApp number
+	•	Website
+	•	Facebook
+	•	X (Twitter renamed to X)
+	•	Instagram / TikTok (if present)
+
+Data Sources
+	•	Profile owner data from database
+	•	Visitor’s previously entered info (if needed)
+	•	Persist visitor’s own details in localStorage to auto-fill future forms
+
+Acceptance Criteria
+	•	When the Save Contact page loads, all available fields are already populated.
+	•	User can edit fields before saving.
+
+⸻
+
+3. “Save Contact” Functionality (Actual Device Save)
+
+Implement real contact saving via:
+
+Option A (Web Standard – vCard)
+	•	Generate and download a .vcf (vCard) file with:
+	•	Name
+	•	Phone
+	•	WhatsApp (as phone or note)
+	•	Website
+	•	Facebook
+	•	X
+	•	Trigger download when user taps “Save Contact”
+	•	Mobile browsers should open native “Add to Contacts” flow
+
+Option B (Progressive Enhancement)
+	•	On iOS Safari / Android Chrome:
+	•	Download vCard and prompt to save to contacts
+	•	Fallback: show instructions if browser blocks auto-open
+
+Acceptance Criteria
+	•	Tapping “Save Contact” downloads/opens a contact file
+	•	User can add the contact to their phone address book
+
+⸻
+
+4. Actionable CTAs (Call, WhatsApp, Social)
+
+Add action icons at the top of the contact card:
+	•	Call: 
+	•	WhatsApp:
+	•	Email: 
+	•	Website: open in new tab
+	•	Facebook: open profile
+	•	X: open X profile
+
+Icons should only render if the corresponding data exists.
+
+⸻
+
+5. Technical Requirements
+	•	Keep existing lead capture intact
+	•	Use existing profile data model
+	•	Add/ensure fields:
+	•	phoneNumber
+	•	whatsAppNumber
+	•	websiteUrl
+	•	facebookUrl
+	•	xUrl
+	•	Add a utility to generate vCard (.vcf) dynamically
+	•	Mobile-first layout
+	•	No breaking changes to /u/{slug} routing
+
+⸻
+
+6. Acceptance Criteria (QA)
+	•	Save Contact page visually resembles a native contact card
+	•	All contact fields are pre-filled
+	•	Call/WhatsApp buttons work instantly
+	•	“Save Contact” downloads a .vcf file
+	•	Works on iOS Safari and Android Chrome
+	•	Graceful fallback on desktop browsers
+
+⸻
+
+Instruction to Replit AI
+
+Implement the iOS-style Save Contact view as described.
+Explain:
+	•	Where the vCard generation logic lives
+	•	How autofill is implemented
+	•	How CTAs are conditionally rendered
+	•	Any new components or routes added
+
+Do not remove existing functionality. Extend the current UX.
+
+⸻
+
+Optional Enhancements (If Time Allows)
+	•	Add “Add to Apple Contacts” detection for iOS
+	•	Add QR code to download contact
+	•	Add profile avatar/logo upload for contact card header
