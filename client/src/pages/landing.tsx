@@ -22,7 +22,6 @@ export default function LandingPage() {
               `/objects/${bannerUrl}`} 
             alt="KONEX Banner" 
             className="w-full h-auto object-cover"
-            style={{ aspectRatio: '1600/600' }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
         </div>

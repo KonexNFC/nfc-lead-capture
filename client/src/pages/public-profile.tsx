@@ -86,17 +86,20 @@ export default function PublicProfile() {
       </div>
 
       {/* Hero Banner */}
-      {bannerUrl && (
-        <div className="w-full max-w-4xl mb-6 rounded-xl overflow-hidden" data-testid="hero-banner">
+      <div className="w-full max-w-4xl mb-6 rounded-xl overflow-hidden" data-testid="hero-banner">
+        {bannerUrl ? (
           <img 
             src={bannerUrl.startsWith('http') ? bannerUrl : bannerUrl.startsWith('/objects/') ? bannerUrl : `/objects/${bannerUrl}`}
             alt="KONEX Banner"
             className="w-full h-auto object-cover"
-            style={{ aspectRatio: '1600/600' }}
             loading="lazy"
           />
-        </div>
-      )}
+        ) : (
+          <div className="w-full h-32 md:h-40 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 flex items-center justify-center">
+            <img src={konexLogo} alt="KONEX" className="h-12 opacity-30" />
+          </div>
+        )}
+      </div>
 
       {/* Profile Card */}
       <ProfilePreview profile={profile} onSaveContact={() => setIsOpen(true)} />

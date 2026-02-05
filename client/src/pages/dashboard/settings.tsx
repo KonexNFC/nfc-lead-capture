@@ -76,8 +76,8 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle>Landing Page Banner</CardTitle>
           <CardDescription>
-            Upload a hero banner image that will display at the top of the landing page.
-            Recommended size: 1600×600 pixels. Max file size: 4MB.
+            Upload a hero banner image that will display on the landing page and public profiles.
+            Any aspect ratio works — the image will resize responsively. Max file size: 4MB.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

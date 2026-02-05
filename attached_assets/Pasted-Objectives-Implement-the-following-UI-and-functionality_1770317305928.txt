@@ -1,0 +1,99 @@
+Objectives
+
+Implement the following UI and functionality updates:
+	1.	Replace Twitter with X
+	2.	Reduce spacing between social icons to allow more links
+	3.	Use exact brand colours for all social icons
+	4.	Remove Phone and WhatsApp from social links
+	5.	Sync Landing Page Banner from profile settings to public profile page (flexible sizing)
+
+⸻
+
+Required Changes
+
+1. Replace Twitter with X
+	•	Rename all references of twitter to x in:
+	•	UI labels
+	•	Icons
+	•	Data model fields (e.g., twitterUrl → xUrl)
+	•	Update icon to X logo.
+	•	Migrate existing data so any stored twitterUrl maps to xUrl.
+
+⸻
+
+2. Reduce Spacing Between Social Icons
+	•	Update the social icons container CSS:
+	•	Reduce gap/margin between icons to allow more links per row.
+	•	Icons should wrap neatly on small screens (use flex-wrap).
+	•	Ensure icons remain tappable on mobile (minimum 40px tap target).
+
+⸻
+
+3. Use Exact Brand Colours for Social Icons
+
+Apply official brand colours:
+	•	Facebook: #1877F2
+	•	X: #000000 (or white on dark background)
+	•	Instagram (if present): #E4405F (or gradient if supported)
+	•	LinkedIn (if present): #0A66C2
+	•	YouTube (if present): #FF0000
+	•	TikTok (if present): use official black/white/red accent
+
+Implementation:
+	•	Set icon fill/stroke colours to brand colours.
+	•	Keep hover/focus states accessible (contrast compliant).
+
+⸻
+
+4. Remove Phone & WhatsApp from Social Links
+	•	Remove Phone and WhatsApp from:
+	•	Social icons UI on /u/{slug}
+	•	Profile settings form (do not show as social link options)
+	•	Keep phone/WhatsApp fields (if needed) only for contact exchange, not as social CTAs.
+
+⸻
+
+5. Sync Landing Page Banner to Public Profile (Flexible Sizing)
+
+Requirement:
+	•	The banner image uploaded in profile settings should display on the public profile page (/u/{slug}).
+	•	Do not enforce a fixed recommended size.
+	•	Render banner responsively:
+	•	Full-width container
+	•	Height adapts to image aspect ratio
+	•	Use object-fit: cover or contain based on design
+	•	Place the banner on the public profile page below:
+	•	“Share your contact instantly”
+
+Fallback:
+	•	If no banner is uploaded, show a default KONEX placeholder.
+
+⸻
+
+Non-Functional Requirements
+	•	Mobile-first layout
+	•	No breaking changes to existing NFC deep links
+	•	Clean, maintainable code
+	•	Accessible icon buttons (aria-labels)
+
+⸻
+
+Acceptance Criteria
+	•	X replaces Twitter everywhere (UI + data model)
+	•	Social icons are closer together and wrap neatly
+	•	Icons use exact official brand colours
+	•	Phone and WhatsApp no longer appear as social links
+	•	Banner from profile settings displays on public profile with flexible sizing
+
+⸻
+
+Instruction to Replit AI
+
+Implement all changes above in one pass.
+Explain:
+	•	Which components/styles were updated
+	•	How Twitter → X migration was handled
+	•	How social icon spacing and colours were implemented
+	•	How banner sync from settings to public profile works
+
+Do not remove unrelated features. Extend the current codebase.
