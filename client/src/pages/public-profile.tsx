@@ -244,52 +244,58 @@ function CTAIcons({ links }: { links: Record<string, string> }) {
   if (!hasAnyCTA) return null;
 
   return (
-    <div className="flex items-center justify-center gap-4 mt-6" data-testid="cta-icons">
+    <div className="flex items-center justify-center gap-3 mt-6" data-testid="cta-icons">
       {phone && (
-        <a
-          href={`tel:${phone.replace(/\D/g, '')}`}
-          className="flex items-center justify-center h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform"
+        <Button
+          size="icon"
+          variant="default"
+          asChild
           aria-label="Call phone number"
           data-testid="cta-phone"
         >
-          <Phone className="h-6 w-6" />
-        </a>
+          <a href={`tel:${phone.replace(/\D/g, '')}`}>
+            <Phone className="h-5 w-5" />
+          </a>
+        </Button>
       )}
       {whatsapp && (
-        <a
-          href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center h-14 w-14 rounded-full bg-green-500 text-white shadow-lg hover:scale-105 transition-transform"
+        <Button
+          size="icon"
+          variant="secondary"
+          asChild
           aria-label="Open WhatsApp"
           data-testid="cta-whatsapp"
         >
-          <MessageCircle className="h-6 w-6" />
-        </a>
+          <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+            <MessageCircle className="h-5 w-5" />
+          </a>
+        </Button>
       )}
       {facebook && (
-        <a
-          href={facebook.startsWith('http') ? facebook : `https://${facebook}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center h-14 w-14 rounded-full bg-blue-600 text-white shadow-lg hover:scale-105 transition-transform"
+        <Button
+          size="icon"
+          variant="secondary"
+          asChild
           aria-label="Open Facebook"
           data-testid="cta-facebook"
         >
-          <SiFacebook className="h-6 w-6" />
-        </a>
+          <a href={facebook.startsWith('http') ? facebook : `https://${facebook}`} target="_blank" rel="noopener noreferrer">
+            <SiFacebook className="h-5 w-5" />
+          </a>
+        </Button>
       )}
       {x && (
-        <a
-          href={x.startsWith('http') ? x : `https://${x}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center h-14 w-14 rounded-full bg-black text-white shadow-lg hover:scale-105 transition-transform"
+        <Button
+          size="icon"
+          variant="secondary"
+          asChild
           aria-label="Open X"
           data-testid="cta-x"
         >
-          <SiX className="h-6 w-6" />
-        </a>
+          <a href={x.startsWith('http') ? x : `https://${x}`} target="_blank" rel="noopener noreferrer">
+            <SiX className="h-5 w-5" />
+          </a>
+        </Button>
       )}
     </div>
   );
