@@ -1,0 +1,133 @@
+Replit AI Prompt — KONEX Critical Fixes (Save, Profile Image, How It Works, Landing Banner)
+
+Context:
+You are working on an existing NFC lead capture web app. Several core features are broken or incomplete. Fix these issues without removing existing functionality. Extend the current codebase.
+
+⸻
+
+Objectives
+
+Fix the following production-blocking issues:
+	1.	“Save contact” not working
+	2.	Profile picture not displaying on public profile pages
+	3.	“How it works” section on the main web app not functioning
+	4.	Add landing page banner with image upload functionality
+
+⸻
+
+Required Fixes
+
+1. Fix “Save Contact” (Critical)
+
+Problem:
+The Save/Submit button on the Exchange Contact form does nothing.
+
+Requirements:
+	•	Wire the Save button to a working form submission handler.
+	•	Validate inputs (Name, Telephone, WhatsApp).
+	•	Persist submitted contact data to the database.
+	•	Return success or error response.
+	•	Show a success confirmation state on the UI.
+
+Acceptance Criteria:
+	•	Clicking Save stores the contact.
+	•	A success message is shown.
+	•	Errors are handled gracefully.
+
+⸻
+
+2. Fix Profile Picture Display
+
+Problem:
+Profile pictures are not rendering on /u/{slug} pages.
+
+Requirements:
+	•	Ensure profile image URLs are correctly stored and retrieved from the database.
+	•	If using file uploads:
+	•	Implement image upload to storage (Supabase Storage, Firebase Storage, or Replit file store).
+	•	Save the image URL on the user profile record.
+	•	Render the profile image on the public profile page with:
+	•	Fallback placeholder if no image exists.
+	•	Optimise images for mobile (max width, aspect ratio, lazy loading).
+
+Acceptance Criteria:
+	•	Profile image appears correctly on public profile pages.
+	•	Placeholder image shown if none uploaded.
+
+⸻
+
+3. Fix “How It Works” on Main Web App
+
+Problem:
+The “How it works” section or link on the main web app does not function.
+
+Requirements:
+	•	If this is a broken link:
+	•	Implement correct routing to a /how-it-works page.
+	•	If this is a non-functional section:
+	•	Implement a visible, scrollable “How it works” section with 3 steps:
+	1.	Tap KONEX Card
+	2.	View Profile
+	3.	Exchange Contact
+	•	Ensure the button/anchor actually scrolls or navigates to the section.
+
+Acceptance Criteria:
+	•	“How it works” link works on desktop and mobile.
+	•	Section is visible and explains the product flow.
+
+⸻
+
+4. Landing Page Banner (Image Upload Functionality)
+
+Requirement:
+Add a hero banner to the landing page with admin upload capability.
+
+Features:
+	•	Add a banner image section at the top of the landing page.
+	•	Provide an admin-only upload UI (can be simple, behind auth or environment flag).
+	•	Store uploaded banner image in storage.
+	•	Render banner image dynamically on the landing page.
+	•	Add fallback default banner if none is uploaded.
+
+Acceptance Criteria:
+	•	Admin can upload a banner image.
+	•	Banner displays on landing page.
+	•	Image persists across reloads.
+
+⸻
+
+Non-Functional Requirements
+	•	Mobile-first UI
+	•	No breaking changes to existing routes
+	•	Keep NFC deep-linking intact
+	•	Clear success and error states
+	•	Optimise images for performance
+
+⸻
+
+Deliverables
+	•	Working Save Contact functionality
+	•	Profile pictures displaying correctly
+	•	Functional “How it works” section
+	•	Landing page hero banner with image upload
+	•	Updated deployment on Replit
+
+⸻
+
+Instruction to Replit AI
+
+Implement all fixes in one pass.
+Explain:
+	•	Which files were modified
+	•	Which new API endpoints were added
+	•	How image uploads are handled
+	•	How Save Contact is now persisted
+
+Do not remove existing features. Extend the app.
+
+⸻
+
+Optional (If Time Allows)
+	•	Add loading states for Save Contact
+	•	Add skeleton loaders for profile images
+	•	Add simple admin toggle for banner management
