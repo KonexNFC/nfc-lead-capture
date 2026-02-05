@@ -1,0 +1,120 @@
+KONEX UI Fixes (Logo Visibility, Banner Upload, Social Links, Brand Colours)
+
+Context:
+You are working on an existing NFC lead capture web app for KONEX. Several UI and admin features need correction. Implement the following changes without removing existing functionality. Extend the current codebase.
+
+⸻
+
+Objectives
+
+Improve brand visibility, fix banner upload functionality and placement, and refine social links behavior and styling.
+
+⸻
+
+Required Changes
+
+1. Make KONEX Logo More Visible (Public Profile Pages)
+
+Problem:
+The KONEX logo at the top of the public profile page is too small and lacks visual hierarchy.
+
+Requirements:
+	•	Increase the logo size by ~1.5–2× on desktop and mobile.
+	•	Add proper spacing (margin-bottom) so it anchors the page visually.
+	•	Ensure logo remains crisp on retina displays.
+	•	Keep logo clickable (route to main landing page if applicable).
+
+Acceptance Criteria:
+	•	KONEX logo is clearly visible and brand-forward on /u/{slug} pages.
+	•	Logo does not overwhelm content but is visually prominent.
+
+⸻
+
+2. Landing Page Hero Banner — Fix Upload & Placement
+
+Problems Identified:
+	•	Recommended banner size (1920×400) is incorrect.
+	•	Image upload is not working.
+	•	Banner management UI was moved to the edit profile page incorrectly.
+
+Requirements:
+
+A. Landing Page Banner (Main Web App)
+	•	Add a hero banner at the top of the landing page (home page).
+	•	Implement a working image upload for the banner.
+	•	Store uploaded banner image in storage (Supabase/Firebase/Replit FS).
+	•	Render banner dynamically on the landing page.
+	•	Allow admin-only upload (simple auth or env-flag is acceptable).
+
+B. Correct Banner Specs
+	•	Update recommended size to: 1600 × 600 px (more flexible and responsive).
+	•	Enforce max file size (e.g., 2–4 MB).
+	•	Resize/crop client-side if needed.
+
+C. Separation of Concerns
+	•	Remove landing page banner upload controls from the Edit Profile (Basic Info) page.
+	•	The profile page should manage profile images only, not the landing page hero banner.
+
+Acceptance Criteria:
+	•	You can upload a banner image successfully.
+	•	The banner displays at the top of the landing page.
+	•	The edit profile page no longer contains landing banner controls.
+
+⸻
+
+3. Make Social Links Optional (Public Profile)
+
+Problem:
+Social links appear required or enforced in the UI.
+
+Requirements:
+	•	Make all social links optional (Facebook, X, LinkedIn, Instagram, etc.).
+	•	Only render social icons if a corresponding URL exists.
+	•	Do not show placeholders for missing links.
+
+Acceptance Criteria:
+	•	Profiles can be saved with zero social links.
+	•	Public profile only displays icons for links that exist.
+
+⸻
+
+4. Use Official Social Media Brand Colours (Icons)
+
+Problem:
+Social icons are not using official brand colours.
+
+Requirements:
+Apply exact brand colours to icons:
+	•	Facebook: #1877F2
+	•	X: #000000 (black)
+	•	LinkedIn: #0A66C2
+	•	Instagram: Official gradient or primary brand colour
+
+UI Constraints:
+	•	Icons should maintain contrast on light/dark backgrounds.
+	•	Icons should be recognisable and accessible.
+
+Acceptance Criteria:
+	•	Each social icon uses its official brand colour.
+	•	No generic monochrome icons for social platforms.
+
+⸻
+
+Non-Functional Requirements
+	•	Mobile-first responsive layout
+	•	Do not break NFC deep links
+	•	Keep existing routes intact
+	•	Graceful fallback images if banner fails to load
+
+⸻
+
+Instruction to Replit AI
+
+Implement all changes above in one pass.
+Explain:
+	•	Which components were updated for logo sizing
+	•	How banner upload and storage were fixed
+	•	How optional social links rendering works
+	•	How brand colours were applied
+
+Do not remove any other features.
