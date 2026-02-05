@@ -7,11 +7,9 @@ import {
   MessageSquare, 
   MessageCircle, 
   Mail, 
-  Globe, 
   Download,
   Check
 } from "lucide-react";
-import { SiFacebook, SiX, SiLinkedin, SiInstagram, SiTiktok } from "react-icons/si";
 import type { Profile } from "@shared/schema";
 
 interface ContactCardProps {
@@ -166,67 +164,6 @@ export function ContactCard({ profile, onClose }: ContactCardProps) {
             </div>
           </div>
 
-          {/* Contact Details Section */}
-          <div className="border-t border-border/50">
-            {website && (
-              <ContactDetail 
-                icon={Globe} 
-                label="Website" 
-                value={website.replace(/^https?:\/\//, '')} 
-                href={website.startsWith('http') ? website : `https://${website}`}
-                testId="detail-website"
-              />
-            )}
-            {facebook && (
-              <ContactDetail 
-                icon={SiFacebook} 
-                label="Facebook" 
-                value={extractHandle(facebook)} 
-                href={facebook.startsWith('http') ? facebook : `https://${facebook}`}
-                color="#1877F2"
-                testId="detail-facebook"
-              />
-            )}
-            {x && (
-              <ContactDetail 
-                icon={SiX} 
-                label="X" 
-                value={extractHandle(x)} 
-                href={x.startsWith('http') ? x : `https://${x}`}
-                color="#000000"
-                testId="detail-x"
-              />
-            )}
-            {linkedin && (
-              <ContactDetail 
-                icon={SiLinkedin} 
-                label="LinkedIn" 
-                value={extractHandle(linkedin)} 
-                href={linkedin.startsWith('http') ? linkedin : `https://${linkedin}`}
-                color="#0A66C2"
-                testId="detail-linkedin"
-              />
-            )}
-            {instagram && (
-              <ContactDetail 
-                icon={SiInstagram} 
-                label="Instagram" 
-                value={extractHandle(instagram)} 
-                href={instagram.startsWith('http') ? instagram : `https://${instagram}`}
-                color="#E4405F"
-                testId="detail-instagram"
-              />
-            )}
-            {tiktok && (
-              <ContactDetail 
-                icon={SiTiktok} 
-                label="TikTok" 
-                value={extractHandle(tiktok)} 
-                href={tiktok.startsWith('http') ? tiktok : `https://${tiktok}`}
-                testId="detail-tiktok"
-              />
-            )}
-          </div>
         </CardContent>
       </Card>
 
