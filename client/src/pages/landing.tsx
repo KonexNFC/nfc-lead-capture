@@ -1,34 +1,13 @@
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette, Nfc, Eye, Users } from "lucide-react";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770263775271.png";
 
 export default function LandingPage() {
-  const { data: bannerData } = useQuery<{ value: string | null }>({
-    queryKey: ['/api/public/settings/landing_banner'],
-  });
-
-  const bannerUrl = bannerData?.value;
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Hero Banner */}
-      {bannerUrl && (
-        <div className="w-full relative overflow-hidden" data-testid="hero-banner">
-          <img 
-            src={bannerUrl.startsWith('http') ? bannerUrl : 
-              bannerUrl.startsWith('/objects/') ? bannerUrl :
-              `/objects/${bannerUrl}`} 
-            alt="KONEX Banner" 
-            className="w-full h-auto object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-        </div>
-      )}
-
       {/* Navbar */}
-      <nav className={`w-full border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80 ${bannerUrl ? '-mt-16' : ''}`}>
+      <nav className="w-full border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto invert dark:invert-0" />
