@@ -15,6 +15,7 @@ import {
   Copy
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Dashboard() {
   const { data: profile, isLoading: profileLoading } = useMyProfile();

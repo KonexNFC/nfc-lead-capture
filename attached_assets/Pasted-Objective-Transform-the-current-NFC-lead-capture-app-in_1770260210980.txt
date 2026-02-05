@@ -1,0 +1,164 @@
+Objective
+
+Transform the current NFC lead capture app into a full KONEX MVP with:
+	•	Public professional profiles
+	•	Profile owner dashboard
+	•	Lead capture + storage
+	•	Basic analytics
+	•	Email notifications
+	•	NFC/QR deep-linking
+
+The app must be mobile-first and demo-ready for investor presentations.
+
+⸻
+
+Core Features to Build
+
+1. Authentication (Profile Owners)
+	•	Implement email magic-link login (no passwords).
+	•	Authenticated users can access a dashboard.
+	•	Visitors do not need accounts.
+
+⸻
+
+2. Public KONEX Profile Pages
+
+Create public profile pages accessible at:
+
+/u/{username_or_id}
+
+Each profile should display:
+	•	Full name
+	•	Job title
+	•	Company
+	•	Profile photo
+	•	Short bio
+	•	Links (LinkedIn, email, phone, website)
+
+Profiles must be mobile-optimised and load in under 2 seconds.
+
+⸻
+
+3. Profile Editor (Dashboard)
+
+Authenticated users can:
+	•	Create and edit their KONEX profile
+	•	Upload/change profile photo
+	•	Edit links and bio
+	•	View their public profile URL
+	•	See and copy their NFC/QR URL
+
+⸻
+
+4. Lead Capture (Extend Existing Feature)
+
+On each public profile:
+	•	Show a lead capture form with:
+	•	Name (required)
+	•	Email (required)
+	•	Company (optional)
+	•	Save submitted leads to the database, linked to the profile owner.
+	•	Show a success confirmation to the visitor.
+
+⸻
+
+5. Email Notifications
+
+When a visitor submits a lead:
+	•	Send an email notification to the profile owner:
+	•	Include visitor name, email, company, timestamp.
+	•	Use a simple email service (Resend, SendGrid, or similar).
+
+⸻
+
+6. Analytics (Basic)
+
+Add a dashboard view with:
+	•	Total profile views (tap count)
+	•	Total leads captured
+	•	Recent leads list (last 10)
+	•	Timestamp of interactions
+
+⸻
+
+7. NFC + QR Deep-Linking
+	•	Each profile has a unique URL to encode into:
+	•	NFC cards
+	•	QR codes
+	•	Generate a QR code for each profile in the dashboard.
+
+⸻
+
+Technical Requirements
+	•	Frontend: React or Next.js
+	•	Backend: Node.js API routes
+	•	Database: Supabase or Firebase
+	•	Auth: Email magic links
+	•	Email: Resend or SendGrid
+	•	Deployment: Replit
+
+⸻
+
+Data Models
+
+User
+	•	id
+	•	email
+	•	createdAt
+
+Profile
+	•	id
+	•	userId
+	•	name
+	•	title
+	•	company
+	•	photoUrl
+	•	bio
+	•	links
+	•	publicSlug
+	•	createdAt
+
+Lead
+	•	id
+	•	profileId
+	•	visitorName
+	•	visitorEmail
+	•	visitorCompany
+	•	timestamp
+	•	source (NFC/QR)
+
+⸻
+
+UX Requirements
+	•	Mobile-first design
+	•	Minimalist UI aligned with KONEX premium tech brand
+	•	Fast load times
+	•	Simple flows for demo use
+
+⸻
+
+Deliverables
+	•	Working public profile pages
+	•	Authenticated dashboard
+	•	Stored leads
+	•	Email notifications on lead capture
+	•	Basic analytics view
+	•	QR code generation
+	•	Deployed live on Replit
+
+⸻
+
+Non-Goals (Out of Scope for MVP)
+	•	Payments
+	•	Subscriptions
+	•	Teams / enterprise
+	•	CRM integrations
+	•	Mobile apps
+
+⸻
+
+Instruction to Replit AI
+
+Use the existing project as a base.
+Do not remove existing NFC lead capture functionality — extend it into the KONEX MVP described above.
+Produce clean, readable, well-structured code and explain where new files or routes are added.
