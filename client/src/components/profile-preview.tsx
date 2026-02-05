@@ -51,7 +51,7 @@ export function ProfilePreview({ profile, mock }: ProfilePreviewProps) {
           <div className="p-1.5 bg-background rounded-full shadow-lg mb-4">
             <Avatar className="h-28 w-28 border-2 border-primary/10">
               <AvatarImage 
-                src={profile.photoUrl ? (profile.photoUrl.startsWith('http') ? profile.photoUrl : `/objects/${profile.photoUrl}`) : undefined} 
+                src={profile.photoUrl ? (profile.photoUrl.startsWith('http') ? profile.photoUrl : `/objects/uploads/${profile.photoUrl}`) : undefined} 
                 alt={profile.name} 
                 className="object-cover" 
               />
