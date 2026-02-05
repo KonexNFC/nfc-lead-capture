@@ -14,8 +14,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { leadFormSchema } from "@shared/routes";
 import { useSubmitLead } from "@/hooks/use-leads";
 import { useMediaQuery } from "@/hooks/use-mobile";
-import { Loader2, Share2, Check, MessageCircle, Phone } from "lucide-react";
-import { SiFacebook, SiX } from "react-icons/si";
+import { Loader2, Share2, Check, MessageCircle } from "lucide-react";
+import { SiFacebook, SiX, SiLinkedin, SiInstagram } from "react-icons/si";
 import { z } from "zod";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770263775271.png";
 
@@ -80,9 +80,6 @@ export default function PublicProfile() {
 
       {/* Hero Section */}
       <div className="text-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2" data-testid="text-hero-title">
-          Connect with {profile.name}
-        </h1>
         <p className="text-muted-foreground text-sm md:text-base" data-testid="text-hero-subtitle">
           Share your contact details instantly.
         </p>
@@ -235,46 +232,22 @@ function SuccessState({
 }
 
 function CTAIcons({ links }: { links: Record<string, string> }) {
-  const phone = links.phone;
-  const whatsapp = links.whatsapp;
   const facebook = links.facebook;
   const x = links.x || links.twitter;
+  const linkedin = links.linkedin;
+  const instagram = links.instagram;
 
-  const hasAnyCTA = phone || whatsapp || facebook || x;
+  const hasAnyCTA = facebook || x || linkedin || instagram;
   if (!hasAnyCTA) return null;
 
   return (
-    <div className="flex items-center justify-center gap-3 mt-6" data-testid="cta-icons">
-      {phone && (
-        <Button
-          size="icon"
-          variant="default"
-          asChild
-          aria-label="Call phone number"
-          data-testid="cta-phone"
-        >
-          <a href={`tel:${phone.replace(/\D/g, '')}`}>
-            <Phone className="h-5 w-5" />
-          </a>
-        </Button>
-      )}
-      {whatsapp && (
-        <Button
-          size="icon"
-          variant="secondary"
-          asChild
-          aria-label="Open WhatsApp"
-          data-testid="cta-whatsapp"
-        >
-          <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-            <MessageCircle className="h-5 w-5" />
-          </a>
-        </Button>
-      )}
+    <div className="flex items-center justify-center gap-2 mt-6 flex-wrap" data-testid="cta-icons">
       {facebook && (
         <Button
           size="icon"
-          variant="secondary"
+          variant="outline"
+          className="text-white"
+          style={{ backgroundColor: '#1877F2', borderColor: '#1877F2' }}
           asChild
           aria-label="Open Facebook"
           data-testid="cta-facebook"
@@ -287,13 +260,45 @@ function CTAIcons({ links }: { links: Record<string, string> }) {
       {x && (
         <Button
           size="icon"
-          variant="secondary"
+          variant="outline"
+          className="text-white"
+          style={{ backgroundColor: '#000000', borderColor: '#000000' }}
           asChild
           aria-label="Open X"
           data-testid="cta-x"
         >
           <a href={x.startsWith('http') ? x : `https://${x}`} target="_blank" rel="noopener noreferrer">
             <SiX className="h-5 w-5" />
+          </a>
+        </Button>
+      )}
+      {linkedin && (
+        <Button
+          size="icon"
+          variant="outline"
+          className="text-white"
+          style={{ backgroundColor: '#0A66C2', borderColor: '#0A66C2' }}
+          asChild
+          aria-label="Open LinkedIn"
+          data-testid="cta-linkedin"
+        >
+          <a href={linkedin.startsWith('http') ? linkedin : `https://${linkedin}`} target="_blank" rel="noopener noreferrer">
+            <SiLinkedin className="h-5 w-5" />
+          </a>
+        </Button>
+      )}
+      {instagram && (
+        <Button
+          size="icon"
+          variant="outline"
+          className="text-white"
+          style={{ background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', borderColor: '#dc2743' }}
+          asChild
+          aria-label="Open Instagram"
+          data-testid="cta-instagram"
+        >
+          <a href={instagram.startsWith('http') ? instagram : `https://${instagram}`} target="_blank" rel="noopener noreferrer">
+            <SiInstagram className="h-5 w-5" />
           </a>
         </Button>
       )}

@@ -1,0 +1,104 @@
+KONEX Social Bio & Hero Cleanup
+
+Context:
+You are modifying the existing KONEX public profile page UI. Implement the following changes to the social bio section and hero content. Do not remove any core functionality. Extend and refine the current components.
+
+⸻
+
+Objectives
+
+Clean up the public profile social bio and hero section for a more premium, conversion-focused layout.
+
+⸻
+
+Required Changes
+
+1. Remove Phone & WhatsApp from Social Bio (CTA Icons)
+
+Change:
+	•	Remove Phone and WhatsApp from the social bio icon row.
+	•	Phone and WhatsApp should remain available only in the Exchange Contact form (not as social icons).
+
+Acceptance Criteria:
+	•	No phone or WhatsApp icons appear in the social bio section.
+	•	Social bio only includes social platforms (e.g., Facebook, X, LinkedIn, Instagram if present).
+
+⸻
+
+2. Replace Twitter with X (Brand Update)
+
+Change:
+	•	Replace any Twitter icon, label, and URL field with X.
+	•	Update:
+	•	Icon to X logo
+	•	Label text to “X”
+	•	Variable/field name from twitterUrl to xUrl (migrate data if needed).
+
+Acceptance Criteria:
+	•	No Twitter branding remains anywhere in UI.
+	•	X icon opens the provided X profile link.
+
+⸻
+
+3. Reduce Spacing Between Social Icons
+
+Change:
+	•	Decrease horizontal spacing (margin/gap) between social icons to create room for additional links.
+
+UI Requirements:
+	•	Icons should remain easily tappable on mobile.
+	•	Use a consistent small gap (e.g., 8–12px).
+	•	Ensure layout does not wrap awkwardly on small screens.
+
+Acceptance Criteria:
+	•	Social icon row is compact and visually balanced.
+	•	More icons can fit on one row on mobile.
+
+⸻
+
+4. Use Exact Social Media Brand Colours
+
+Change:
+Apply official brand colours to social icons:
+	•	Facebook: #1877F2
+	•	X (Twitter): #000000 (X brand is black/white)
+	•	LinkedIn (if present): #0A66C2
+	•	Instagram (if present): Gradient or primary brand colour
+
+Acceptance Criteria:
+	•	Icons display in exact brand colours.
+	•	Icons remain visible on both light and dark backgrounds.
+
+⸻
+
+5. Remove “Connect with {User}” from Hero
+
+Change:
+	•	Remove the hero line “Connect with {User}” from the public profile page.
+	•	Keep only:
+	•	“Share your contact instantly”
+	•	Or equivalent microcopy guiding the user to the form.
+
+Acceptance Criteria:
+	•	No “Connect with {Name}” text appears on /u/{slug} pages.
+	•	Hero section remains clean and focused on the call-to-action.
+
+⸻
+
+Non-Functional Requirements
+	•	Do not break existing routes or NFC deep links
+	•	Mobile-first layout
+	•	Accessible tap targets
+	•	Graceful handling if some social links are missing
+
+⸻
+
+Instruction to Replit AI
+
+Implement all changes above in one pass.
+Explain:
+	•	Which UI components were updated
+	•	How Twitter → X migration was handled
+	•	How spacing and colours were applied
+
+Do not remove any other features.
