@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRoute } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { usePublicProfile } from "@/hooks/use-profiles";
 import { ProfilePreview } from "@/components/profile-preview";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { leadFormSchema } from "@shared/routes";
 import { useSubmitLead } from "@/hooks/use-leads";
 import { useMediaQuery } from "@/hooks/use-mobile";
-import { Loader2, Share2, Check, MessageCircle, UserPlus } from "lucide-react";
+import { Loader2, Share2, Check, MessageCircle, Phone } from "lucide-react";
+import { SiFacebook, SiX } from "react-icons/si";
 import { z } from "zod";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770263775271.png";
+
+const STORAGE_KEY_PREFIX = "konex_contact_";
 
 export default function PublicProfile() {
   const [match, params] = useRoute("/u/:slug");
@@ -25,10 +29,20 @@ export default function PublicProfile() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState<{ whatsapp?: string } | null>(null);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  
+  const { data: bannerData } = useQuery<{ value: string | null }>({
+    queryKey: ['/api/public/settings/landing_banner'],
+  });
+  const bannerUrl = bannerData?.value;
 
   const handleSuccess = (data: { whatsapp?: string }) => {
     setSubmittedData(data);
     setIsSubmitted(true);
+    if (data.whatsapp || data) {
+      try {
+        localStorage.setItem(`${STORAGE_KEY_PREFIX}${slug}`, JSON.stringify(data));
+      } catch (e) {}
+    }
   };
 
   const handleClose = () => {
@@ -74,8 +88,24 @@ export default function PublicProfile() {
         </p>
       </div>
 
+      {/* Hero Banner */}
+      {bannerUrl && (
+        <div className="w-full max-w-4xl mb-6 rounded-xl overflow-hidden" data-testid="hero-banner">
+          <img 
+            src={bannerUrl.startsWith('http') ? bannerUrl : bannerUrl.startsWith('/objects/') ? bannerUrl : `/objects/${bannerUrl}`}
+            alt="KONEX Banner"
+            className="w-full h-auto object-cover"
+            style={{ aspectRatio: '1920/400' }}
+            loading="lazy"
+          />
+        </div>
+      )}
+
       {/* Profile Card */}
       <ProfilePreview profile={profile} onSaveContact={() => setIsOpen(true)} />
+
+      {/* CTA Icons */}
+      <CTAIcons links={(profile.links as Record<string, string>) || {}} />
 
       {/* Floating Action Button for Lead Capture */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
@@ -204,6 +234,67 @@ function SuccessState({
   );
 }
 
+function CTAIcons({ links }: { links: Record<string, string> }) {
+  const phone = links.phone;
+  const whatsapp = links.whatsapp;
+  const facebook = links.facebook;
+  const x = links.x || links.twitter;
+
+  const hasAnyCTA = phone || whatsapp || facebook || x;
+  if (!hasAnyCTA) return null;
+
+  return (
+    <div className="flex items-center justify-center gap-4 mt-6" data-testid="cta-icons">
+      {phone && (
+        <a
+          href={`tel:${phone.replace(/\D/g, '')}`}
+          className="flex items-center justify-center h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform"
+          aria-label="Call phone number"
+          data-testid="cta-phone"
+        >
+          <Phone className="h-6 w-6" />
+        </a>
+      )}
+      {whatsapp && (
+        <a
+          href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center h-14 w-14 rounded-full bg-green-500 text-white shadow-lg hover:scale-105 transition-transform"
+          aria-label="Open WhatsApp"
+          data-testid="cta-whatsapp"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </a>
+      )}
+      {facebook && (
+        <a
+          href={facebook.startsWith('http') ? facebook : `https://${facebook}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center h-14 w-14 rounded-full bg-blue-600 text-white shadow-lg hover:scale-105 transition-transform"
+          aria-label="Open Facebook"
+          data-testid="cta-facebook"
+        >
+          <SiFacebook className="h-6 w-6" />
+        </a>
+      )}
+      {x && (
+        <a
+          href={x.startsWith('http') ? x : `https://${x}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center h-14 w-14 rounded-full bg-black text-white shadow-lg hover:scale-105 transition-transform"
+          aria-label="Open X"
+          data-testid="cta-x"
+        >
+          <SiX className="h-6 w-6" />
+        </a>
+      )}
+    </div>
+  );
+}
+
 function LeadForm({ 
   slug, 
   profileName,
@@ -211,18 +302,30 @@ function LeadForm({
 }: { 
   slug: string; 
   profileName: string;
-  onSuccess: (data: { whatsapp?: string }) => void;
+  onSuccess: (data: { whatsapp?: string; name?: string; telephone?: string }) => void;
 }) {
   const submitLead = useSubmitLead();
   const [sameAsPhone, setSameAsPhone] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   
+  const getSavedContact = (): { name?: string; telephone?: string; whatsapp?: string } => {
+    try {
+      const saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${slug}`);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {}
+    return {};
+  };
+
+  const savedContact = getSavedContact();
+  
   const form = useForm<z.infer<typeof leadFormSchema>>({
     resolver: zodResolver(leadFormSchema),
     defaultValues: { 
-      name: "", 
-      telephone: "", 
-      whatsapp: "",
+      name: savedContact.name || "", 
+      telephone: savedContact.telephone || "", 
+      whatsapp: savedContact.whatsapp || "",
       email: "", 
       company: "", 
       note: "" 
@@ -242,8 +345,15 @@ function LeadForm({
     setSubmitError(null);
     submitLead.mutate({ ...data, slug }, {
       onSuccess: () => {
+        try {
+          localStorage.setItem(`${STORAGE_KEY_PREFIX}${slug}`, JSON.stringify({
+            name: data.name,
+            telephone: data.telephone,
+            whatsapp: data.whatsapp
+          }));
+        } catch (e) {}
         form.reset();
-        onSuccess({ whatsapp: data.whatsapp });
+        onSuccess({ whatsapp: data.whatsapp, name: data.name, telephone: data.telephone });
       },
       onError: (error) => {
         setSubmitError("Something went wrong. Please try again.");

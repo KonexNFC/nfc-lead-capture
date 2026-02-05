@@ -1,0 +1,123 @@
+KONEX Public Profile Enhancements (CTAs, Autofill, Banner Placement)
+
+Context:
+You are extending an existing NFC lead capture web app. Implement the following feature upgrades on the public profile page (/u/{slug}) and related flows. Do not remove existing functionality; extend it.
+
+⸻
+
+Objectives
+
+Enhance the public KONEX profile experience to increase conversion and usability:
+	1.	Add actionable social/contact icons (Phone, WhatsApp, Facebook, X)
+	2.	Autofill saved contact info in the “Exchange Contact” form
+	3.	Move the hero banner image to the public profile page, placed below “Share your contact instantly”
+	4.	Enforce banner size guidance (1920×400) with responsive rendering
+
+⸻
+
+Required Features
+
+1. Social & Contact Call-To-Action Icons (Public Profile)
+
+On /u/{slug} public profile pages:
+
+Add CTA icon buttons for:
+	•	Phone (Call):
+	•	If profile has a phone number, show a phone icon
+	•	On tap: tel:{phoneNumber}
+	•	WhatsApp:
+	•	If profile has WhatsApp number, show WhatsApp icon
+	•	On tap: https://wa.me/{whatsAppNumber}
+	•	Facebook:
+	•	If profile has Facebook URL, show Facebook icon
+	•	On tap: open link in new tab
+	•	X (formerly Twitter):
+	•	Replace Twitter icon/label with X
+	•	If profile has X URL, show X icon
+	•	On tap: open link in new tab
+
+UI Requirements
+	•	Icons displayed in a horizontal row below the profile info
+	•	Icons only render if the corresponding link exists
+	•	Mobile-friendly tap targets
+	•	Use accessible labels (aria-labels)
+
+⸻
+
+2. Autofill “Exchange Contact” Form (If Contact Previously Saved)
+
+When a visitor returns to the same profile:
+	•	Autofill the “Exchange Contact” form with previously saved values:
+	•	Name
+	•	Telephone
+	•	WhatsApp
+
+Implementation
+	•	Store submitted contact info in localStorage or cookies scoped to the profile slug
+	•	On page load, check for existing saved values and pre-fill the form
+	•	Allow the user to edit the pre-filled values before resubmitting
+
+Acceptance Criteria
+	•	Returning visitors see their details pre-filled
+	•	Autofill works on mobile browsers
+	•	Does not overwrite new manual entries
+
+⸻
+
+3. Hero Banner Placement on Public Profile Page
+
+Change Required:
+	•	The hero banner image should appear on the public card landing page (/u/{slug}), not only on the main landing page.
+
+Placement:
+	•	Position the banner below the line “Share your contact instantly” on the public profile page.
+
+Image Requirements:
+	•	Recommended size: 1920 × 400 px
+	•	Render responsively (cover width, fixed height ratio)
+	•	Use object-fit: cover
+	•	Lazy-load the image for performance
+
+Fallback:
+	•	If no banner is uploaded, show a default KONEX banner.
+
+⸻
+
+4. Data Model Updates (If Needed)
+
+Ensure profile model supports:
+	•	phoneNumber
+	•	whatsAppNumber
+	•	facebookUrl
+	•	xUrl (rename twitterUrl to xUrl in codebase, migrate if needed)
+	•	bannerImageUrl (used on public profile page)
+
+⸻
+
+Non-Functional Requirements
+	•	Mobile-first layout
+	•	No breaking changes to existing NFC deep links
+	•	Graceful fallback if any field is missing
+	•	Fast load times
+
+⸻
+
+Acceptance Criteria
+	•	Phone, WhatsApp, Facebook, and X icons appear when links exist
+	•	Phone and WhatsApp icons trigger direct actions (call / open WhatsApp)
+	•	Exchange Contact form autofills for returning visitors
+	•	Hero banner displays on /u/{slug} under “Share your contact instantly”
+	•	Banner displays correctly on mobile and desktop
+
+⸻
+
+Instruction to Replit AI
+
+Implement all features above in one pass.
+Explain:
+	•	Which components were updated
+	•	Where CTA icons were added
+	•	How autofill persistence works
+	•	How banner placement and responsive sizing were implemented
+
+Do not remove existing features. Extend the app.

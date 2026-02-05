@@ -24,7 +24,10 @@ export const profiles = pgTable("profiles", {
     email?: string;
     website?: string;
     phone?: string;
+    whatsapp?: string;
     twitter?: string;
+    x?: string;
+    facebook?: string;
     instagram?: string;
     snapchat?: string;
     tiktok?: string;
