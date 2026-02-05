@@ -1,13 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, type InsertLead } from "@shared/routes";
+import { api, leadFormSchema } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+type LeadFormData = z.infer<typeof leadFormSchema> & { slug: string };
 
 // Submit a lead (Public)
 export function useSubmitLead() {
   const { toast } = useToast();
   
   return useMutation({
-    mutationFn: async (data: InsertLead & { slug: string }) => {
+    mutationFn: async (data: LeadFormData) => {
       const res = await fetch(api.leads.submit.path, {
         method: api.leads.submit.method,
         headers: { "Content-Type": "application/json" },

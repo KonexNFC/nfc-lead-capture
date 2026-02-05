@@ -148,14 +148,17 @@ export async function registerRoutes(
 
     const lead = await storage.createLead({
       name: input.name,
-      email: input.email,
+      email: input.email || null,
+      telephone: input.telephone || null,
+      whatsapp: input.whatsapp || null,
       company: input.company,
       note: input.note,
       source: input.source,
       profileId: profile.id
     });
 
-    console.log(`[EMAIL MOCK] Notification to profile owner ${profile.userId}: New lead from ${lead.name} (${lead.email})`);
+    const contactInfo = lead.telephone || lead.whatsapp || lead.email || 'no contact';
+    console.log(`[EMAIL MOCK] Notification to profile owner ${profile.userId}: New lead from ${lead.name} (${contactInfo})`);
 
     res.status(201).json(lead);
   });

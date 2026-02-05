@@ -1,7 +1,36 @@
 import { z } from 'zod';
 import { insertUserSchema, insertProfileSchema, insertLeadSchema, profiles, leads } from './schema';
 
-export { insertUserSchema, insertProfileSchema, insertLeadSchema };
+export { insertUserSchema, insertProfileSchema };
+
+// Base lead form fields
+const leadFormFields = {
+  name: z.string().min(1, "Name is required"),
+  telephone: z.string().optional(),
+  whatsapp: z.string().optional(),
+  email: z.string().email().optional().or(z.literal("")),
+  company: z.string().optional(),
+  note: z.string().optional(),
+};
+
+// Custom lead schema with phone validation - requires at least one contact method
+export const leadFormSchema = z.object(leadFormFields).refine(
+  (data) => {
+    // At least one contact method must be provided
+    const hasTelephone = data.telephone && data.telephone.trim().length >= 7;
+    const hasWhatsapp = data.whatsapp && data.whatsapp.trim().length >= 7;
+    return hasTelephone || hasWhatsapp;
+  },
+  { message: "Please provide at least one phone number (Telephone or WhatsApp)", path: ["telephone"] }
+);
+
+// API submission schema (includes slug) - used for server validation
+export const leadSubmitSchema = z.object({
+  ...leadFormFields,
+  slug: z.string(),
+});
+
+export { insertLeadSchema };
 
 export const errorSchemas = {
   validation: z.object({
@@ -101,7 +130,7 @@ export const api = {
     submit: {
       method: 'POST' as const,
       path: '/api/public/leads',
-      input: insertLeadSchema.extend({ slug: z.string() }), // Pass slug to identify profile
+      input: leadSubmitSchema, // Pass slug to identify profile
       responses: {
         201: z.custom<typeof leads.$inferSelect>(),
         404: errorSchemas.notFound,
