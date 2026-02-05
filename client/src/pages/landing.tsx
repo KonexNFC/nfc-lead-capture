@@ -15,13 +15,14 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Hero Banner */}
       {bannerUrl && (
-        <div className="w-full h-48 md:h-64 relative overflow-hidden" data-testid="hero-banner">
+        <div className="w-full relative overflow-hidden" data-testid="hero-banner">
           <img 
             src={bannerUrl.startsWith('http') ? bannerUrl : 
               bannerUrl.startsWith('/objects/') ? bannerUrl :
               `/objects/${bannerUrl}`} 
             alt="KONEX Banner" 
-            className="w-full h-full object-cover"
+            className="w-full h-auto object-cover"
+            style={{ aspectRatio: '1600/600' }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
         </div>

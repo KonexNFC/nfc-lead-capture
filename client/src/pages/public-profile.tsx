@@ -74,9 +74,9 @@ export default function PublicProfile() {
   return (
     <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-6 pb-24">
       {/* KONEX Logo + Wordmark Header */}
-      <div className="flex items-center gap-2 mb-4" data-testid="konex-branding-header">
-        <img src={konexLogo} alt="KONEX" className="h-8 w-auto" />
-      </div>
+      <a href="/" className="flex items-center gap-2 mb-6" data-testid="konex-branding-header">
+        <img src={konexLogo} alt="KONEX" className="h-12 md:h-16 w-auto" />
+      </a>
 
       {/* Hero Section */}
       <div className="text-center mb-6">
@@ -92,7 +92,7 @@ export default function PublicProfile() {
             src={bannerUrl.startsWith('http') ? bannerUrl : bannerUrl.startsWith('/objects/') ? bannerUrl : `/objects/${bannerUrl}`}
             alt="KONEX Banner"
             className="w-full h-auto object-cover"
-            style={{ aspectRatio: '1920/400' }}
+            style={{ aspectRatio: '1600/600' }}
             loading="lazy"
           />
         </div>
