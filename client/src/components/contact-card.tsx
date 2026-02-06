@@ -25,7 +25,11 @@ export function ContactCard({ profile, onClose }: ContactCardProps) {
   const email = links.email;
   const website = links.website;
   const facebook = links.facebook;
+  const x = links.x || links.twitter;
+  const linkedin = links.linkedin;
+  const instagram = links.instagram;
   const tiktok = links.tiktok;
+  const snapchat = links.snapchat;
 
   const handleSaveContact = () => {
     const vcardData: VCardData = {
@@ -37,7 +41,11 @@ export function ContactCard({ profile, onClose }: ContactCardProps) {
       email: email,
       website: website,
       facebook: facebook,
+      x: x,
+      linkedin: linkedin,
+      instagram: instagram,
       tiktok: tiktok,
+      snapchat: snapchat,
       photoUrl: profile.photoUrl || undefined,
     };
     downloadVCard(vcardData);
