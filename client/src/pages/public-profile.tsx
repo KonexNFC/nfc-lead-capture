@@ -5,7 +5,7 @@ import { ProfilePreview } from "@/components/profile-preview";
 import { ContactCard } from "@/components/contact-card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -14,8 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { leadFormSchema } from "@shared/routes";
 import { useSubmitLead } from "@/hooks/use-leads";
 import { useMediaQuery } from "@/hooks/use-mobile";
-import { Loader2, Share2 } from "lucide-react";
-import { SiFacebook } from "react-icons/si";
+import { Loader2 } from "lucide-react";
 import { z } from "zod";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 import type { Profile } from "@shared/schema";
@@ -68,92 +67,60 @@ export default function PublicProfile() {
   );
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-6 pb-24">
+    <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-6 pb-8">
       {/* KONEX Logo + Wordmark Header */}
       <a href="/" className="flex items-center gap-2 mb-6" data-testid="konex-branding-header">
         <img src={konexLogo} alt="KONEX" className="h-12 md:h-16 w-auto" />
       </a>
 
-      {/* Hero Section */}
-      <div className="text-center mb-6">
-        <p className="text-muted-foreground text-sm md:text-base" data-testid="text-hero-subtitle">
-          Share your contact details instantly.
-        </p>
-      </div>
-
-
       {/* Profile Card */}
       <ProfilePreview profile={profile} onSaveContact={() => setIsOpen(true)} />
 
-      {/* CTA Icons */}
-      <CTAIcons links={(profile.links as Record<string, string>) || {}} />
-
-      {/* Floating Action Button for Lead Capture */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-        {isDesktop ? (
-           <Dialog open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : handleClose()}>
-            <Button 
-              size="lg" 
-              className="rounded-full shadow-2xl px-8 h-14 text-base font-semibold animate-in slide-in-from-bottom-4" 
-              onClick={() => setIsOpen(true)}
-              data-testid="button-exchange-contact"
-            >
-              <Share2 className="mr-2 h-5 w-5" />
-              Exchange Contact
-            </Button>
-            <DialogContent className="max-w-md sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle data-testid="text-form-title">
-                  {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
-                </DialogTitle>
-                <DialogDescription data-testid="text-form-description">
-                  {isSubmitted ? "" : "Your details will be sent directly to them."}
-                </DialogDescription>
-              </DialogHeader>
+      {/* Dialog/Drawer for Lead Capture Form */}
+      {isDesktop ? (
+        <Dialog open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : handleClose()}>
+          <DialogContent className="max-w-md sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle data-testid="text-form-title">
+                {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
+              </DialogTitle>
+              <DialogDescription data-testid="text-form-description">
+                {isSubmitted ? "" : "Your details will be sent directly to them."}
+              </DialogDescription>
+            </DialogHeader>
+            {FormContent}
+            {!isSubmitted && (
+              <p className="text-xs text-muted-foreground text-center mt-4 pt-4 border-t" data-testid="text-trust-line">
+                Powered by KONEX · Secure contact exchange
+              </p>
+            )}
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : handleClose()}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle data-testid="text-form-title">
+                {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
+              </DrawerTitle>
+              <DrawerDescription data-testid="text-form-description">
+                {isSubmitted ? "" : "Your details will be sent directly to them."}
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="p-4 pb-8">
               {FormContent}
               {!isSubmitted && (
                 <p className="text-xs text-muted-foreground text-center mt-4 pt-4 border-t" data-testid="text-trust-line">
                   Powered by KONEX · Secure contact exchange
                 </p>
               )}
-            </DialogContent>
-           </Dialog>
-        ) : (
-          <Drawer open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : handleClose()}>
-            <DrawerTrigger asChild>
-              <Button 
-                size="lg" 
-                className="rounded-full shadow-2xl px-8 h-14 text-base font-semibold animate-in slide-in-from-bottom-4"
-                data-testid="button-exchange-contact"
-              >
-                <Share2 className="mr-2 h-5 w-5" />
-                Exchange Contact
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent>
-              <DrawerHeader>
-                <DrawerTitle data-testid="text-form-title">
-                  {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
-                </DrawerTitle>
-                <DrawerDescription data-testid="text-form-description">
-                  {isSubmitted ? "" : "Your details will be sent directly to them."}
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="p-4 pb-8">
-                {FormContent}
-                {!isSubmitted && (
-                  <p className="text-xs text-muted-foreground text-center mt-4 pt-4 border-t" data-testid="text-trust-line">
-                    Powered by KONEX · Secure contact exchange
-                  </p>
-                )}
-              </div>
-            </DrawerContent>
-          </Drawer>
-        )}
-      </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
+      )}
 
       {/* Footer Branding */}
-      <div className="fixed bottom-4 right-4 hidden md:flex items-center gap-2 text-xs text-muted-foreground/50">
+      <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground/50">
         <img src={konexLogo} alt="KONEX" className="h-4 w-auto opacity-50" />
         <span>Powered by KONEX</span>
       </div>
@@ -161,31 +128,6 @@ export default function PublicProfile() {
   );
 }
 
-function CTAIcons({ links }: { links: Record<string, string> }) {
-  const facebook = links.facebook;
-
-  if (!facebook) return null;
-
-  return (
-    <div className="flex items-center justify-center gap-2 mt-6 flex-wrap" data-testid="cta-icons">
-      {facebook && (
-        <Button
-          size="icon"
-          variant="outline"
-          className="text-white"
-          style={{ backgroundColor: '#1877F2', borderColor: '#1877F2' }}
-          asChild
-          aria-label="Open Facebook"
-          data-testid="cta-facebook"
-        >
-          <a href={facebook.startsWith('http') ? facebook : `https://${facebook}`} target="_blank" rel="noopener noreferrer">
-            <SiFacebook className="h-5 w-5" />
-          </a>
-        </Button>
-      )}
-    </div>
-  );
-}
 
 function LeadForm({ 
   slug, 
