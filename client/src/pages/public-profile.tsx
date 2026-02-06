@@ -200,7 +200,7 @@ function LeadForm({
   const [sameAsPhone, setSameAsPhone] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   
-  const getSavedContact = (): { name?: string; telephone?: string; whatsapp?: string } => {
+  const getSavedContact = (): { name?: string; telephone?: string; whatsapp?: string; email?: string; company?: string; note?: string } => {
     try {
       const saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${slug}`);
       if (saved) {
@@ -218,9 +218,9 @@ function LeadForm({
       name: savedContact.name || "", 
       telephone: savedContact.telephone || "", 
       whatsapp: savedContact.whatsapp || "",
-      email: "", 
-      company: "", 
-      note: "" 
+      email: savedContact.email || "", 
+      company: savedContact.company || "", 
+      note: savedContact.note || "" 
     }
   });
 
@@ -241,7 +241,10 @@ function LeadForm({
           localStorage.setItem(`${STORAGE_KEY_PREFIX}${slug}`, JSON.stringify({
             name: data.name,
             telephone: data.telephone,
-            whatsapp: data.whatsapp
+            whatsapp: data.whatsapp,
+            email: data.email,
+            company: data.company,
+            note: data.note
           }));
         } catch (e) {}
         form.reset();
