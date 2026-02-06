@@ -25,9 +25,6 @@ export function ContactCard({ profile, onClose }: ContactCardProps) {
   const email = links.email;
   const website = links.website;
   const facebook = links.facebook;
-  const x = links.x || links.twitter;
-  const instagram = links.instagram;
-  const linkedin = links.linkedin;
   const tiktok = links.tiktok;
 
   const handleSaveContact = () => {
@@ -40,9 +37,6 @@ export function ContactCard({ profile, onClose }: ContactCardProps) {
       email: email,
       website: website,
       facebook: facebook,
-      x: x,
-      instagram: instagram,
-      linkedin: linkedin,
       tiktok: tiktok,
       photoUrl: profile.photoUrl || undefined,
     };
