@@ -86,24 +86,24 @@ const features: Feature[] = [
 export function FeatureSections() {
   return (
     <section id="why-konex" className="py-24 bg-background border-b border-border/50" data-testid="feature-sections">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="max-w-5xl mx-auto px-4 md:px-6">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">Why KONEX?</h2>
           <p className="text-muted-foreground text-lg">Everything your paper card can't do.</p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-10">
           {features.map((feature, i) => (
             <div
               key={i}
-              className="flex items-start gap-4 p-5 rounded-md border border-border/50 bg-muted/30"
+              className="flex items-start gap-4"
               data-testid={`feature-item-${i}`}
             >
-              <div className="flex-shrink-0 h-10 w-10 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+              <div className="flex-shrink-0 h-11 w-11 rounded-md bg-primary/10 text-primary flex items-center justify-center">
                 <feature.icon className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-sm font-semibold leading-snug mb-1">{feature.title}</h3>
+                <h3 className="font-semibold leading-snug mb-1">{feature.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{feature.copy}</p>
               </div>
             </div>
