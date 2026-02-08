@@ -13,6 +13,12 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface Feature {
   icon: LucideIcon;
@@ -86,29 +92,29 @@ const features: Feature[] = [
 export function FeatureSections() {
   return (
     <section id="why-konex" className="py-24 bg-background border-b border-border/50" data-testid="feature-sections">
-      <div className="max-w-5xl mx-auto px-4 md:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-16">
+      <div className="max-w-3xl mx-auto px-4 md:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">Why KONEX?</h2>
           <p className="text-muted-foreground text-lg">Everything your paper card can't do.</p>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-10">
+        <Accordion type="single" collapsible className="w-full">
           {features.map((feature, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-4"
-              data-testid={`feature-item-${i}`}
-            >
-              <div className="flex-shrink-0 h-11 w-11 rounded-md bg-primary/10 text-primary flex items-center justify-center">
-                <feature.icon className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-semibold leading-snug mb-1">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{feature.copy}</p>
-              </div>
-            </div>
+            <AccordionItem key={i} value={`feature-${i}`} data-testid={`feature-item-${i}`}>
+              <AccordionTrigger className="hover:no-underline gap-3">
+                <div className="flex items-center gap-3 text-left">
+                  <div className="flex-shrink-0 h-9 w-9 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+                    <feature.icon className="h-4 w-4" />
+                  </div>
+                  <span className="font-semibold">{feature.title}</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pl-12">
+                <p className="text-muted-foreground leading-relaxed">{feature.copy}</p>
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
       </div>
     </section>
   );
