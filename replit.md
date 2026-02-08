@@ -46,7 +46,12 @@ Key server components:
 
 Core tables:
 - `users`: Authentication (email, hashed password)
-- `profiles`: Digital business cards (name, title, company, bio, links, theme, slug, views)
+- `profiles`: Digital business cards with modular features
+  - Basic fields: name, title, company, bio, photoUrl, slug, theme, views
+  - `links` (jsonb): Social/contact links (phone, whatsapp, email, linkedin, facebook, instagram, x, tiktok, youtube, snapchat, website)
+  - `modules` (jsonb): Modular features - tiles (custom links/PDFs), videoUrl, bookingUrl/bookingLabel, reviews, address
+  - `branding` (jsonb): Visual customization - logoUrl, heroUrl, heroVideoUrl, primaryColor, accentColor, fontFamily
+  - `textOverrides` (jsonb): Multilingual text - headline, subheadline, ctaLabel, bioOverride, locale
 - `leads`: Captured contacts (name, telephone, whatsapp, email, company, note, source)
 
 ### Shared Code

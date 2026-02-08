@@ -14,6 +14,7 @@ import Dashboard from "@/pages/dashboard/index";
 import EditProfile from "@/pages/dashboard/edit";
 import LeadsPage from "@/pages/dashboard/leads";
 import SettingsPage from "@/pages/dashboard/settings";
+import ModulesPage from "@/pages/dashboard/modules";
 import PublicProfile from "@/pages/public-profile";
 import NotFound from "@/pages/not-found";
 
@@ -57,6 +58,9 @@ function Router() {
       </Route>
       <Route path="/dashboard/leads">
         <ProtectedRoute component={LeadsPage} />
+      </Route>
+      <Route path="/dashboard/modules">
+        <ProtectedRoute component={ModulesPage} />
       </Route>
       <Route path="/dashboard/settings">
         <ProtectedRoute component={SettingsPage} />

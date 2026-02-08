@@ -7,7 +7,8 @@ import {
   Settings,
   LogOut, 
   Menu,
-  X
+  X,
+  Blocks
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'My Profile', href: '/dashboard/edit', icon: UserCircle },
+    { name: 'Modules', href: '/dashboard/modules', icon: Blocks },
     { name: 'Leads', href: '/dashboard/leads', icon: Users },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];

@@ -17,8 +17,9 @@ import { useMediaQuery } from "@/hooks/use-mobile";
 import { Loader2, Share2 } from "lucide-react";
 import { SiFacebook } from "react-icons/si";
 import { z } from "zod";
+import { ProfileModulesRenderer } from "@/components/profile-modules";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
-import type { Profile } from "@shared/schema";
+import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/schema";
 
 const STORAGE_KEY_PREFIX = "konex_contact_";
 
@@ -54,6 +55,23 @@ export default function PublicProfile() {
   if (isLoading) return <div className="h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" data-testid="loading-spinner" /></div>;
   if (!profile || error) return <div className="h-screen flex items-center justify-center text-muted-foreground" data-testid="text-profile-not-found">Profile not found</div>;
 
+  const branding = (profile.branding as ProfileBranding) || {};
+  const textOverrides = (profile.textOverrides as ProfileTextOverrides) || {};
+  const ctaLabel = textOverrides.ctaLabel || "Exchange Contact";
+  const subtitleText = textOverrides.subheadline || "Share your contact details instantly.";
+
+  const brandStyle: Record<string, string> = {};
+  if (branding.primaryColor) {
+    brandStyle["--brand-primary"] = branding.primaryColor;
+    brandStyle["--brand-primary-fg"] = "#ffffff";
+  }
+  if (branding.accentColor) {
+    brandStyle["--brand-accent"] = branding.accentColor;
+  }
+  if (branding.fontFamily) {
+    brandStyle.fontFamily = `"${branding.fontFamily}", system-ui, sans-serif`;
+  }
+
   const FormContent = isSubmitted ? (
     <ContactCard 
       profile={profile}
@@ -67,26 +85,50 @@ export default function PublicProfile() {
     />
   );
 
+  const heroUrl = branding.heroUrl
+    ? branding.heroUrl.startsWith("http") ? branding.heroUrl : `/objects/${branding.heroUrl}`
+    : null;
+  const logoUrl = branding.logoUrl
+    ? branding.logoUrl.startsWith("http") ? branding.logoUrl : `/objects/${branding.logoUrl}`
+    : null;
+
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-6 pb-24">
-      {/* KONEX Logo + Wordmark Header */}
+    <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-6 pb-24" style={brandStyle}>
+      {/* Hero Banner */}
+      {heroUrl && (
+        <div className="w-full max-w-md rounded-md overflow-hidden mb-6 relative" data-testid="hero-banner">
+          <img src={heroUrl} alt="Hero" className="w-full h-40 object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        </div>
+      )}
+
+      {/* Logo or KONEX Branding */}
       <a href="/" className="flex items-center gap-2 mb-6" data-testid="konex-branding-header">
-        <img src={konexLogo} alt="KONEX" className="h-12 md:h-16 w-auto" />
+        {logoUrl ? (
+          <img src={logoUrl} alt="Logo" className="h-12 md:h-16 w-auto" />
+        ) : (
+          <img src={konexLogo} alt="KONEX" className="h-12 md:h-16 w-auto" />
+        )}
       </a>
 
       {/* Hero Section */}
       <div className="text-center mb-6">
+        {textOverrides.headline && (
+          <h1 className="text-xl font-bold mb-1" data-testid="text-hero-headline">{textOverrides.headline}</h1>
+        )}
         <p className="text-muted-foreground text-sm md:text-base" data-testid="text-hero-subtitle">
-          Share your contact details instantly.
+          {subtitleText}
         </p>
       </div>
-
 
       {/* Profile Card */}
       <ProfilePreview profile={profile} onSaveContact={() => setIsOpen(true)} />
 
       {/* CTA Icons */}
       <CTAIcons links={(profile.links as Record<string, string>) || {}} />
+
+      {/* Modules */}
+      <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
 
       {/* Floating Action Button for Lead Capture */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
@@ -95,11 +137,12 @@ export default function PublicProfile() {
             <Button 
               size="lg" 
               className="rounded-full shadow-2xl px-8 h-14 text-base font-semibold animate-in slide-in-from-bottom-4" 
+              style={branding.primaryColor ? { backgroundColor: branding.primaryColor, color: "#fff", borderColor: branding.primaryColor } : undefined}
               onClick={() => setIsOpen(true)}
               data-testid="button-exchange-contact"
             >
               <Share2 className="mr-2 h-5 w-5" />
-              Exchange Contact
+              {ctaLabel}
             </Button>
             <DialogContent className="max-w-md sm:max-w-lg">
               <DialogHeader>
@@ -124,10 +167,11 @@ export default function PublicProfile() {
               <Button 
                 size="lg" 
                 className="rounded-full shadow-2xl px-8 h-14 text-base font-semibold animate-in slide-in-from-bottom-4"
+                style={branding.primaryColor ? { backgroundColor: branding.primaryColor, color: "#fff", borderColor: branding.primaryColor } : undefined}
                 data-testid="button-exchange-contact"
               >
                 <Share2 className="mr-2 h-5 w-5" />
-                Exchange Contact
+                {ctaLabel}
               </Button>
             </DrawerTrigger>
             <DrawerContent>

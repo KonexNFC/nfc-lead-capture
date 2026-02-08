@@ -10,6 +10,50 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export interface ProfileTile {
+  id: string;
+  title: string;
+  subtitle?: string;
+  url: string;
+  iconUrl?: string;
+  type: "link" | "pdf" | "menu" | "custom";
+}
+
+export interface ProfileReview {
+  id: string;
+  platform: string;
+  url: string;
+  label?: string;
+}
+
+export interface ProfileBranding {
+  logoUrl?: string;
+  heroUrl?: string;
+  heroVideoUrl?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  fontFamily?: string;
+}
+
+export interface ProfileTextOverrides {
+  headline?: string;
+  subheadline?: string;
+  ctaLabel?: string;
+  bioOverride?: string;
+  locale?: string;
+}
+
+export interface ProfileModules {
+  order?: string[];
+  enabled?: Record<string, boolean>;
+  tiles?: ProfileTile[];
+  videoUrl?: string;
+  bookingUrl?: string;
+  bookingLabel?: string;
+  reviews?: ProfileReview[];
+  address?: string;
+}
+
 export const profiles = pgTable("profiles", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
@@ -33,8 +77,11 @@ export const profiles = pgTable("profiles", {
     tiktok?: string;
     youtube?: string;
   }>(),
-  theme: text("theme").default("light"), // light, dark, custom
+  theme: text("theme").default("light"),
   views: integer("views").default(0),
+  modules: jsonb("modules").$type<ProfileModules>(),
+  branding: jsonb("branding").$type<ProfileBranding>(),
+  textOverrides: jsonb("text_overrides").$type<ProfileTextOverrides>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -47,7 +94,7 @@ export const leads = pgTable("leads", {
   whatsapp: text("whatsapp"),
   company: text("company"),
   note: text("note"),
-  source: text("source").default("nfc"), // nfc, qr, direct
+  source: text("source").default("nfc"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

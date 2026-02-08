@@ -1,7 +1,8 @@
 import { z } from 'zod';
-import { insertUserSchema, insertProfileSchema, insertLeadSchema, profiles, leads } from './schema';
+import { insertUserSchema, insertProfileSchema, insertLeadSchema, profiles, leads, type UpdateProfileRequest } from './schema';
 
 export { insertUserSchema, insertProfileSchema };
+export type { UpdateProfileRequest };
 
 // Base lead form fields
 const leadFormFields = {
@@ -28,6 +29,7 @@ export const leadFormSchema = z.object(leadFormFields).refine(
 export const leadSubmitSchema = z.object({
   ...leadFormFields,
   slug: z.string(),
+  source: z.string().optional(),
 });
 
 export { insertLeadSchema };
