@@ -140,13 +140,10 @@ export default function LandingPage() {
                   desc: "Visitors share their info directly with you. Capture leads effortlessly and never lose a connection."
                 }
               ].map((item, i) => (
-                <div key={i} className="relative flex flex-col items-center text-center" data-testid={`how-it-works-step-${item.step}`}>
-                  {/* Step number */}
+                <div key={i} className="flex flex-col items-center text-center" data-testid={`how-it-works-step-${item.step}`}>
+                  <span className="text-sm font-bold text-muted-foreground mb-3">Step {item.step}</span>
                   <div className="relative z-10 h-16 w-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-6 shadow-lg shadow-primary/25">
                     <item.icon className="h-7 w-7 text-white" />
-                  </div>
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 bg-background px-2 text-sm font-bold text-muted-foreground">
-                    Step {item.step}
                   </div>
                   <h3 className="text-xl font-bold mb-3">{item.title}</h3>
                   <p className="text-muted-foreground leading-relaxed max-w-xs">{item.desc}</p>
