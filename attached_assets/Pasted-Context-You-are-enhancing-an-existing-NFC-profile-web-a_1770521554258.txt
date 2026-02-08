@@ -1,0 +1,152 @@
+Context:
+You are enhancing an existing NFC profile web app. The public profile page (/u/{slug}) should include a premium, scrollable feature section similar to the provided reference screenshots (TAPiTAG-style). Implement this as a reusable component and populate it with KONEX copy.
+
+⸻
+
+Objective
+
+Add a feature-led content section to the public profile page to explain the KONEX value proposition and capabilities, improving conversion and investor demo quality.
+
+⸻
+
+Placement
+
+On /u/{slug} pages:
+
+Place the feature sections:
+	•	Below the hero banner and the line “Share your contact instantly”
+	•	Above the contact exchange form
+
+⸻
+
+Feature Sections to Implement (UI + Copy)
+
+Create vertically stacked feature blocks with:
+	•	Icon (left)
+	•	Title (bold)
+	•	Supporting copy (1–2 lines)
+	•	Dark theme styling (premium tech aesthetic)
+	•	Mobile-first spacing
+
+1. Dynamic, Edit-Anytime Profile
+
+Title: Dynamic, Edit-Anytime Profile
+Copy: Change phone, email, role, links, photos, and copy in seconds — no reprints, ever.
+
+⸻
+
+2. Your Design
+
+Title: Your Design
+Copy: Choose your fonts, background colours, floating background design and more.
+
+⸻
+
+3. Add Your Language
+
+Title: Add Your Language
+Copy: All text & tabs can be customised. If your first language isn’t English, no problem — personalise how you connect.
+
+⸻
+
+4. Custom Tiles
+
+Title: Custom Tiles
+Copy: Add your own artwork & links to custom icons. Share PDFs, weblinks, menus, and more.
+
+⸻
+
+5. Brand Videos
+
+Title: Brand Videos
+Copy: Embed your brand video from YouTube to personalise your landing page.
+
+⸻
+
+6. Smart Actions
+
+Title: Smart Actions (Call / Text / WhatsApp / Directions)
+Copy: Buttons that actually do things: call, SMS, WhatsApp with prefilled text, email compose, or open maps to your address.
+
+⸻
+
+7. Social Hub
+
+Title: Social Hub
+Copy: All your channels in one place (LinkedIn, Instagram, TikTok, YouTube, X, Facebook). Followers go up; chasing links goes down.
+
+⸻
+
+8. Links, Files & Media
+
+Title: Links, Files & Media
+Copy: Add websites, landing pages, PDFs (price lists, brochures) and videos (intro, showreel, product demo).
+
+⸻
+
+9. Booking & Calendar
+
+Title: Booking & Calendar
+Copy: Deep-link to Calendly, Google/Outlook calendars, or your booking app so meetings get scheduled on the spot.
+
+⸻
+
+10. Lead Generation
+
+Title: Lead Generation
+Copy: Generate leads in seconds with our Exchange Contact button.
+
+⸻
+
+11. Reviews & Reputation
+
+Title: Reviews & Reputation
+Copy: One-tap routes to Google Reviews / Trustpilot / TripAdvisor. Ask while the moment is hot.
+
+⸻
+
+12. Branding Controls
+
+Title: Branding Controls
+Copy: Fonts, colours, logos, hero image/video — make it unmistakably your brand.
+
+⸻
+
+Design Requirements
+	•	Dark background (black / near-black)
+	•	Icon + text layout (left-aligned icons)
+	•	Mobile-first spacing
+	•	Smooth scroll
+	•	Subtle dividers between sections
+	•	Reusable <FeatureSection /> component
+
+⸻
+
+Technical Requirements
+	•	Implement as a React component rendered on /u/{slug}
+	•	Data-driven structure (array of features → map to UI)
+	•	Icons can be from Heroicons / Lucide / FontAwesome
+	•	Ensure this section does not break NFC deep linking
+	•	Lazy-load icons/media if needed for performance
+
+⸻
+
+Acceptance Criteria
+	•	Feature sections appear under the hero banner on public profile pages
+	•	Content matches the provided copy
+	•	Layout is clean and readable on mobile
+	•	Does not interfere with lead capture form
+	•	Improves storytelling for investor demos
+
+⸻
+
+Instruction to Replit AI
+
+Implement this entire feature section in one pass.
+Explain:
+	•	Which component was created
+	•	How features are defined (data structure)
+	•	Where it is rendered in /u/{slug}
+	•	How to edit copy in the future
+
+Do not remove existing functionality.
