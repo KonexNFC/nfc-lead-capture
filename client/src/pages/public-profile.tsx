@@ -17,7 +17,6 @@ import { useMediaQuery } from "@/hooks/use-mobile";
 import { Loader2, Share2 } from "lucide-react";
 import { SiFacebook } from "react-icons/si";
 import { z } from "zod";
-import { FeatureSections } from "@/components/feature-sections";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 import type { Profile } from "@shared/schema";
 
@@ -88,9 +87,6 @@ export default function PublicProfile() {
 
       {/* CTA Icons */}
       <CTAIcons links={(profile.links as Record<string, string>) || {}} />
-
-      {/* Feature Sections */}
-      <FeatureSections />
 
       {/* Floating Action Button for Lead Capture */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
