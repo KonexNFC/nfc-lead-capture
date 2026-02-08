@@ -49,11 +49,15 @@ export default function LandingPage() {
                     Create Your Card
                   </Button>
                 </Link>
-                <Link href="#how-it-works">
-                  <Button variant="outline" size="lg" className="h-14 px-8 rounded-full text-lg" data-testid="button-how-it-works">
-                    How it Works
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="h-14 px-8 rounded-full text-lg" 
+                  data-testid="button-how-it-works"
+                  onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  How it Works
+                </Button>
               </div>
             </div>
             
