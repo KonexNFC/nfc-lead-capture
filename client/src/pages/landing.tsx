@@ -116,6 +116,21 @@ export default function LandingPage() {
               <p className="text-muted-foreground text-lg">Three simple steps to revolutionize your networking</p>
             </div>
             
+            <div className="mb-12 max-w-3xl mx-auto">
+              <div className="relative rounded-md overflow-hidden shadow-2xl shadow-primary/10">
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full"
+                  data-testid="video-how-it-works"
+                >
+                  <source src="/videos/nfc-demo.mp4" type="video/mp4" />
+                </video>
+              </div>
+            </div>
+
             <div className="grid md:grid-cols-3 gap-8 relative">
               {/* Connector line for desktop */}
               <div className="hidden md:block absolute top-16 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-primary via-accent to-purple-500" />
