@@ -1,19 +1,75 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette, Nfc, Eye, Users } from "lucide-react";
+import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette, Nfc, Eye, Users, Menu, Zap, HelpCircle, ChevronRight } from "lucide-react";
 import { FeatureSections } from "@/components/feature-sections";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 
 export default function LandingPage() {
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Navbar */}
       <nav className="w-full border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto rounded" />
+            <div className="hidden md:flex items-center gap-1 ml-4">
+              <Button variant="ghost" size="sm" className="font-medium text-muted-foreground" onClick={() => scrollTo("how-it-works")} data-testid="nav-how-it-works">
+                How It Works
+              </Button>
+              <Button variant="ghost" size="sm" className="font-medium text-muted-foreground" onClick={() => scrollTo("features")} data-testid="nav-features">
+                Features
+              </Button>
+              <Button variant="ghost" size="sm" className="font-medium text-muted-foreground" onClick={() => scrollTo("why-konex")} data-testid="nav-why-konex">
+                Why KONEX
+              </Button>
+              <Link href="/what-is-nfc">
+                <Button variant="ghost" size="sm" className="font-medium text-muted-foreground" data-testid="nav-what-is-nfc">
+                  What is NFC
+                </Button>
+              </Link>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden" data-testid="button-nav-menu">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => scrollTo("how-it-works")} data-testid="menu-how-it-works">
+                  <Eye className="h-4 w-4 mr-2" />
+                  How It Works
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => scrollTo("features")} data-testid="menu-features">
+                  <Zap className="h-4 w-4 mr-2" />
+                  Features
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => scrollTo("why-konex")} data-testid="menu-why-konex">
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Why KONEX
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <Link href="/what-is-nfc">
+                  <DropdownMenuItem data-testid="menu-what-is-nfc">
+                    <Nfc className="h-4 w-4 mr-2" />
+                    What is NFC
+                    <ChevronRight className="h-4 w-4 ml-auto" />
+                  </DropdownMenuItem>
+                </Link>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Link href="/auth">
               <Button variant="ghost" className="font-medium" data-testid="button-login">Log in</Button>
             </Link>
