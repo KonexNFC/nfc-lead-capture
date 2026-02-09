@@ -5,6 +5,7 @@ export interface VCardData {
   phone?: string;
   whatsapp?: string;
   email?: string;
+  website?: string;
   photoUrl?: string;
 }
 
@@ -38,6 +39,11 @@ export function generateVCard(data: VCardData): string {
 
   if (data.email) {
     lines.push(`EMAIL:${escapeVCardValue(data.email)}`);
+  }
+
+  if (data.website) {
+    const url = data.website.startsWith('http') ? data.website : `https://${data.website}`;
+    lines.push(`URL:${escapeVCardValue(url)}`);
   }
 
   lines.push('END:VCARD');
