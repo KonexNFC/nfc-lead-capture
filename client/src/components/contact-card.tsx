@@ -6,7 +6,6 @@ import {
   MessageCircle, 
   Mail, 
   Download,
-  Globe,
   Building2,
   Briefcase,
   ExternalLink
@@ -25,7 +24,6 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
   const phone = links.phone;
   const whatsapp = links.whatsapp;
   const email = links.email;
-  const website = links.website;
 
   const handleSaveContact = () => {
     const vcardData: VCardData = {
@@ -35,7 +33,6 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
       phone: phone,
       whatsapp: whatsapp,
       email: email,
-      website: website,
       photoUrl: profile.photoUrl || undefined,
     };
     downloadVCard(vcardData);
@@ -63,10 +60,6 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
   }
   if (email) {
     contactRows.push({ icon: Mail, label: "email", value: email, href: `mailto:${email}`, color: "#007AFF", testId: "contact-row-email" });
-  }
-  if (website) {
-    const url = website.startsWith('http') ? website : `https://${website}`;
-    contactRows.push({ icon: Globe, label: "website", value: website.replace(/^https?:\/\//, ''), href: url, color: "#5856D6", testId: "contact-row-website" });
   }
 
   return (
