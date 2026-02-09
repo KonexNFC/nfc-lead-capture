@@ -1,11 +1,12 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
+import { type Express } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
+import { z } from "zod";
 import { storage } from "./storage";
-import { User as SelectUser } from "@shared/schema";
+import { type User as SelectUser } from "@shared/schema";
 
 const scryptAsync = promisify(scrypt);
 
@@ -100,5 +101,62 @@ export function setupAuth(app: Express) {
       return res.json(req.user);
     }
     res.status(401).send("Not logged in");
+  });
+
+  const forgotPasswordSchema = z.object({
+    email: z.string().email("Please enter a valid email"),
+  });
+
+  const resetPasswordSchema = z.object({
+    token: z.string().min(1, "Token is required"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+  });
+
+  app.post("/api/forgot-password", async (req, res, next) => {
+    try {
+      const parsed = forgotPasswordSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).send(parsed.error.errors[0]?.message || "Invalid input");
+      }
+      const { email } = parsed.data;
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(200).json({ message: "If an account with that email exists, a reset link has been sent." });
+      }
+
+      const token = randomBytes(32).toString("hex");
+      const expiry = new Date(Date.now() + 60 * 60 * 1000);
+      await storage.setResetToken(user.id, token, expiry);
+
+      const resetUrl = `${req.protocol}://${req.get("host")}/reset-password?token=${token}`;
+      console.log(`[EMAIL MOCK] Password reset link for ${email}: ${resetUrl}`);
+
+      res.status(200).json({ message: "If an account with that email exists, a reset link has been sent." });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.post("/api/reset-password", async (req, res, next) => {
+    try {
+      const parsed = resetPasswordSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).send(parsed.error.errors[0]?.message || "Invalid input");
+      }
+      const { token, password } = parsed.data;
+
+      const user = await storage.getUserByResetToken(token);
+      if (!user || !user.resetTokenExpiry || new Date() > user.resetTokenExpiry) {
+        return res.status(400).send("Invalid or expired reset link");
+      }
+
+      const hashedPassword = await hashPassword(password);
+      await storage.updatePassword(user.id, hashedPassword);
+
+      res.status(200).json({ message: "Password has been reset successfully" });
+    } catch (err) {
+      next(err);
+    }
   });
 }

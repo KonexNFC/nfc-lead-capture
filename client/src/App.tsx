@@ -17,6 +17,8 @@ import SettingsPage from "@/pages/dashboard/settings";
 import ModulesPage from "@/pages/dashboard/modules";
 import PublicProfile from "@/pages/public-profile";
 import WhatIsNfcPage from "@/pages/what-is-nfc";
+import ForgotPasswordPage from "@/pages/forgot-password";
+import ResetPasswordPage from "@/pages/reset-password";
 import NotFound from "@/pages/not-found";
 
 // Protected Route Wrapper
@@ -50,6 +52,8 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <Route path="/u/:slug" component={PublicProfile} />
       <Route path="/what-is-nfc" component={WhatIsNfcPage} />
+      <Route path="/forgot-password" component={ForgotPasswordPage} />
+      <Route path="/reset-password" component={ResetPasswordPage} />
       
       {/* Protected Routes */}
       <Route path="/dashboard">

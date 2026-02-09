@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreditCard, Loader2 } from "lucide-react";
+import { Link } from "wouter";
 
 const loginSchema = z.object({
   username: z.string().email("Please enter a valid email"),
@@ -121,11 +122,20 @@ function LoginForm({ onSubmit, isLoading, onSuccess }: {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full mt-2" disabled={isLoading}>
+            <Button type="submit" className="w-full mt-2" disabled={isLoading} data-testid="button-login">
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign In"}
             </Button>
           </form>
         </Form>
+        <div className="mt-4 text-center">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-primary transition-opacity hover:opacity-70"
+            data-testid="link-forgot-password"
+          >
+            Forgot your password?
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );
