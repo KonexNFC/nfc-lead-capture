@@ -1,7 +1,6 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette, Nfc, Eye, Users, Menu, Zap, HelpCircle, ChevronRight } from "lucide-react";
-import { FeatureSections } from "@/components/feature-sections";
+import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette, Nfc, Eye, Users, Menu, Zap, ChevronRight } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,9 +29,6 @@ export default function LandingPage() {
               <Button variant="ghost" size="sm" className="font-medium text-muted-foreground" onClick={() => scrollTo("features")} data-testid="nav-features">
                 Features
               </Button>
-              <Button variant="ghost" size="sm" className="font-medium text-muted-foreground" onClick={() => scrollTo("why-konex")} data-testid="nav-why-konex">
-                Why KONEX
-              </Button>
               <Link href="/what-is-nfc">
                 <Button variant="ghost" size="sm" className="font-medium text-muted-foreground" data-testid="nav-what-is-nfc">
                   What is NFC
@@ -55,10 +51,6 @@ export default function LandingPage() {
                 <DropdownMenuItem onClick={() => scrollTo("features")} data-testid="menu-features">
                   <Zap className="h-4 w-4 mr-2" />
                   Features
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => scrollTo("why-konex")} data-testid="menu-why-konex">
-                  <HelpCircle className="h-4 w-4 mr-2" />
-                  Why KONEX
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <Link href="/what-is-nfc">
@@ -263,8 +255,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Why KONEX - Full Feature Breakdown */}
-        <FeatureSections />
       </main>
 
       <footer className="py-8 border-t border-border/50 text-center text-muted-foreground text-sm">
