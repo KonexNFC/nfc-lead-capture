@@ -6,21 +6,7 @@ export interface VCardData {
   whatsapp?: string;
   email?: string;
   website?: string;
-  facebook?: string;
-  x?: string;
-  instagram?: string;
-  linkedin?: string;
-  tiktok?: string;
-  snapchat?: string;
   photoUrl?: string;
-}
-
-function ensureUrl(value: string, baseUrl: string): string {
-  if (value.startsWith('http://') || value.startsWith('https://')) {
-    return value;
-  }
-  const handle = value.replace(/^@/, '');
-  return `${baseUrl}${handle}`;
 }
 
 export function generateVCard(data: VCardData): string {
@@ -58,36 +44,6 @@ export function generateVCard(data: VCardData): string {
   if (data.website) {
     const url = data.website.startsWith('http') ? data.website : `https://${data.website}`;
     lines.push(`URL:${escapeVCardValue(url)}`);
-  }
-
-  if (data.facebook) {
-    const url = ensureUrl(data.facebook, 'https://facebook.com/');
-    lines.push(`X-SOCIALPROFILE;TYPE=facebook:${url}`);
-  }
-
-  if (data.x) {
-    const url = ensureUrl(data.x, 'https://x.com/');
-    lines.push(`X-SOCIALPROFILE;TYPE=twitter:${url}`);
-  }
-
-  if (data.linkedin) {
-    const url = ensureUrl(data.linkedin, 'https://linkedin.com/in/');
-    lines.push(`X-SOCIALPROFILE;TYPE=linkedin:${url}`);
-  }
-
-  if (data.instagram) {
-    const url = ensureUrl(data.instagram, 'https://instagram.com/');
-    lines.push(`X-SOCIALPROFILE;TYPE=instagram:${url}`);
-  }
-
-  if (data.tiktok) {
-    const url = ensureUrl(data.tiktok, 'https://tiktok.com/@');
-    lines.push(`X-SOCIALPROFILE;TYPE=tiktok:${url}`);
-  }
-
-  if (data.snapchat) {
-    const url = ensureUrl(data.snapchat, 'https://snapchat.com/add/');
-    lines.push(`X-SOCIALPROFILE;TYPE=snapchat:${url}`);
   }
 
   lines.push('END:VCARD');

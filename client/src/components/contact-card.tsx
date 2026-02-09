@@ -7,12 +7,10 @@ import {
   Mail, 
   Download,
   Globe,
-  MapPin,
   Building2,
   Briefcase,
   ExternalLink
 } from "lucide-react";
-import { SiFacebook, SiLinkedin, SiInstagram, SiTiktok, SiSnapchat, SiX } from "react-icons/si";
 import type { Profile } from "@shared/schema";
 
 interface ContactCardProps {
@@ -28,12 +26,6 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
   const whatsapp = links.whatsapp;
   const email = links.email;
   const website = links.website;
-  const facebook = links.facebook;
-  const x = links.x || links.twitter;
-  const linkedin = links.linkedin;
-  const instagram = links.instagram;
-  const tiktok = links.tiktok;
-  const snapchat = links.snapchat;
 
   const handleSaveContact = () => {
     const vcardData: VCardData = {
@@ -44,12 +36,6 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
       whatsapp: whatsapp,
       email: email,
       website: website,
-      facebook: facebook,
-      x: x,
-      linkedin: linkedin,
-      instagram: instagram,
-      tiktok: tiktok,
-      snapchat: snapchat,
       photoUrl: profile.photoUrl || undefined,
     };
     downloadVCard(vcardData);
@@ -81,32 +67,6 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
   if (website) {
     const url = website.startsWith('http') ? website : `https://${website}`;
     contactRows.push({ icon: Globe, label: "website", value: website.replace(/^https?:\/\//, ''), href: url, color: "#5856D6", testId: "contact-row-website" });
-  }
-
-  const socialRows: { icon: React.ElementType; label: string; value: string; href: string; color: string; testId: string }[] = [];
-  if (linkedin) {
-    const url = linkedin.startsWith('http') ? linkedin : `https://linkedin.com/in/${linkedin.replace(/^@/, '')}`;
-    socialRows.push({ icon: SiLinkedin, label: "LinkedIn", value: extractHandle(linkedin), href: url, color: "#0A66C2", testId: "contact-row-linkedin" });
-  }
-  if (instagram) {
-    const url = instagram.startsWith('http') ? instagram : `https://instagram.com/${instagram.replace(/^@/, '')}`;
-    socialRows.push({ icon: SiInstagram, label: "Instagram", value: extractHandle(instagram), href: url, color: "#E4405F", testId: "contact-row-instagram" });
-  }
-  if (facebook) {
-    const url = facebook.startsWith('http') ? facebook : `https://facebook.com/${facebook.replace(/^@/, '')}`;
-    socialRows.push({ icon: SiFacebook, label: "Facebook", value: extractHandle(facebook), href: url, color: "#1877F2", testId: "contact-row-facebook" });
-  }
-  if (x) {
-    const url = x.startsWith('http') ? x : `https://x.com/${x.replace(/^@/, '')}`;
-    socialRows.push({ icon: SiX, label: "X", value: extractHandle(x), href: url, color: "#000000", testId: "contact-row-x" });
-  }
-  if (tiktok) {
-    const url = tiktok.startsWith('http') ? tiktok : `https://tiktok.com/@${tiktok.replace(/^@/, '')}`;
-    socialRows.push({ icon: SiTiktok, label: "TikTok", value: extractHandle(tiktok), href: url, color: "#000000", testId: "contact-row-tiktok" });
-  }
-  if (snapchat) {
-    const url = snapchat.startsWith('http') ? snapchat : `https://snapchat.com/add/${snapchat.replace(/^@/, '')}`;
-    socialRows.push({ icon: SiSnapchat, label: "Snapchat", value: extractHandle(snapchat), href: url, color: "#FFFC00", testId: "contact-row-snapchat" });
   }
 
   return (
@@ -183,7 +143,7 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
         )}
       </div>
 
-      {(contactRows.length > 0 || socialRows.length > 0) && (
+      {contactRows.length > 0 && (
         <div className="mt-3 bg-muted/40 rounded-md overflow-hidden border border-border/50">
           {contactRows.map((row, i) => (
             <a
@@ -191,26 +151,7 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
               href={row.href}
               target={row.href.startsWith('http') ? '_blank' : undefined}
               rel={row.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-              className={`flex items-center gap-3 px-4 py-3 transition-opacity hover:opacity-70 active:opacity-50 ${i < contactRows.length - 1 || socialRows.length > 0 ? 'border-b border-border/30' : ''}`}
-              data-testid={row.testId}
-            >
-              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: row.color }}>
-                <row.icon className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] text-muted-foreground uppercase tracking-wide font-medium">{row.label}</p>
-                <p className="text-sm font-medium truncate">{row.value}</p>
-              </div>
-              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
-            </a>
-          ))}
-          {socialRows.map((row, i) => (
-            <a
-              key={row.testId}
-              href={row.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex items-center gap-3 px-4 py-3 transition-opacity hover:opacity-70 active:opacity-50 ${i < socialRows.length - 1 ? 'border-b border-border/30' : ''}`}
+              className={`flex items-center gap-3 px-4 py-3 transition-opacity hover:opacity-70 active:opacity-50 ${i < contactRows.length - 1 ? 'border-b border-border/30' : ''}`}
               data-testid={row.testId}
             >
               <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: row.color }}>
@@ -250,17 +191,4 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
       </div>
     </div>
   );
-}
-
-function extractHandle(url: string): string {
-  try {
-    if (url.startsWith('http')) {
-      const parsed = new URL(url);
-      const path = parsed.pathname.replace(/^\/+|\/+$/g, '');
-      return path ? `@${path.split('/').pop()}` : url;
-    }
-    return url.startsWith('@') ? url : `@${url}`;
-  } catch {
-    return url;
-  }
 }
