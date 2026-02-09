@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
+import { sendLeadNotificationEmail } from "./email";
 
 async function seedDatabase() {
   const existingUser = await storage.getUserByEmail("demo@konex.app");
@@ -157,8 +158,18 @@ export async function registerRoutes(
       profileId: profile.id
     });
 
-    const contactInfo = lead.telephone || lead.whatsapp || lead.email || 'no contact';
-    console.log(`[EMAIL MOCK] Notification to profile owner ${profile.userId}: New lead from ${lead.name} (${contactInfo})`);
+    const owner = await storage.getUser(profile.userId);
+    if (owner?.email && lead.name) {
+      sendLeadNotificationEmail(
+        owner.email,
+        profile.name || 'Your Profile',
+        lead.name,
+        lead.telephone || lead.whatsapp || lead.email || 'no contact',
+        { email: lead.email, telephone: lead.telephone, whatsapp: lead.whatsapp, company: lead.company, note: lead.note }
+      ).catch((err) => {
+        console.error("[EMAIL ERROR] Lead notification failed:", err);
+      });
+    }
 
     res.status(201).json(lead);
   });

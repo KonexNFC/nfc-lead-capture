@@ -100,14 +100,10 @@ Key files:
 - esbuild for server bundling
 - TSX for TypeScript execution in development
 
-## Future Enhancements
-
-### Email Notifications (Not Yet Implemented)
-Email notifications for lead capture are not yet integrated. Currently, lead notifications are logged to the console:
-```
-[EMAIL MOCK] Notification to profile owner {userId}: New lead from {name} ({email})
-```
-To implement email notifications in the future:
-1. Set up Resend or SendGrid integration via Replit's connector system
-2. Replace the console.log in `server/routes.ts` lead submission handler with actual email sending
-3. Store the profile owner's email and send notifications when new leads are captured
+### Email Notifications
+- **Provider**: SendGrid via Replit connector (connection:conn_sendgrid_01KGTZG5GDMAJN99QWA90VEKZM)
+- **Module**: `server/email.ts` - SendGrid client setup and email templates
+- **Password Reset**: HTML email with reset button link, sent when user requests password reset
+- **Lead Notifications**: HTML email with lead details (name, contact info, company, note) sent to profile owner when a new lead is captured
+- **Error Handling**: Email failures are caught and logged but don't block API responses (fire-and-forget pattern)
+- **Authentication**: API key managed via Replit connector, never cached per integration guidelines

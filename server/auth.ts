@@ -6,6 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { z } from "zod";
 import { storage } from "./storage";
+import { sendPasswordResetEmail } from "./email";
 import { type User as SelectUser } from "@shared/schema";
 
 const scryptAsync = promisify(scrypt);
@@ -129,8 +130,13 @@ export function setupAuth(app: Express) {
       const expiry = new Date(Date.now() + 60 * 60 * 1000);
       await storage.setResetToken(user.id, token, expiry);
 
-      const resetUrl = `${req.protocol}://${req.get("host")}/reset-password?token=${token}`;
-      console.log(`[EMAIL MOCK] Password reset link for ${email}: ${resetUrl}`);
+      const host = req.get("host") || "konexnfc.com";
+      const protocol = host.includes("localhost") ? "http" : "https";
+      const resetUrl = `${protocol}://${host}/reset-password?token=${token}`;
+
+      sendPasswordResetEmail(email, resetUrl).catch((err) => {
+        console.error("[EMAIL ERROR] Password reset email failed:", err);
+      });
 
       res.status(200).json({ message: "If an account with that email exists, a reset link has been sent." });
     } catch (err) {
