@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { leadFormSchema } from "@shared/routes";
 import { useSubmitLead } from "@/hooks/use-leads";
 import { useMediaQuery } from "@/hooks/use-mobile";
-import { Loader2, Share2 } from "lucide-react";
+import { Loader2, Share2, UserPlus } from "lucide-react";
 import { SiFacebook } from "react-icons/si";
 import { z } from "zod";
 import { ProfileModulesRenderer } from "@/components/profile-modules";
@@ -30,6 +30,7 @@ export default function PublicProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState<{ whatsapp?: string } | null>(null);
+  const [isContactSheetOpen, setIsContactSheetOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   
 
@@ -122,13 +123,52 @@ export default function PublicProfile() {
       </div>
 
       {/* Profile Card */}
-      <ProfilePreview profile={profile} onSaveContact={() => setIsOpen(true)} />
+      <ProfilePreview profile={profile} onSaveContact={() => setIsContactSheetOpen(true)} />
 
       {/* CTA Icons */}
       <CTAIcons links={(profile.links as Record<string, string>) || {}} />
 
       {/* Modules */}
       <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
+
+      {/* Contact Save Sheet */}
+      {isDesktop ? (
+        <Dialog open={isContactSheetOpen} onOpenChange={setIsContactSheetOpen}>
+          <DialogContent className="max-w-md sm:max-w-lg p-6">
+            <DialogHeader>
+              <DialogTitle data-testid="text-contact-sheet-title">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5" />
+                  Save Contact
+                </div>
+              </DialogTitle>
+              <DialogDescription>
+                Preview and save {profile.name}'s contact details to your device.
+              </DialogDescription>
+            </DialogHeader>
+            <ContactCard profile={profile} showSuccessBanner={false} onClose={() => setIsContactSheetOpen(false)} />
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer open={isContactSheetOpen} onOpenChange={setIsContactSheetOpen}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle data-testid="text-contact-sheet-title">
+                <div className="flex items-center gap-2 justify-center">
+                  <UserPlus className="h-5 w-5" />
+                  Save Contact
+                </div>
+              </DrawerTitle>
+              <DrawerDescription className="text-center">
+                Preview and save {profile.name}'s contact details.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="p-4 pb-8">
+              <ContactCard profile={profile} showSuccessBanner={false} onClose={() => setIsContactSheetOpen(false)} />
+            </div>
+          </DrawerContent>
+        </Drawer>
+      )}
 
       {/* Floating Action Button for Lead Capture */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
