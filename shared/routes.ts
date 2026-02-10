@@ -65,9 +65,9 @@ export const api = {
     login: {
       method: 'POST' as const,
       path: '/api/login',
-      input: z.object({ username: z.string(), password: z.string() }), // using username field for email to match passport-local defaults
+      input: z.object({ username: z.string(), password: z.string() }),
       responses: {
-        200: z.object({ id: z.number(), email: z.string() }),
+        200: z.object({ id: z.number(), email: z.string(), isAdmin: z.boolean().optional() }),
         401: errorSchemas.unauthorized,
       },
     },

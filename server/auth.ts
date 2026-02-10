@@ -85,7 +85,8 @@ export function setupAuth(app: Express) {
       if (!user) return res.status(401).send("Invalid email or password");
       req.login(user, (err) => {
         if (err) return next(err);
-        res.status(200).json(user);
+        const { password: _, resetToken: _t, resetTokenExpiry: _e, ...safeUser } = user;
+        res.status(200).json(safeUser);
       });
     })(req, res, next);
   });
@@ -99,7 +100,9 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (req.isAuthenticated()) {
-      return res.json(req.user);
+      const user = req.user as SelectUser;
+      const { password: _, resetToken: _t, resetTokenExpiry: _e, ...safeUser } = user;
+      return res.json(safeUser);
     }
     res.status(401).send("Not logged in");
   });
