@@ -7,7 +7,10 @@ import {
   Github, 
   Twitter, 
   Instagram,
-  Globe
+  Globe,
+  Phone,
+  MessageSquare,
+  MessageCircle
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -34,6 +37,8 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
   };
 
   const links = (profile.links as Record<string, string>) || {};
+  const contactKeys = new Set(['phone', 'whatsapp', 'sms', 'email']);
+  const socialLinks = Object.entries(links).filter(([key]) => !contactKeys.has(key));
 
   return (
     <div className="w-full max-w-sm mx-auto perspective-1000">
@@ -84,15 +89,51 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
               </p>
             )}
 
+            {(links.phone || links.whatsapp || links.sms || links.email) && (
+              <div className="flex items-center justify-center gap-3 px-2 mb-3">
+                {links.phone && (
+                  <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1.5 group">
+                    <div className="h-11 w-11 rounded-full bg-green-500/10 flex items-center justify-center text-green-600 transition-all group-hover:bg-green-500 group-hover:text-white">
+                      <Phone className="h-5 w-5" />
+                    </div>
+                    <span className="text-[10px] font-medium text-muted-foreground">Call</span>
+                  </a>
+                )}
+                {(links.sms || links.phone) && (
+                  <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1.5 group">
+                    <div className="h-11 w-11 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 transition-all group-hover:bg-blue-500 group-hover:text-white">
+                      <MessageSquare className="h-5 w-5" />
+                    </div>
+                    <span className="text-[10px] font-medium text-muted-foreground">Text</span>
+                  </a>
+                )}
+                {links.whatsapp && (
+                  <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 group">
+                    <div className="h-11 w-11 rounded-full bg-green-600/10 flex items-center justify-center text-green-700 transition-all group-hover:bg-green-600 group-hover:text-white">
+                      <MessageCircle className="h-5 w-5" />
+                    </div>
+                    <span className="text-[10px] font-medium text-muted-foreground">WhatsApp</span>
+                  </a>
+                )}
+                {links.email && (
+                  <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1.5 group">
+                    <div className="h-11 w-11 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-700 transition-all group-hover:bg-blue-600 group-hover:text-white">
+                      <Mail className="h-5 w-5" />
+                    </div>
+                    <span className="text-[10px] font-medium text-muted-foreground">Email</span>
+                  </a>
+                )}
+              </div>
+            )}
+
+            {socialLinks.length > 0 && (
             <div className="grid grid-cols-4 gap-3 px-2">
-              {Object.entries(links).map(([key, value]) => {
+              {socialLinks.map(([key, value]) => {
                 if (!value) return null;
                 const Icon = socialIcons[key] || LinkIcon;
                 
-                // Construct href based on type
                 let href = value;
-                if (key === 'email' && !value.startsWith('mailto:')) href = `mailto:${value}`;
-                else if (key !== 'email' && !value.startsWith('http')) href = `https://${value}`;
+                if (!value.startsWith('http')) href = `https://${value}`;
 
                 return (
                   <a
@@ -110,6 +151,7 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
                 );
               })}
             </div>
+            )}
           </div>
           
           <div className="w-full pb-6 pt-2">

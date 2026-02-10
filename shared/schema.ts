@@ -67,11 +67,12 @@ export const profiles = pgTable("profiles", {
   photoUrl: text("photo_url"),
   slug: text("slug").notNull().unique(),
   links: jsonb("links").$type<{
-    linkedin?: string;
-    email?: string;
-    website?: string;
     phone?: string;
     whatsapp?: string;
+    sms?: string;
+    email?: string;
+    linkedin?: string;
+    website?: string;
     twitter?: string;
     x?: string;
     facebook?: string;

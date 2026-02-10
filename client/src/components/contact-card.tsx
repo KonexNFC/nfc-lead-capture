@@ -4,6 +4,7 @@ import { downloadVCard, type VCardData } from "@/lib/vcard";
 import { 
   Phone, 
   MessageCircle, 
+  MessageSquare,
   Mail, 
   Download,
   Globe,
@@ -24,6 +25,7 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
   
   const phone = links.phone;
   const whatsapp = links.whatsapp;
+  const smsNumber = links.sms || links.phone;
   const email = links.email;
   const website = links.website;
 
@@ -51,7 +53,7 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
       : `/objects/${profile.photoUrl}`
     : undefined;
 
-  const hasQuickActions = phone || whatsapp || email;
+  const hasQuickActions = phone || whatsapp || smsNumber || email;
 
   const contactRows: { icon: React.ElementType; label: string; value: string; href: string; color?: string; testId: string }[] = [];
 
@@ -115,6 +117,16 @@ export function ContactCard({ profile, onClose, showSuccessBanner = true }: Cont
               >
                 <Phone className="h-5 w-5 text-green-500" />
                 <span className="text-[11px] font-medium text-muted-foreground">Call</span>
+              </a>
+            )}
+            {smsNumber && (
+              <a
+                href={`sms:${smsNumber}`}
+                className="flex-1 flex flex-col items-center gap-1 py-3 transition-opacity hover:opacity-70 active:opacity-50 border-r border-border/50 last:border-r-0"
+                data-testid="action-sms"
+              >
+                <MessageSquare className="h-5 w-5 text-blue-500" />
+                <span className="text-[11px] font-medium text-muted-foreground">Text</span>
               </a>
             )}
             {whatsapp && (

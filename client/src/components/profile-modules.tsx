@@ -50,7 +50,8 @@ const tileIcons: Record<string, typeof FileText> = {
 const DEFAULT_MODULE_ORDER = ["smart-actions", "tiles", "video", "booking", "reviews"];
 
 function SmartActionsModule({ links, modules }: { links: Record<string, string>; modules: ProfileModules }) {
-  const hasSmartActions = links.phone || links.whatsapp || links.email || modules.address;
+  const smsNumber = links.sms || links.phone;
+  const hasSmartActions = links.phone || links.whatsapp || smsNumber || links.email || modules.address;
   if (!hasSmartActions) return null;
 
   return (
@@ -67,9 +68,9 @@ function SmartActionsModule({ links, modules }: { links: Record<string, string>;
             </a>
           </Button>
         )}
-        {links.phone && (
+        {smsNumber && (
           <Button variant="outline" className="justify-start gap-2" asChild data-testid="action-sms">
-            <a href={`sms:${links.phone}`}>
+            <a href={`sms:${smsNumber}`}>
               <MessageSquare className="h-4 w-4" />
               Text
             </a>

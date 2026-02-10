@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProfilePreview } from "@/components/profile-preview";
-import { Loader2, Plus, Trash2, Upload } from "lucide-react";
+import { Loader2, Plus, Trash2, Upload, Phone, MessageCircle, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -42,6 +42,7 @@ export default function EditProfile() {
         links: {
           phone: "",
           whatsapp: "",
+          sms: "",
           email: "",
           linkedin: "",
           website: "",
@@ -65,7 +66,7 @@ export default function EditProfile() {
         bio: profile.bio || "",
         photoUrl: profile.photoUrl || "",
         slug: profile.slug,
-        links: (profile.links as Record<string, string>) || { phone: "", whatsapp: "", email: "", linkedin: "", website: "", x: "", facebook: "", instagram: "", snapchat: "", tiktok: "", youtube: "" }
+        links: (profile.links as Record<string, string>) || { phone: "", whatsapp: "", sms: "", email: "", linkedin: "", website: "", x: "", facebook: "", instagram: "", snapchat: "", tiktok: "", youtube: "" }
       });
     }
   }, [profile, form]);
@@ -268,19 +269,85 @@ export default function EditProfile() {
 
             <Card className="border-border/50">
               <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Phone className="h-5 w-5" />
+                  Contact Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="links.phone"
+                  render={({ field }) => (
+                    <FormItem data-testid="field-phone">
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input type="tel" inputMode="tel" placeholder="+971 50 123 4567" {...field} value={field.value || ''} data-testid="input-phone" />
+                      </FormControl>
+                      <FormDescription>Used for Call and SMS actions on your card</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="links.whatsapp"
+                  render={({ field }) => (
+                    <FormItem data-testid="field-whatsapp">
+                      <FormLabel>WhatsApp Number</FormLabel>
+                      <FormControl>
+                        <Input type="tel" inputMode="tel" placeholder="+971 50 123 4567" {...field} value={field.value || ''} data-testid="input-whatsapp" />
+                      </FormControl>
+                      <FormDescription>Include country code for WhatsApp messaging</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="links.sms"
+                  render={({ field }) => (
+                    <FormItem data-testid="field-sms">
+                      <FormLabel>SMS Number</FormLabel>
+                      <FormControl>
+                        <Input type="tel" inputMode="tel" placeholder="+971 50 123 4567" {...field} value={field.value || ''} data-testid="input-sms" />
+                      </FormControl>
+                      <FormDescription>Leave empty to use your phone number for SMS</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="links.email"
+                  render={({ field }) => (
+                    <FormItem data-testid="field-email">
+                      <FormLabel>Email Address</FormLabel>
+                      <FormControl>
+                        <Input type="email" inputMode="email" placeholder="you@company.com" {...field} value={field.value || ''} data-testid="input-email" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50">
+              <CardHeader>
                 <CardTitle>Links & Socials</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {['phone', 'whatsapp', 'email', 'linkedin', 'website', 'x', 'facebook', 'instagram', 'github', 'snapchat', 'tiktok', 'youtube'].map((key) => (
+                {['linkedin', 'website', 'x', 'facebook', 'instagram', 'snapchat', 'tiktok', 'youtube'].map((key) => (
                   <FormField
                     key={key}
                     control={form.control}
                     name={`links.${key}`}
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem data-testid={`field-link-${key}`}>
                         <FormLabel className="capitalize">{key}</FormLabel>
                         <FormControl>
-                          <Input placeholder={key === 'email' ? 'me@example.com' : 'username or url'} {...field} value={field.value || ''} />
+                          <Input placeholder="Username or URL" {...field} value={field.value || ''} data-testid={`input-link-${key}`} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
