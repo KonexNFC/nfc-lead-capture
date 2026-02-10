@@ -8,7 +8,8 @@ import {
   LogOut, 
   Menu,
   X,
-  Blocks
+  Blocks,
+  Shield
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
     { name: 'Modules', href: '/dashboard/modules', icon: Blocks },
     { name: 'Leads', href: '/dashboard/leads', icon: Users },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+    ...(user?.isAdmin ? [{ name: 'Admin Panel', href: '/dashboard/admin', icon: Shield }] : []),
   ];
 
   const NavContent = () => (
@@ -42,7 +44,9 @@ export function LayoutShell({ children }: LayoutShellProps) {
       
       <div className="flex-1 py-6 px-4 space-y-2">
         {navigation.map((item) => {
-          const isActive = location === item.href;
+          const isActive = item.href === '/dashboard' 
+            ? location === '/dashboard' 
+            : location.startsWith(item.href);
           return (
             <Link key={item.name} href={item.href} className={`
               flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors

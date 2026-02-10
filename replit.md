@@ -25,6 +25,7 @@ Preferred communication style: Simple, everyday language.
 The frontend follows a feature-based structure with:
 - Public routes (`/`, `/auth`, `/u/:slug`) for landing, authentication, and public profiles
 - Protected routes (`/dashboard/*`) wrapped in `LayoutShell` with sidebar navigation
+- Admin routes (`/dashboard/admin/*`) visible only to users with `isAdmin` flag
 - Custom hooks for auth, profiles, leads, and file uploads
 
 ### Backend Architecture
@@ -53,6 +54,14 @@ Core tables:
   - `branding` (jsonb): Visual customization - logoUrl, heroUrl, heroVideoUrl, primaryColor, accentColor, fontFamily
   - `textOverrides` (jsonb): Multilingual text - headline, subheadline, ctaLabel, bioOverride, locale
 - `leads`: Captured contacts (name, telephone, whatsapp, email, company, note, source)
+
+### Admin Panel
+- Admin users have `isAdmin: true` flag in the users table
+- Admin routes: `/api/admin/analytics`, `/api/admin/users`, `/api/admin/users/:id`, `/api/admin/users/:id/profile`, `/api/admin/leads`, `DELETE /api/admin/users/:id`
+- Admin middleware checks `req.user.isAdmin` and returns 403 for non-admins
+- Frontend admin pages at `/dashboard/admin/*`: overview, user management, all leads
+- Admin link in sidebar only visible to admin users
+- Current admin account: info@konexnfc.com
 
 ### Shared Code
 The `shared/` directory contains code used by both frontend and backend:

@@ -201,6 +201,83 @@ export async function registerRoutes(
     });
   });
 
+  // === Admin Routes ===
+  function requireAdmin(req: any, res: any, next: any) {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (!req.user?.isAdmin) return res.status(403).json({ message: "Admin access required" });
+    next();
+  }
+
+  app.get("/api/admin/analytics", requireAdmin, async (_req, res) => {
+    const analytics = await storage.getAdminAnalytics();
+    res.json(analytics);
+  });
+
+  app.get("/api/admin/users", requireAdmin, async (_req, res) => {
+    const allUsers = await storage.listAllUsers();
+    const allProfiles = await storage.listAllProfiles();
+    const usersWithProfiles = allUsers.map(u => ({
+      id: u.id,
+      email: u.email,
+      isAdmin: u.isAdmin,
+      createdAt: u.createdAt,
+      profile: allProfiles.find(p => p.userId === u.id) || null,
+    }));
+    res.json(usersWithProfiles);
+  });
+
+  app.get("/api/admin/users/:id", requireAdmin, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) return res.status(400).json({ message: "Invalid user ID" });
+    const user = await storage.getUser(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    const profile = await storage.getProfile(userId);
+    const userLeads = profile ? await storage.getLeadsByProfile(profile.id) : [];
+    res.json({
+      id: user.id,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      createdAt: user.createdAt,
+      profile: profile || null,
+      leads: userLeads,
+    });
+  });
+
+  app.put("/api/admin/users/:id/profile", requireAdmin, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) return res.status(400).json({ message: "Invalid user ID" });
+    const user = await storage.getUser(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    
+    const input = api.profiles.updateMine.input.parse(req.body);
+    let profile = await storage.getProfile(userId);
+    if (!profile) {
+      if (!input.slug || !input.name) {
+        return res.status(400).json({ message: "Name and slug are required for new profile" });
+      }
+      profile = await storage.createProfile({ ...input, userId, name: input.name, slug: input.slug });
+      return res.json(profile);
+    }
+
+    const updated = await storage.updateProfileById(profile.id, input);
+    res.json(updated);
+  });
+
+  app.delete("/api/admin/users/:id", requireAdmin, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) return res.status(400).json({ message: "Invalid user ID" });
+    const user = await storage.getUser(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.isAdmin) return res.status(400).json({ message: "Cannot delete an admin account" });
+    await storage.deleteUser(userId);
+    res.json({ message: "User deleted" });
+  });
+
+  app.get("/api/admin/leads", requireAdmin, async (_req, res) => {
+    const allLeads = await storage.listAllLeads();
+    res.json(allLeads);
+  });
+
   // === Site Settings (Public) ===
   app.get("/api/public/settings/:key", async (req, res) => {
     try {

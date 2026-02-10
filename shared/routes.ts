@@ -82,7 +82,7 @@ export const api = {
       method: 'GET' as const,
       path: '/api/user',
       responses: {
-        200: z.object({ id: z.number(), email: z.string() }).nullable(),
+        200: z.object({ id: z.number(), email: z.string(), isAdmin: z.boolean().optional() }).nullable(),
       },
     },
   },

@@ -6,7 +6,7 @@ import {
   type Lead, type InsertLead,
   type SiteSetting
 } from "@shared/schema";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, count } from "drizzle-orm";
 
 export interface IStorage {
   // User
@@ -21,9 +21,11 @@ export interface IStorage {
   // Profile
   getProfile(userId: number): Promise<Profile | undefined>;
   getProfileBySlug(slug: string): Promise<Profile | undefined>;
+  getProfileById(profileId: number): Promise<Profile | undefined>;
   incrementProfileViews(profileId: number): Promise<void>;
   createProfile(profile: InsertProfile & { userId: number }): Promise<Profile>;
   updateProfile(userId: number, updates: UpdateProfileRequest): Promise<Profile>;
+  updateProfileById(profileId: number, updates: UpdateProfileRequest): Promise<Profile>;
 
   // Leads
   createLead(lead: InsertLead & { profileId: number }): Promise<Lead>;
@@ -32,6 +34,13 @@ export interface IStorage {
   // Site Settings
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<SiteSetting>;
+
+  // Admin
+  listAllUsers(): Promise<User[]>;
+  listAllProfiles(): Promise<Profile[]>;
+  listAllLeads(): Promise<(Lead & { profileName?: string })[]>;
+  deleteUser(userId: number): Promise<void>;
+  getAdminAnalytics(): Promise<{ totalUsers: number; totalProfiles: number; totalLeads: number; totalViews: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -116,6 +125,21 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(leads.createdAt));
   }
 
+  // Profile by ID
+  async getProfileById(profileId: number): Promise<Profile | undefined> {
+    const [profile] = await db.select().from(profiles).where(eq(profiles.id, profileId));
+    return profile;
+  }
+
+  async updateProfileById(profileId: number, updates: UpdateProfileRequest): Promise<Profile> {
+    const [updated] = await db
+      .update(profiles)
+      .set(updates)
+      .where(eq(profiles.id, profileId))
+      .returning();
+    return updated;
+  }
+
   // Site Settings
   async getSetting(key: string): Promise<string | null> {
     const [setting] = await db.select().from(siteSettings).where(eq(siteSettings.key, key));
@@ -134,6 +158,58 @@ export class DatabaseStorage implements IStorage {
     }
     const [created] = await db.insert(siteSettings).values({ key, value }).returning();
     return created;
+  }
+
+  // Admin
+  async listAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async listAllProfiles(): Promise<Profile[]> {
+    return await db.select().from(profiles).orderBy(desc(profiles.createdAt));
+  }
+
+  async listAllLeads(): Promise<(Lead & { profileName?: string })[]> {
+    const rows = await db
+      .select({
+        id: leads.id,
+        profileId: leads.profileId,
+        name: leads.name,
+        email: leads.email,
+        telephone: leads.telephone,
+        whatsapp: leads.whatsapp,
+        company: leads.company,
+        note: leads.note,
+        source: leads.source,
+        createdAt: leads.createdAt,
+        profileName: profiles.name,
+      })
+      .from(leads)
+      .leftJoin(profiles, eq(leads.profileId, profiles.id))
+      .orderBy(desc(leads.createdAt));
+    return rows.map(r => ({ ...r, profileName: r.profileName ?? undefined }));
+  }
+
+  async deleteUser(userId: number): Promise<void> {
+    const profile = await this.getProfile(userId);
+    if (profile) {
+      await db.delete(leads).where(eq(leads.profileId, profile.id));
+      await db.delete(profiles).where(eq(profiles.userId, userId));
+    }
+    await db.delete(users).where(eq(users.id, userId));
+  }
+
+  async getAdminAnalytics(): Promise<{ totalUsers: number; totalProfiles: number; totalLeads: number; totalViews: number }> {
+    const [userCount] = await db.select({ count: count() }).from(users);
+    const [profileCount] = await db.select({ count: count() }).from(profiles);
+    const [leadCount] = await db.select({ count: count() }).from(leads);
+    const [viewSum] = await db.select({ total: sql<number>`COALESCE(SUM(${profiles.views}), 0)` }).from(profiles);
+    return {
+      totalUsers: userCount.count,
+      totalProfiles: profileCount.count,
+      totalLeads: leadCount.count,
+      totalViews: Number(viewSum.total),
+    };
   }
 }
 

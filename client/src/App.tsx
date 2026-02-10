@@ -15,6 +15,10 @@ import EditProfile from "@/pages/dashboard/edit";
 import LeadsPage from "@/pages/dashboard/leads";
 import SettingsPage from "@/pages/dashboard/settings";
 import ModulesPage from "@/pages/dashboard/modules";
+import AdminDashboard from "@/pages/dashboard/admin/index";
+import AdminUsers from "@/pages/dashboard/admin/users";
+import AdminUserDetail from "@/pages/dashboard/admin/user-detail";
+import AdminLeads from "@/pages/dashboard/admin/leads";
 import PublicProfile from "@/pages/public-profile";
 import WhatIsNfcPage from "@/pages/what-is-nfc";
 import ForgotPasswordPage from "@/pages/forgot-password";
@@ -22,7 +26,7 @@ import ResetPasswordPage from "@/pages/reset-password";
 import NotFound from "@/pages/not-found";
 
 // Protected Route Wrapper
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+function ProtectedRoute({ component: Component, adminOnly }: { component: React.ComponentType; adminOnly?: boolean }) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -35,6 +39,10 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 
   if (!user) {
     return <Redirect to="/auth" />;
+  }
+
+  if (adminOnly && !user.isAdmin) {
+    return <Redirect to="/dashboard" />;
   }
 
   return (
@@ -70,6 +78,22 @@ function Router() {
       </Route>
       <Route path="/dashboard/settings">
         <ProtectedRoute component={SettingsPage} />
+      </Route>
+
+      {/* Admin Routes */}
+      <Route path="/dashboard/admin">
+        <ProtectedRoute component={AdminDashboard} adminOnly />
+      </Route>
+      <Route path="/dashboard/admin/users">
+        <ProtectedRoute component={AdminUsers} adminOnly />
+      </Route>
+      <Route path="/dashboard/admin/users/:id">
+        {(params) => (
+          <ProtectedRoute component={() => <AdminUserDetail params={params} />} adminOnly />
+        )}
+      </Route>
+      <Route path="/dashboard/admin/leads">
+        <ProtectedRoute component={AdminLeads} adminOnly />
       </Route>
 
       {/* 404 */}
