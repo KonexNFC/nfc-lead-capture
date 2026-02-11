@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
+import konexCard from "@assets/FD0746A1-9C5E-4D81-A4DC-743ECFD7C4F5_1770810117183.png";
 
 export default function LandingPage() {
   const scrollTo = (id: string) => {
@@ -213,6 +214,34 @@ export default function LandingPage() {
                   <p className="text-muted-foreground leading-relaxed max-w-xs">{item.desc}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* KONEX Card Showcase */}
+        <section className="py-24 bg-background relative overflow-hidden">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+          <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center gap-12 lg:gap-20">
+            <div className="flex-1">
+              <img 
+                src={konexCard} 
+                alt="KONEX NFC Business Cards" 
+                className="w-full max-w-lg mx-auto rounded-md" 
+                data-testid="img-konex-card"
+              />
+            </div>
+            <div className="flex-1 text-center md:text-left space-y-6">
+              <h2 className="text-3xl md:text-4xl font-display font-bold" data-testid="text-card-showcase-title">
+                One card. Unlimited connections.
+              </h2>
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                The KONEX NFC card is your all-in-one networking tool. Sleek, professional, and always ready. Just tap it on any smartphone to instantly share your digital profile — no app needed.
+              </p>
+              <Link href="/auth?tab=register">
+                <Button size="lg" className="h-14 px-8 rounded-full text-lg font-semibold shadow-xl shadow-primary/20 mt-4" data-testid="button-get-your-card">
+                  Get Your Card
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
