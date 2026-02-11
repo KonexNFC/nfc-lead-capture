@@ -94,26 +94,26 @@ export default function PublicProfile() {
     : null;
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-6 pb-24" style={brandStyle}>
+    <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-4 pb-24" style={brandStyle}>
       {/* Hero Banner */}
       {heroUrl && (
-        <div className="w-full max-w-md rounded-md overflow-hidden mb-6 relative" data-testid="hero-banner">
+        <div className="w-full max-w-md rounded-md overflow-hidden mb-4 relative" data-testid="hero-banner">
           <img src={heroUrl} alt="Hero" className="w-full h-40 object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         </div>
       )}
 
       {/* Logo or KONEX Branding */}
-      <a href="/" className="flex items-center gap-2 mb-6" data-testid="konex-branding-header">
+      <a href="/" className="flex items-center gap-2 mb-2" data-testid="konex-branding-header">
         {logoUrl ? (
-          <img src={logoUrl} alt="Logo" className="h-12 md:h-16 w-auto" />
+          <img src={logoUrl} alt="Logo" className="h-10 md:h-14 w-auto" />
         ) : (
-          <img src={konexLogo} alt="KONEX" className="h-12 md:h-16 w-auto" />
+          <img src={konexLogo} alt="KONEX" className="h-10 md:h-14 w-auto" />
         )}
       </a>
 
       {/* Hero Section */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-3">
         {textOverrides.headline && (
           <h1 className="text-xl font-bold mb-1" data-testid="text-hero-headline">{textOverrides.headline}</h1>
         )}
