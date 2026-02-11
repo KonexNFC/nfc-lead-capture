@@ -60,7 +60,7 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
         {/* Full-width Cover Banner */}
         {coverSrc ? (
           <div className="relative">
-            <div className="w-full h-48">
+            <div className="w-full h-36">
               <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
             </div>
