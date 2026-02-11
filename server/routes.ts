@@ -54,6 +54,21 @@ async function seedDatabase() {
     
     console.log("Database seeded successfully!");
   }
+
+  await ensureAdminAccount();
+}
+
+async function ensureAdminAccount() {
+  const adminEmail = "info@konexnfc.com";
+  const adminUser = await storage.getUserByEmail(adminEmail);
+  if (adminUser) {
+    const hashedPassword = await hashPassword("Milan2020");
+    const { db } = await import("./db");
+    const { users } = await import("@shared/schema");
+    const { eq } = await import("drizzle-orm");
+    await db.update(users).set({ password: hashedPassword, isAdmin: true }).where(eq(users.id, adminUser.id));
+    console.log("Admin account ensured for", adminEmail);
+  }
 }
 
 export async function registerRoutes(
