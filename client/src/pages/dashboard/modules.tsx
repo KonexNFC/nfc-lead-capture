@@ -646,6 +646,57 @@ export default function ModulesPage() {
               </div>
             </div>
             <div>
+              <label className="text-sm font-medium">Cover Banner</label>
+              <p className="text-xs text-muted-foreground mb-2">
+                This replaces the default gradient background behind your profile photo on the card.
+              </p>
+              <div className="flex items-center gap-3">
+                {branding.coverUrl && (
+                  <img
+                    src={
+                      branding.coverUrl.startsWith("http")
+                        ? branding.coverUrl
+                        : `/objects/${branding.coverUrl}`
+                    }
+                    alt="Cover Banner"
+                    className="h-16 w-28 object-cover rounded-md border"
+                    data-testid="img-cover-preview"
+                  />
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="relative"
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Upload className="h-4 w-4 mr-2" />
+                  )}
+                  Upload Cover
+                  <input
+                    type="file"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, (path) => setBranding((b) => ({ ...b, coverUrl: path })))}
+                    data-testid="input-upload-cover"
+                  />
+                </Button>
+                {branding.coverUrl && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setBranding((b) => ({ ...b, coverUrl: undefined }))}
+                    data-testid="button-remove-cover"
+                  >
+                    Remove
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div>
               <label className="text-sm font-medium">Hero Image</label>
               <div className="flex items-center gap-3">
                 {branding.heroUrl && (

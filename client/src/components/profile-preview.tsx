@@ -19,7 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { Profile } from "@shared/schema";
+import type { Profile, ProfileBranding } from "@shared/schema";
 
 interface ProfilePreviewProps {
   profile: Profile;
@@ -28,6 +28,12 @@ interface ProfilePreviewProps {
 }
 
 export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewProps) {
+  const branding = (profile.branding as ProfileBranding) || {};
+  const coverSrc = branding.coverUrl
+    ? branding.coverUrl.startsWith("http") ? branding.coverUrl
+      : branding.coverUrl.startsWith("/objects/") ? branding.coverUrl
+      : `/objects/${branding.coverUrl}`
+    : null;
   const socialConfig: Record<string, { icon: any; color: string; label: string }> = {
     linkedin: { icon: SiLinkedin, color: "#0A66C2", label: "LinkedIn" },
     x: { icon: SiX, color: "#14171A", label: "X" },
@@ -52,8 +58,15 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
         ${mock ? 'scale-90 opacity-90' : 'transform-gpu transition-transform hover:scale-[1.01]'}
       `}>
         {/* Header/Cover */}
-        <div className="h-32 bg-gradient-to-br from-primary via-accent to-purple-500 relative">
-          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
+        <div className="h-32 relative">
+          {coverSrc ? (
+            <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
+          ) : (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-purple-500" />
+              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
+            </>
+          )}
         </div>
 
         {/* Profile Content */}

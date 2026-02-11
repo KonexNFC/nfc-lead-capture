@@ -31,6 +31,7 @@ export interface ProfileReview {
 
 export interface ProfileBranding {
   logoUrl?: string;
+  coverUrl?: string;
   heroUrl?: string;
   heroVideoUrl?: string;
   primaryColor?: string;
