@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth, hashPassword } from "./auth";
+import { setupAuth, hashPassword, comparePasswords } from "./auth";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
@@ -322,6 +322,75 @@ export async function registerRoutes(
     if (user.id === (req.user as any).id) return res.status(400).json({ message: "Cannot change your own admin status" });
     await storage.toggleAdmin(userId, parsed.data.isAdmin);
     res.json({ message: "Admin status updated" });
+  });
+
+  // === Account Settings ===
+  const changePasswordSchema = z.object({
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(6, "New password must be at least 6 characters"),
+  });
+
+  app.post("/api/change-password", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const parsed = changePasswordSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+
+    const user = await storage.getUser((req.user as any).id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const valid = await comparePasswords(parsed.data.currentPassword, user.password);
+    if (!valid) return res.status(400).json({ message: "Current password is incorrect" });
+
+    const hashed = await hashPassword(parsed.data.newPassword);
+    await storage.updatePassword(user.id, hashed);
+    res.json({ message: "Password updated successfully" });
+  });
+
+  const changeEmailSchema = z.object({
+    newEmail: z.string().email("Please enter a valid email"),
+    password: z.string().min(1, "Password is required"),
+  });
+
+  app.patch("/api/change-email", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const parsed = changeEmailSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+
+    const user = await storage.getUser((req.user as any).id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const valid = await comparePasswords(parsed.data.password, user.password);
+    if (!valid) return res.status(400).json({ message: "Password is incorrect" });
+
+    const existing = await storage.getUserByEmail(parsed.data.newEmail);
+    if (existing && existing.id !== user.id) return res.status(409).json({ message: "Email already in use" });
+
+    await storage.updateEmail(user.id, parsed.data.newEmail.toLowerCase().trim());
+    res.json({ message: "Email updated successfully" });
+  });
+
+  const deleteAccountSchema = z.object({
+    password: z.string().min(1, "Password is required"),
+  });
+
+  app.delete("/api/account", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const parsed = deleteAccountSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+
+    const user = await storage.getUser((req.user as any).id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.isAdmin) return res.status(400).json({ message: "Admin accounts cannot be deleted this way" });
+
+    const valid = await comparePasswords(parsed.data.password, user.password);
+    if (!valid) return res.status(400).json({ message: "Password is incorrect" });
+
+    req.logout((err) => {
+      if (err) console.error("Logout error during account deletion:", err);
+    });
+
+    await storage.deleteUser(user.id);
+    res.json({ message: "Account deleted successfully" });
   });
 
   // === Site Settings (Public) ===
