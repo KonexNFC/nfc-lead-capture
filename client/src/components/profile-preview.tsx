@@ -54,7 +54,7 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
     <div className="w-full max-w-sm mx-auto perspective-1000">
       <Card className={`
         relative overflow-hidden bg-background border-border/50 shadow-2xl 
-        rounded-[2rem] h-[600px] flex flex-col
+        rounded-[2rem] min-h-[600px] flex flex-col
         ${mock ? 'scale-90 opacity-90' : 'transform-gpu transition-transform hover:scale-[1.01]'}
       `}>
         {/* Full-width Cover Banner */}
