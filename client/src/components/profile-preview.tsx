@@ -1,17 +1,21 @@
 import { 
   Briefcase, 
-  MapPin, 
   Mail, 
   Link as LinkIcon, 
-  Linkedin, 
-  Github, 
-  Twitter, 
-  Instagram,
   Globe,
   Phone,
   MessageSquare,
   MessageCircle
 } from "lucide-react";
+import { 
+  SiLinkedin, 
+  SiX, 
+  SiInstagram, 
+  SiFacebook, 
+  SiTiktok, 
+  SiYoutube, 
+  SiSnapchat 
+} from "react-icons/si";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,16 +28,16 @@ interface ProfilePreviewProps {
 }
 
 export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewProps) {
-  const socialIcons: Record<string, any> = {
-    linkedin: Linkedin,
-    github: Github,
-    twitter: Twitter,
-    instagram: Instagram,
-    website: Globe,
-    email: Mail,
-    snapchat: Globe,
-    tiktok: Globe,
-    youtube: Globe
+  const socialConfig: Record<string, { icon: any; color: string; label: string }> = {
+    linkedin: { icon: SiLinkedin, color: "#0A66C2", label: "LinkedIn" },
+    x: { icon: SiX, color: "#14171A", label: "X" },
+    twitter: { icon: SiX, color: "#14171A", label: "X" },
+    instagram: { icon: SiInstagram, color: "#E4405F", label: "Instagram" },
+    facebook: { icon: SiFacebook, color: "#1877F2", label: "Facebook" },
+    tiktok: { icon: SiTiktok, color: "#000000", label: "TikTok" },
+    youtube: { icon: SiYoutube, color: "#FF0000", label: "YouTube" },
+    snapchat: { icon: SiSnapchat, color: "#FFFC00", label: "Snapchat" },
+    website: { icon: Globe, color: "#6366F1", label: "Website" },
   };
 
   const links = (profile.links as Record<string, string>) || {};
@@ -130,10 +134,13 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
             <div className="grid grid-cols-4 gap-3 px-2">
               {socialLinks.map(([key, value]) => {
                 if (!value) return null;
-                const Icon = socialIcons[key] || LinkIcon;
+                const config = socialConfig[key] || { icon: LinkIcon, color: "#6B7280", label: key };
+                const Icon = config.icon;
                 
                 let href = value;
                 if (!value.startsWith('http')) href = `https://${value}`;
+
+                const isSnapchat = key === "snapchat";
 
                 return (
                   <a
@@ -143,10 +150,13 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
                     rel="noopener noreferrer"
                     className="flex flex-col items-center gap-2 group"
                   >
-                    <div className="h-12 w-12 rounded-2xl bg-secondary flex items-center justify-center text-foreground transition-all group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-lg group-hover:shadow-primary/25 group-hover:-translate-y-1">
+                    <div 
+                      className="h-12 w-12 rounded-2xl flex items-center justify-center transition-all group-hover:shadow-lg group-hover:-translate-y-1"
+                      style={{ backgroundColor: config.color, color: isSnapchat ? "#000" : "#fff" }}
+                    >
                       <Icon className="h-5 w-5" />
                     </div>
-                    <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{key}</span>
+                    <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{config.label}</span>
                   </a>
                 );
               })}
