@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Download, Phone, Mail, MessageCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, ArrowLeft, Download, Phone, Mail, MessageCircle, Search } from "lucide-react";
 import { Link } from "wouter";
 
 interface LeadWithProfile {
@@ -21,16 +24,35 @@ interface LeadWithProfile {
 }
 
 export default function AdminLeads() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("all");
+
   const { data: leads, isLoading } = useQuery<LeadWithProfile[]>({
     queryKey: ["/api/admin/leads"],
   });
 
+  const filteredLeads = leads?.filter((lead) => {
+    const matchesSearch = searchQuery === "" ||
+      lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      lead.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      lead.company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      lead.telephone?.includes(searchQuery) ||
+      lead.whatsapp?.includes(searchQuery) ||
+      lead.profileName?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesSource = sourceFilter === "all" || lead.source === sourceFilter;
+
+    return matchesSearch && matchesSource;
+  }) ?? [];
+
+  const uniqueSources = Array.from(new Set(leads?.map(l => l.source).filter(Boolean) ?? []));
+
   const exportCSV = () => {
-    if (!leads) return;
+    if (!filteredLeads.length) return;
     const headers = ["Name", "Telephone", "WhatsApp", "Email", "Company", "Note", "Profile", "Source", "Date"];
     const csvContent = [
       headers.join(","),
-      ...leads.map(l => [
+      ...filteredLeads.map(l => [
         `"${l.name}"`,
         `"${l.telephone || ''}"`,
         `"${l.whatsapp || ''}"`,
@@ -47,7 +69,7 @@ export default function AdminLeads() {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "konex_all_leads.csv");
+    link.setAttribute("download", "konex_leads.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -63,7 +85,7 @@ export default function AdminLeads() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/admin">
             <Button variant="ghost" size="icon" data-testid="button-back-admin">
@@ -72,13 +94,37 @@ export default function AdminLeads() {
           </Link>
           <div>
             <h1 className="text-3xl font-display font-bold" data-testid="text-admin-leads-title">All Leads</h1>
-            <p className="text-muted-foreground">{leads?.length ?? 0} leads across all profiles</p>
+            <p className="text-muted-foreground">{filteredLeads.length} of {leads?.length ?? 0} leads</p>
           </div>
         </div>
-        <Button variant="outline" onClick={exportCSV} disabled={!leads?.length} data-testid="button-export-csv">
+        <Button variant="outline" onClick={exportCSV} disabled={!filteredLeads.length} data-testid="button-export-csv">
           <Download className="h-4 w-4 mr-2" />
           Export CSV
         </Button>
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, email, company, phone..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+            data-testid="input-search-leads"
+          />
+        </div>
+        <Select value={sourceFilter} onValueChange={setSourceFilter}>
+          <SelectTrigger className="w-[150px]" data-testid="select-source-filter">
+            <SelectValue placeholder="Filter source" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Sources</SelectItem>
+            {uniqueSources.map(source => (
+              <SelectItem key={source} value={source!}>{source!.toUpperCase()}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <Card className="border-border/50">
@@ -95,14 +141,14 @@ export default function AdminLeads() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {leads?.length === 0 ? (
+              {filteredLeads.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    No leads captured yet.
+                    {searchQuery || sourceFilter !== "all" ? "No leads match your filters." : "No leads captured yet."}
                   </TableCell>
                 </TableRow>
               ) : (
-                leads?.map((lead) => (
+                filteredLeads.map((lead) => (
                   <TableRow key={lead.id} data-testid={`row-lead-${lead.id}`}>
                     <TableCell className="font-medium">{lead.name}</TableCell>
                     <TableCell>

@@ -57,11 +57,16 @@ Core tables:
 
 ### Admin Panel
 - Admin users have `isAdmin: true` flag in the users table
-- Admin routes: `/api/admin/analytics`, `/api/admin/users`, `/api/admin/users/:id`, `/api/admin/users/:id/profile`, `/api/admin/leads`, `DELETE /api/admin/users/:id`
+- Admin routes: `/api/admin/analytics`, `/api/admin/users`, `/api/admin/users/:id`, `/api/admin/users/:id/profile`, `/api/admin/leads`, `DELETE /api/admin/users/:id`, `/api/admin/growth`, `/api/admin/top-profiles`, `/api/admin/activity`, `PATCH /api/admin/users/:id/toggle-admin`
 - Admin middleware checks `req.user.isAdmin` and returns 403 for non-admins
-- Frontend admin pages at `/dashboard/admin/*`: overview, user management, all leads
+- Frontend admin pages at `/dashboard/admin/*`: overview (with growth charts, top profiles, recent activity), user management (with search/filter/toggle admin), all leads (with search/filter/CSV export)
 - Admin link in sidebar only visible to admin users
 - Current admin account: info@konexnfc.com
+- Admin dashboard uses Recharts for growth area charts (signups and leads over 30 days)
+- Users page supports search by email/name/company and filter by role (all/admin/user/no-profile)
+- Leads page supports search by name/email/company/phone and filter by source (nfc/qr/etc)
+- Admin can toggle other users' admin status via shield icon (with confirmation dialog)
+- `ensureAdminAccount()` runs on app startup to reset admin password and ensure admin flag
 
 ### Shared Code
 The `shared/` directory contains code used by both frontend and backend:

@@ -6,7 +6,7 @@ import {
   type Lead, type InsertLead,
   type SiteSetting
 } from "@shared/schema";
-import { eq, desc, sql, count } from "drizzle-orm";
+import { eq, desc, sql, count, gte, and } from "drizzle-orm";
 
 export interface IStorage {
   // User
@@ -41,6 +41,10 @@ export interface IStorage {
   listAllLeads(): Promise<(Lead & { profileName?: string })[]>;
   deleteUser(userId: number): Promise<void>;
   getAdminAnalytics(): Promise<{ totalUsers: number; totalProfiles: number; totalLeads: number; totalViews: number }>;
+  getGrowthData(days: number): Promise<{ date: string; users: number; leads: number; views: number }[]>;
+  getTopProfiles(limit: number): Promise<{ id: number; name: string; slug: string; views: number; leadCount: number; photoUrl: string | null }[]>;
+  getRecentActivity(limit: number): Promise<{ type: string; description: string; timestamp: string; meta?: Record<string, any> }[]>;
+  toggleAdmin(userId: number, isAdmin: boolean): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -210,6 +214,122 @@ export class DatabaseStorage implements IStorage {
       totalLeads: leadCount.count,
       totalViews: Number(viewSum.total),
     };
+  }
+
+  async getGrowthData(days: number): Promise<{ date: string; users: number; leads: number; views: number }[]> {
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    const usersByDay = await db
+      .select({
+        date: sql<string>`TO_CHAR(${users.createdAt}, 'YYYY-MM-DD')`,
+        count: count(),
+      })
+      .from(users)
+      .where(gte(users.createdAt, since))
+      .groupBy(sql`TO_CHAR(${users.createdAt}, 'YYYY-MM-DD')`)
+      .orderBy(sql`TO_CHAR(${users.createdAt}, 'YYYY-MM-DD')`);
+
+    const leadsByDay = await db
+      .select({
+        date: sql<string>`TO_CHAR(${leads.createdAt}, 'YYYY-MM-DD')`,
+        count: count(),
+      })
+      .from(leads)
+      .where(gte(leads.createdAt, since))
+      .groupBy(sql`TO_CHAR(${leads.createdAt}, 'YYYY-MM-DD')`)
+      .orderBy(sql`TO_CHAR(${leads.createdAt}, 'YYYY-MM-DD')`);
+
+    const dateMap = new Map<string, { users: number; leads: number; views: number }>();
+    for (let i = 0; i < days; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - (days - 1 - i));
+      const key = d.toISOString().split('T')[0];
+      dateMap.set(key, { users: 0, leads: 0, views: 0 });
+    }
+
+    for (const row of usersByDay) {
+      const existing = dateMap.get(row.date);
+      if (existing) existing.users = row.count;
+    }
+    for (const row of leadsByDay) {
+      const existing = dateMap.get(row.date);
+      if (existing) existing.leads = row.count;
+    }
+
+    return Array.from(dateMap.entries()).map(([date, data]) => ({ date, ...data }));
+  }
+
+  async getTopProfiles(limit: number): Promise<{ id: number; name: string; slug: string; views: number; leadCount: number; photoUrl: string | null }[]> {
+    const rows = await db
+      .select({
+        id: profiles.id,
+        name: profiles.name,
+        slug: profiles.slug,
+        views: profiles.views,
+        photoUrl: profiles.photoUrl,
+        leadCount: sql<number>`(SELECT COUNT(*) FROM ${leads} WHERE ${leads.profileId} = ${profiles.id})`,
+      })
+      .from(profiles)
+      .orderBy(desc(profiles.views))
+      .limit(limit);
+
+    return rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      views: r.views ?? 0,
+      leadCount: Number(r.leadCount),
+      photoUrl: r.photoUrl,
+    }));
+  }
+
+  async getRecentActivity(limit: number): Promise<{ type: string; description: string; timestamp: string; meta?: Record<string, any> }[]> {
+    const recentUsers = await db
+      .select({ id: users.id, email: users.email, createdAt: users.createdAt })
+      .from(users)
+      .orderBy(desc(users.createdAt))
+      .limit(limit);
+
+    const recentLeads = await db
+      .select({
+        id: leads.id,
+        name: leads.name,
+        profileName: profiles.name,
+        source: leads.source,
+        createdAt: leads.createdAt,
+      })
+      .from(leads)
+      .leftJoin(profiles, eq(leads.profileId, profiles.id))
+      .orderBy(desc(leads.createdAt))
+      .limit(limit);
+
+    const activities: { type: string; description: string; timestamp: string; meta?: Record<string, any> }[] = [];
+
+    for (const u of recentUsers) {
+      activities.push({
+        type: "signup",
+        description: `${u.email} created an account`,
+        timestamp: u.createdAt?.toISOString() ?? new Date().toISOString(),
+        meta: { email: u.email },
+      });
+    }
+
+    for (const l of recentLeads) {
+      activities.push({
+        type: "lead",
+        description: `${l.name} submitted contact via ${l.profileName || 'a profile'}`,
+        timestamp: l.createdAt?.toISOString() ?? new Date().toISOString(),
+        meta: { source: l.source, profileName: l.profileName },
+      });
+    }
+
+    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return activities.slice(0, limit);
+  }
+
+  async toggleAdmin(userId: number, isAdmin: boolean): Promise<void> {
+    await db.update(users).set({ isAdmin }).where(eq(users.id, userId));
   }
 }
 

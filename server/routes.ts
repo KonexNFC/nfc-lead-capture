@@ -293,6 +293,37 @@ export async function registerRoutes(
     res.json(allLeads);
   });
 
+  app.get("/api/admin/growth", requireAdmin, async (req, res) => {
+    const days = parseInt(req.query.days as string) || 30;
+    const growth = await storage.getGrowthData(Math.min(days, 90));
+    res.json(growth);
+  });
+
+  app.get("/api/admin/top-profiles", requireAdmin, async (req, res) => {
+    const limit = parseInt(req.query.limit as string) || 5;
+    const topProfiles = await storage.getTopProfiles(Math.min(limit, 20));
+    res.json(topProfiles);
+  });
+
+  app.get("/api/admin/activity", requireAdmin, async (req, res) => {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const activity = await storage.getRecentActivity(Math.min(limit, 50));
+    res.json(activity);
+  });
+
+  app.patch("/api/admin/users/:id/toggle-admin", requireAdmin, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) return res.status(400).json({ message: "Invalid user ID" });
+    const toggleSchema = z.object({ isAdmin: z.boolean() });
+    const parsed = toggleSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Invalid request body" });
+    const user = await storage.getUser(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.id === (req.user as any).id) return res.status(400).json({ message: "Cannot change your own admin status" });
+    await storage.toggleAdmin(userId, parsed.data.isAdmin);
+    res.json({ message: "Admin status updated" });
+  });
+
   // === Site Settings (Public) ===
   app.get("/api/public/settings/:key", async (req, res) => {
     try {
