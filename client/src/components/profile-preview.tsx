@@ -57,47 +57,81 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
         rounded-[2rem] h-[600px] flex flex-col
         ${mock ? 'scale-90 opacity-90' : 'transform-gpu transition-transform hover:scale-[1.01]'}
       `}>
-        {/* Header/Cover */}
-        <div className="h-32 relative">
-          {coverSrc ? (
-            <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
-          ) : (
-            <>
+        {/* Full-width Cover Banner */}
+        {coverSrc ? (
+          <div className="relative">
+            <div className="w-full h-48">
+              <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+            </div>
+            <div className="flex flex-col items-center -mt-14 relative z-10 px-6">
+              <div className="p-1.5 bg-background rounded-full shadow-lg mb-3">
+                <Avatar className="h-28 w-28 border-2 border-primary/10">
+                  <AvatarImage 
+                    src={profile.photoUrl ? (
+                      profile.photoUrl.startsWith('http') ? profile.photoUrl : 
+                      profile.photoUrl.startsWith('/objects/') ? profile.photoUrl :
+                      `/objects/${profile.photoUrl}`
+                    ) : undefined} 
+                    alt={profile.name} 
+                    className="object-cover" 
+                  />
+                  <AvatarFallback className="text-2xl bg-secondary font-display font-bold text-primary">
+                    {profile.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              <div className="text-center space-y-1 mb-4">
+                <h2 className="text-2xl font-bold font-display text-foreground">{profile.name}</h2>
+                <div className="flex items-center justify-center gap-1.5 text-muted-foreground text-sm font-medium">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  <span>{profile.title}</span>
+                </div>
+                {profile.company && (
+                  <p className="text-sm text-primary font-medium">{profile.company}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="h-32 relative">
               <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-purple-500" />
               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
-            </>
-          )}
-        </div>
+            </div>
+            <div className="px-6 flex flex-col items-center -mt-16 relative z-10">
+              <div className="p-1.5 bg-background rounded-full shadow-lg mb-4">
+                <Avatar className="h-28 w-28 border-2 border-primary/10">
+                  <AvatarImage 
+                    src={profile.photoUrl ? (
+                      profile.photoUrl.startsWith('http') ? profile.photoUrl : 
+                      profile.photoUrl.startsWith('/objects/') ? profile.photoUrl :
+                      `/objects/${profile.photoUrl}`
+                    ) : undefined} 
+                    alt={profile.name} 
+                    className="object-cover" 
+                  />
+                  <AvatarFallback className="text-2xl bg-secondary font-display font-bold text-primary">
+                    {profile.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              <div className="text-center space-y-1 mb-6">
+                <h2 className="text-2xl font-bold font-display text-foreground">{profile.name}</h2>
+                <div className="flex items-center justify-center gap-1.5 text-muted-foreground text-sm font-medium">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  <span>{profile.title}</span>
+                </div>
+                {profile.company && (
+                  <p className="text-sm text-primary font-medium">{profile.company}</p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Profile Content */}
-        <div className="px-6 flex-1 flex flex-col items-center -mt-16 relative z-10">
-          <div className="p-1.5 bg-background rounded-full shadow-lg mb-4">
-            <Avatar className="h-28 w-28 border-2 border-primary/10">
-              <AvatarImage 
-                src={profile.photoUrl ? (
-                  profile.photoUrl.startsWith('http') ? profile.photoUrl : 
-                  profile.photoUrl.startsWith('/objects/') ? profile.photoUrl :
-                  `/objects/${profile.photoUrl}`
-                ) : undefined} 
-                alt={profile.name} 
-                className="object-cover" 
-              />
-              <AvatarFallback className="text-2xl bg-secondary font-display font-bold text-primary">
-                {profile.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-
-          <div className="text-center space-y-1 mb-6">
-            <h2 className="text-2xl font-bold font-display text-foreground">{profile.name}</h2>
-            <div className="flex items-center justify-center gap-1.5 text-muted-foreground text-sm font-medium">
-              <Briefcase className="h-3.5 w-3.5" />
-              <span>{profile.title}</span>
-            </div>
-            {profile.company && (
-              <p className="text-sm text-primary font-medium">{profile.company}</p>
-            )}
-          </div>
+        <div className="px-6 flex-1 flex flex-col items-center relative z-10">
 
           <div className="w-full space-y-3 flex-1 overflow-y-auto pb-6 scrollbar-hide">
             {profile.bio && (
