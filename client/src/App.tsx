@@ -80,6 +80,11 @@ function Router() {
         <ProtectedRoute component={SettingsPage} />
       </Route>
 
+      {/* Admin shortcut redirect */}
+      <Route path="/admin">
+        <Redirect to="/dashboard/admin" />
+      </Route>
+
       {/* Admin Routes */}
       <Route path="/dashboard/admin">
         <ProtectedRoute component={AdminDashboard} adminOnly />
