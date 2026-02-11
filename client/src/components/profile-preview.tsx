@@ -210,17 +210,17 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
             </div>
             )}
           </div>
-          
-          <div className="w-full pb-6 pt-2">
-            <Button 
-              className="w-full rounded-xl h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" 
-              size="lg"
-              onClick={onSaveContact}
-              data-testid="button-save-contact"
-            >
-              Save Contact
-            </Button>
-          </div>
+        </div>
+
+        <div className="w-full px-6 pb-5 pt-2 mt-auto">
+          <Button 
+            className="w-full rounded-xl h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" 
+            size="lg"
+            onClick={onSaveContact}
+            data-testid="button-save-contact"
+          >
+            Save Contact
+          </Button>
         </div>
       </Card>
     </div>
