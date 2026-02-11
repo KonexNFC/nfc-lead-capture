@@ -125,8 +125,6 @@ export default function PublicProfile() {
       {/* Profile Card */}
       <ProfilePreview profile={profile} onSaveContact={() => setIsContactSheetOpen(true)} />
 
-      {/* CTA Icons */}
-      <CTAIcons links={(profile.links as Record<string, string>) || {}} />
 
       {/* Modules */}
       <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
