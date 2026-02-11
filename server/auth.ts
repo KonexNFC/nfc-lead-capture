@@ -42,7 +42,7 @@ export function setupAuth(app: Express) {
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
-      const user = await storage.getUserByEmail(username);
+      const user = await storage.getUserByEmail(username.toLowerCase().trim());
       if (!user || !(await comparePasswords(password, user.password))) {
         return done(null, false);
       } else {
