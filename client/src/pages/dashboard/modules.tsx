@@ -823,11 +823,11 @@ export default function ModulesPage() {
         <Button
           onClick={handleSave}
           size="lg"
-          disabled={updateMutation.isPending}
+          disabled={updateProfileMutation.isPending}
           className="shadow-xl"
           data-testid="button-save-modules-bottom"
         >
-          {updateMutation.isPending ? (
+          {updateProfileMutation.isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Save className="mr-2 h-4 w-4" />
