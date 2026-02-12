@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { LayoutShell } from "@/components/layout-shell";
+import { ActiveProfileProvider } from "@/hooks/use-active-profile";
 import { Loader2 } from "lucide-react";
 
 // Pages
@@ -46,9 +47,11 @@ function ProtectedRoute({ component: Component, adminOnly }: { component: React.
   }
 
   return (
-    <LayoutShell>
-      <Component />
-    </LayoutShell>
+    <ActiveProfileProvider>
+      <LayoutShell>
+        <Component />
+      </LayoutShell>
+    </ActiveProfileProvider>
   );
 }
 

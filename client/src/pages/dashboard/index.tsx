@@ -1,5 +1,5 @@
-import { useMyProfile } from "@/hooks/use-profiles";
-import { useLeads } from "@/hooks/use-leads";
+import { useActiveProfile } from "@/hooks/use-active-profile";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,15 +19,23 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Dashboard() {
-  const { data: profile, isLoading: profileLoading } = useMyProfile();
-  const { data: leads, isLoading: leadsLoading } = useLeads();
+  const { activeProfile: profile, isLoading: profileLoading } = useActiveProfile();
+  const { data: leads, isLoading: leadsLoading } = useQuery({
+    queryKey: ["/api/leads", profile?.id],
+    queryFn: async () => {
+      const url = profile?.id ? `/api/leads?profileId=${profile.id}` : "/api/leads";
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      return await res.json();
+    },
+    enabled: !!profile,
+  });
   const { toast } = useToast();
 
   if (profileLoading || leadsLoading) {
     return <DashboardSkeleton />;
   }
 
-  // If no profile, prompt to create one
   if (!profile) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
@@ -38,7 +46,7 @@ export default function Dashboard() {
           <h2 className="text-2xl font-bold font-display">Let's set up your profile</h2>
           <p className="text-muted-foreground">You haven't created your digital business card yet. Create one now to start sharing.</p>
         </div>
-        <Link href="/dashboard/edit">
+        <Link href="/dashboard/edit?new=1">
           <Button size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">Create Profile</Button>
         </Link>
       </div>

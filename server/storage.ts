@@ -21,12 +21,14 @@ export interface IStorage {
 
   // Profile
   getProfile(userId: number): Promise<Profile | undefined>;
+  getProfilesByUserId(userId: number): Promise<Profile[]>;
   getProfileBySlug(slug: string): Promise<Profile | undefined>;
   getProfileById(profileId: number): Promise<Profile | undefined>;
   incrementProfileViews(profileId: number): Promise<void>;
   createProfile(profile: InsertProfile & { userId: number }): Promise<Profile>;
   updateProfile(userId: number, updates: UpdateProfileRequest): Promise<Profile>;
   updateProfileById(profileId: number, updates: UpdateProfileRequest): Promise<Profile>;
+  deleteProfile(profileId: number): Promise<void>;
 
   // Leads
   createLead(lead: InsertLead & { profileId: number }): Promise<Lead>;
@@ -92,6 +94,10 @@ export class DatabaseStorage implements IStorage {
     return profile;
   }
 
+  async getProfilesByUserId(userId: number): Promise<Profile[]> {
+    return await db.select().from(profiles).where(eq(profiles.userId, userId)).orderBy(desc(profiles.createdAt));
+  }
+
   async getProfileBySlug(slug: string): Promise<Profile | undefined> {
     const [profile] = await db.select().from(profiles).where(eq(profiles.slug, slug));
     return profile;
@@ -149,6 +155,11 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  async deleteProfile(profileId: number): Promise<void> {
+    await db.delete(leads).where(eq(leads.profileId, profileId));
+    await db.delete(profiles).where(eq(profiles.id, profileId));
+  }
+
   // Site Settings
   async getSetting(key: string): Promise<string | null> {
     const [setting] = await db.select().from(siteSettings).where(eq(siteSettings.key, key));
@@ -200,11 +211,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteUser(userId: number): Promise<void> {
-    const profile = await this.getProfile(userId);
-    if (profile) {
+    const userProfiles = await this.getProfilesByUserId(userId);
+    for (const profile of userProfiles) {
       await db.delete(leads).where(eq(leads.profileId, profile.id));
-      await db.delete(profiles).where(eq(profiles.userId, userId));
     }
+    await db.delete(profiles).where(eq(profiles.userId, userId));
     await db.delete(users).where(eq(users.id, userId));
   }
 

@@ -40,6 +40,22 @@ Key server components:
 - `server/storage.ts`: Database abstraction layer
 - `server/auth.ts`: Authentication setup with password hashing (scrypt)
 
+### Multi-Profile Support
+Users can create and manage multiple digital business cards (e.g., personal, business). Key architecture:
+- **Profile Context**: `client/src/hooks/use-active-profile.tsx` - React context providing active profile state, profile list, and CRUD mutations
+- **Profile Switcher**: Dropdown in sidebar (`layout-shell.tsx`) lets users switch between profiles or create new ones
+- **Active Profile Persistence**: Stored in localStorage (`konex_active_profile_id`) across sessions
+- **API Endpoints**:
+  - `GET /api/profiles` - list all user's profiles
+  - `POST /api/profiles` - create new profile
+  - `GET /api/profiles/:id` - get specific profile (ownership validated)
+  - `PUT /api/profiles/:id` - update specific profile (ownership validated)
+  - `DELETE /api/profiles/:id` - delete profile and its leads (ownership validated)
+- **Legacy Compat**: `GET /api/profile` and `PUT /api/profile` still work (first profile)
+- **Leads Filtering**: `GET /api/leads?profileId=X` filters by profile; without param returns all with profileName attached
+- **Dashboard Pages**: All pages (Dashboard, Edit, Modules, Leads) use `useActiveProfile()` hook to operate on the currently selected profile
+- **Edit Page**: Supports `?new=1` query param for creating new profiles; includes delete profile confirmation dialog
+
 ### Database
 - **ORM**: Drizzle ORM with PostgreSQL dialect
 - **Schema Location**: `shared/schema.ts`

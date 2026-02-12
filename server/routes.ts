@@ -85,8 +85,74 @@ export async function registerRoutes(
   seedDatabase().catch(console.error);
 
   // === Profiles ===
+
+  // List all my profiles
+  app.get("/api/profiles", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userProfiles = await storage.getProfilesByUserId(req.user.id);
+    res.json(userProfiles);
+  });
+
+  // Create a new profile
+  app.post("/api/profiles", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const input = api.profiles.updateMine.input.parse(req.body);
+    if (!input.slug) return res.status(400).json({ message: "Slug is required" });
+    if (!input.name) return res.status(400).json({ message: "Name is required" });
+    try {
+      const profile = await storage.createProfile({
+        ...input,
+        userId: req.user.id,
+        name: input.name,
+        slug: input.slug,
+        photoUrl: input.photoUrl ? input.photoUrl.replace(/^\/objects\//, '') : input.photoUrl
+      });
+      res.status(201).json(profile);
+    } catch (e) {
+      res.status(400).json({ message: "Slug might be taken" });
+    }
+  });
+
+  // Get specific profile by ID (ownership check)
+  app.get("/api/profiles/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const profileId = parseInt(req.params.id);
+    if (isNaN(profileId)) return res.status(400).json({ message: "Invalid profile ID" });
+    const profile = await storage.getProfileById(profileId);
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+    if (profile.userId !== req.user.id) return res.status(403).json({ message: "Not your profile" });
+    res.json(profile);
+  });
+
+  // Update specific profile by ID (ownership check)
+  app.put("/api/profiles/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const profileId = parseInt(req.params.id);
+    if (isNaN(profileId)) return res.status(400).json({ message: "Invalid profile ID" });
+    const profile = await storage.getProfileById(profileId);
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+    if (profile.userId !== req.user.id) return res.status(403).json({ message: "Not your profile" });
+    const input = api.profiles.updateMine.input.parse(req.body);
+    const updated = await storage.updateProfileById(profileId, {
+      ...input,
+      photoUrl: input.photoUrl ? input.photoUrl.replace(/^\/objects\//, '') : input.photoUrl
+    });
+    res.json(updated);
+  });
+
+  // Delete a profile (ownership check)
+  app.delete("/api/profiles/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const profileId = parseInt(req.params.id);
+    if (isNaN(profileId)) return res.status(400).json({ message: "Invalid profile ID" });
+    const profile = await storage.getProfileById(profileId);
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+    if (profile.userId !== req.user.id) return res.status(403).json({ message: "Not your profile" });
+    await storage.deleteProfile(profileId);
+    res.json({ message: "Profile deleted" });
+  });
   
-  // Get my profile
+  // Get my profile (legacy - returns first profile)
   app.get(api.profiles.getMine.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const profile = await storage.getProfile(req.user.id);
@@ -94,11 +160,10 @@ export async function registerRoutes(
     res.json(profile);
   });
 
-  // Update my profile
+  // Update my profile (legacy - updates first profile or creates)
   app.put(api.profiles.updateMine.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     
-    // Check if profile exists, if not create one
     let profile = await storage.getProfile(req.user.id);
     const input = api.profiles.updateMine.input.parse(req.body);
 
@@ -189,31 +254,56 @@ export async function registerRoutes(
     res.status(201).json(lead);
   });
 
-  // List Leads (Private)
+  // List Leads (Private) - supports ?profileId= filter
   app.get(api.leads.list.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     
-    const profile = await storage.getProfile(req.user.id);
-    if (!profile) return res.json([]);
+    const profileIdParam = req.query.profileId ? parseInt(req.query.profileId as string) : null;
+    const userProfiles = await storage.getProfilesByUserId(req.user.id);
+    if (userProfiles.length === 0) return res.json([]);
 
-    const leads = await storage.getLeadsByProfile(profile.id);
-    res.json(leads);
+    if (profileIdParam) {
+      const targetProfile = userProfiles.find(p => p.id === profileIdParam);
+      if (!targetProfile) return res.status(403).json({ message: "Not your profile" });
+      const profileLeads = await storage.getLeadsByProfile(profileIdParam);
+      return res.json(profileLeads);
+    }
+
+    const allLeads: any[] = [];
+    for (const p of userProfiles) {
+      const profileLeads = await storage.getLeadsByProfile(p.id);
+      allLeads.push(...profileLeads.map(l => ({ ...l, profileName: p.name })));
+    }
+    allLeads.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+    res.json(allLeads);
   });
 
-  // Analytics
+  // Analytics - supports ?profileId= filter
   app.get(api.leads.stats.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
-    const profile = await storage.getProfile(req.user.id);
-    if (!profile) return res.json({ totalLeads: 0, recentLeads: [] });
+    const profileIdParam = req.query.profileId ? parseInt(req.query.profileId as string) : null;
+    const userProfiles = await storage.getProfilesByUserId(req.user.id);
+    if (userProfiles.length === 0) return res.json({ totalLeads: 0, recentLeads: [], totalViews: 0 });
 
-    const leads = await storage.getLeadsByProfile(profile.id);
-    
-    res.json({
-      totalLeads: leads.length,
-      recentLeads: leads.slice(0, 5),
-      totalViews: profile.views
-    });
+    if (profileIdParam) {
+      const targetProfile = userProfiles.find(p => p.id === profileIdParam);
+      if (!targetProfile) return res.json({ totalLeads: 0, recentLeads: [], totalViews: 0 });
+      const profileLeads = await storage.getLeadsByProfile(profileIdParam);
+      return res.json({ totalLeads: profileLeads.length, recentLeads: profileLeads.slice(0, 5), totalViews: targetProfile.views });
+    }
+
+    let totalLeads = 0;
+    let totalViews = 0;
+    const allLeads: any[] = [];
+    for (const p of userProfiles) {
+      const profileLeads = await storage.getLeadsByProfile(p.id);
+      totalLeads += profileLeads.length;
+      totalViews += (p.views || 0);
+      allLeads.push(...profileLeads);
+    }
+    allLeads.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+    res.json({ totalLeads, recentLeads: allLeads.slice(0, 5), totalViews });
   });
 
   // === Admin Routes ===

@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useActiveProfile } from "@/hooks/use-active-profile";
 import { 
   LayoutDashboard, 
   UserCircle, 
@@ -9,11 +10,21 @@ import {
   Menu,
   X,
   Blocks,
-  Shield
+  Shield,
+  ChevronDown,
+  Plus,
+  Check
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 
 interface LayoutShellProps {
@@ -21,8 +32,9 @@ interface LayoutShellProps {
 }
 
 export function LayoutShell({ children }: LayoutShellProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { logout, user } = useAuth();
+  const { profiles, activeProfile, setActiveProfileId } = useActiveProfile();
   const [isOpen, setIsOpen] = useState(false);
 
   const navigation = [
@@ -34,6 +46,55 @@ export function LayoutShell({ children }: LayoutShellProps) {
     ...(user?.isAdmin ? [{ name: 'Admin Panel', href: '/dashboard/admin', icon: Shield }] : []),
   ];
 
+  const ProfileSwitcher = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-left hover-elevate transition-colors border border-border/50"
+          data-testid="button-profile-switcher"
+        >
+          <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
+            {activeProfile?.name?.charAt(0) || "?"}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium truncate">{activeProfile?.name || "No profile"}</p>
+            {activeProfile?.title && (
+              <p className="text-xs text-muted-foreground truncate">{activeProfile.title}</p>
+            )}
+          </div>
+          <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56">
+        {profiles.map((p) => (
+          <DropdownMenuItem
+            key={p.id}
+            onClick={() => setActiveProfileId(p.id)}
+            className="flex items-center gap-2"
+            data-testid={`menu-profile-${p.id}`}
+          >
+            <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0">
+              {p.name.charAt(0)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm">{p.name}</p>
+              {p.title && <p className="text-xs text-muted-foreground truncate">{p.title}</p>}
+            </div>
+            {p.id === activeProfile?.id && <Check className="h-4 w-4 text-primary shrink-0" />}
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => setLocation("/dashboard/edit?new=1")}
+          data-testid="menu-create-profile"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Create New Profile
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   const NavContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-6 border-b border-border/50">
@@ -41,6 +102,12 @@ export function LayoutShell({ children }: LayoutShellProps) {
           <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto" />
         </div>
       </div>
+
+      {profiles.length > 0 && (
+        <div className="px-4 pt-4">
+          <ProfileSwitcher />
+        </div>
+      )}
       
       <div className="flex-1 py-6 px-4 space-y-2">
         {navigation.map((item) => {

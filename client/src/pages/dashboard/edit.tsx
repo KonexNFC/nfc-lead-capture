@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMyProfile, useUpdateProfile, useCheckSlug } from "@/hooks/use-profiles";
+import { useCheckSlug } from "@/hooks/use-profiles";
+import { useActiveProfile } from "@/hooks/use-active-profile";
 import { insertProfileSchema } from "@shared/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,12 +11,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProfilePreview } from "@/components/profile-preview";
-import { Loader2, Plus, Trash2, Upload, Phone, MessageCircle, MessageSquare } from "lucide-react";
+import { Loader2, Plus, Trash2, Upload, Phone, MessageCircle, MessageSquare, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useLocation, useSearch } from "wouter";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
-// Schema refinement for links jsonb validation
 const profileFormSchema = insertProfileSchema.extend({
   links: z.record(z.string()).optional(),
   slug: z.string().min(3).regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric and dashes only")
@@ -24,11 +36,14 @@ const profileFormSchema = insertProfileSchema.extend({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function EditProfile() {
-  const { data: profile, isLoading } = useMyProfile();
-  const updateMutation = useUpdateProfile();
+  const { activeProfile: profile, isLoading, createProfile, updateProfile, deleteProfile, setActiveProfileId } = useActiveProfile();
   const checkSlugMutation = useCheckSlug();
   const { toast } = useToast();
   const { uploadFile, isUploading: isUploadingPhoto } = useUpload();
+  const search = useSearch();
+  const [, setLocation] = useLocation();
+  const isNewMode = new URLSearchParams(search).get("new") === "1";
+  const [creatingNew, setCreatingNew] = useState(isNewMode);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -56,9 +71,14 @@ export default function EditProfile() {
     }
   });
 
-  // Load initial data
   useEffect(() => {
-    if (profile) {
+    if (isNewMode) {
+      setCreatingNew(true);
+    }
+  }, [isNewMode]);
+
+  useEffect(() => {
+    if (profile && !creatingNew) {
       form.reset({
         name: profile.name,
         title: profile.title || "",
@@ -69,7 +89,18 @@ export default function EditProfile() {
         links: (profile.links as Record<string, string>) || { phone: "", whatsapp: "", sms: "", email: "", linkedin: "", website: "", x: "", facebook: "", instagram: "", snapchat: "", tiktok: "", youtube: "" }
       });
     }
-  }, [profile, form]);
+    if (creatingNew) {
+      form.reset({
+        name: "",
+        title: "",
+        company: "",
+        bio: "",
+        photoUrl: "",
+        slug: "",
+        links: { phone: "", whatsapp: "", sms: "", email: "", linkedin: "", website: "", x: "", facebook: "", instagram: "", snapchat: "", tiktok: "", youtube: "" }
+      });
+    }
+  }, [profile, form, creatingNew]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -94,8 +125,23 @@ export default function EditProfile() {
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
-    // Only check slug if changed
-    if (data.slug !== profile?.slug) {
+    if (creatingNew || !profile) {
+      const { available } = await checkSlugMutation.mutateAsync(data.slug);
+      if (!available) {
+        form.setError("slug", { message: "This URL is already taken" });
+        return;
+      }
+      createProfile.mutate(data, {
+        onSuccess: (newProfile) => {
+          setActiveProfileId(newProfile.id);
+          setCreatingNew(false);
+          setLocation("/dashboard/edit");
+        },
+      });
+      return;
+    }
+
+    if (data.slug !== profile.slug) {
       const { available } = await checkSlugMutation.mutateAsync(data.slug);
       if (!available) {
         form.setError("slug", { message: "This URL is already taken" });
@@ -103,7 +149,16 @@ export default function EditProfile() {
       }
     }
     
-    updateMutation.mutate(data);
+    updateProfile.mutate({ profileId: profile.id, data });
+  };
+
+  const handleDeleteProfile = () => {
+    if (!profile) return;
+    deleteProfile.mutate(profile.id, {
+      onSuccess: () => {
+        setLocation("/dashboard");
+      },
+    });
   };
 
   // Watch for live preview
@@ -114,9 +169,43 @@ export default function EditProfile() {
   return (
     <div className="grid lg:grid-cols-2 gap-8 items-start">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Edit Profile</h1>
-          <p className="text-muted-foreground">Customize how you appear to others.</p>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-3xl font-display font-bold" data-testid="text-edit-title">
+              {creatingNew ? "Create New Profile" : "Edit Profile"}
+            </h1>
+            <p className="text-muted-foreground">
+              {creatingNew ? "Set up a new digital business card." : "Customize how you appear to others."}
+            </p>
+          </div>
+          {!creatingNew && profile && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="text-destructive" data-testid="button-delete-profile">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Profile
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this profile?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete "{profile.name}" and all its collected leads. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteProfile}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    data-testid="button-confirm-delete-profile"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
 
         <Form {...form}>
@@ -358,9 +447,9 @@ export default function EditProfile() {
             </Card>
 
             <div className="flex justify-end sticky bottom-4 z-10">
-              <Button type="submit" size="lg" className="shadow-xl" disabled={updateMutation.isPending}>
-                {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Changes
+              <Button type="submit" size="lg" className="shadow-xl" disabled={createProfile.isPending || updateProfile.isPending} data-testid="button-save-profile">
+                {(createProfile.isPending || updateProfile.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {creatingNew ? "Create Profile" : "Save Changes"}
               </Button>
             </div>
           </form>

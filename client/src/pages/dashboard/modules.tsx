@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useMyProfile, useUpdateProfile } from "@/hooks/use-profiles";
+import { useActiveProfile } from "@/hooks/use-active-profile";
 import { useUpload } from "@/hooks/use-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,8 +51,7 @@ const MODULE_DEFINITIONS = [
 const DEFAULT_ORDER = MODULE_DEFINITIONS.map((m) => m.key);
 
 export default function ModulesPage() {
-  const { data: profile, isLoading } = useMyProfile();
-  const updateMutation = useUpdateProfile();
+  const { activeProfile: profile, isLoading, updateProfile: updateProfileMutation } = useActiveProfile();
   const { uploadFile, isUploading } = useUpload();
   const { toast } = useToast();
 
@@ -113,6 +112,7 @@ export default function ModulesPage() {
   };
 
   const handleSave = () => {
+    if (!profile) return;
     const errors = validateModules();
     if (errors.length > 0) {
       toast({
@@ -124,16 +124,19 @@ export default function ModulesPage() {
     }
     const cleanedTiles = (modules.tiles || []).filter((t) => t.title || t.url);
     const cleanedReviews = (modules.reviews || []).filter((r) => r.url);
-    updateMutation.mutate({
-      modules: {
-        ...modules,
-        tiles: cleanedTiles,
-        reviews: cleanedReviews,
-        order: moduleOrder,
-        enabled: moduleEnabled,
+    updateProfileMutation.mutate({
+      profileId: profile.id,
+      data: {
+        modules: {
+          ...modules,
+          tiles: cleanedTiles,
+          reviews: cleanedReviews,
+          order: moduleOrder,
+          enabled: moduleEnabled,
+        },
+        branding,
+        textOverrides,
       },
-      branding,
-      textOverrides,
     });
   };
 
@@ -216,11 +219,11 @@ export default function ModulesPage() {
         </div>
         <Button
           onClick={handleSave}
-          disabled={updateMutation.isPending}
+          disabled={updateProfileMutation.isPending}
           className="shadow-lg"
           data-testid="button-save-modules"
         >
-          {updateMutation.isPending ? (
+          {updateProfileMutation.isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Save className="mr-2 h-4 w-4" />
