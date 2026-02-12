@@ -45,7 +45,7 @@ export default function Dashboard() {
     );
   }
 
-  const profileUrl = `${window.location.origin}/u/${profile.slug}`;
+  const profileUrl = `https://konexnfc.com/u/${profile.slug}`;
   const recentLeads = leads?.slice(0, 5) || [];
 
   const handleCopyLink = () => {
