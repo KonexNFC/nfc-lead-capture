@@ -18,13 +18,6 @@ import {
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 
 interface LayoutShellProps {
@@ -46,70 +39,71 @@ export function LayoutShell({ children }: LayoutShellProps) {
     ...(user?.isAdmin ? [{ name: 'Admin Panel', href: '/dashboard/admin', icon: Shield }] : []),
   ];
 
-  const ProfileSwitcher = () => {
-    const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
 
-    const handleSelectProfile = (id: number) => {
-      setActiveProfileId(id);
-      setDropdownOpen(false);
-      setIsOpen(false);
-    };
+  const handleSelectProfile = (id: number) => {
+    setActiveProfileId(id);
+    setSwitcherOpen(false);
+    setIsOpen(false);
+  };
 
-    const handleCreateNew = () => {
-      setDropdownOpen(false);
-      setIsOpen(false);
-      setLocation("/dashboard/edit?new=1");
-    };
+  const handleCreateNew = () => {
+    setSwitcherOpen(false);
+    setIsOpen(false);
+    setLocation("/dashboard/edit?new=1");
+  };
 
-    return (
-      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-        <DropdownMenuTrigger asChild>
-          <button
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-left hover-elevate transition-colors border border-border/50"
-            data-testid="button-profile-switcher"
-          >
-            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
-              {activeProfile?.name?.charAt(0) || "?"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{activeProfile?.name || "No profile"}</p>
-              {activeProfile?.title && (
-                <p className="text-xs text-muted-foreground truncate">{activeProfile.title}</p>
-              )}
-            </div>
-            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56 z-[9999]" sideOffset={4}>
+  const ProfileSwitcher = () => (
+    <div>
+      <button
+        onClick={() => setSwitcherOpen(!switcherOpen)}
+        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-left hover-elevate transition-colors border border-border/50"
+        data-testid="button-profile-switcher"
+      >
+        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
+          {activeProfile?.name?.charAt(0) || "?"}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium truncate">{activeProfile?.name || "No profile"}</p>
+          {activeProfile?.title && (
+            <p className="text-xs text-muted-foreground truncate">{activeProfile.title}</p>
+          )}
+        </div>
+        <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${switcherOpen ? "rotate-180" : ""}`} />
+      </button>
+      {switcherOpen && (
+        <div className="mt-1 rounded-lg border border-border/50 bg-muted/50 overflow-hidden">
           {profiles.map((p) => (
-            <DropdownMenuItem
+            <button
               key={p.id}
               onClick={() => handleSelectProfile(p.id)}
-              className="flex items-center gap-2"
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-sm hover-elevate transition-colors"
               data-testid={`menu-profile-${p.id}`}
             >
               <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0">
                 {p.name.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="truncate text-sm">{p.name}</p>
+                <p className="truncate">{p.name}</p>
                 {p.title && <p className="text-xs text-muted-foreground truncate">{p.title}</p>}
               </div>
               {p.id === activeProfile?.id && <Check className="h-4 w-4 text-primary shrink-0" />}
-            </DropdownMenuItem>
+            </button>
           ))}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={handleCreateNew}
-            data-testid="menu-create-profile"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create New Profile
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    );
-  };
+          <div className="border-t border-border/50">
+            <button
+              onClick={handleCreateNew}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-sm hover-elevate transition-colors"
+              data-testid="menu-create-profile"
+            >
+              <Plus className="h-4 w-4 text-muted-foreground" />
+              <span>Create New Profile</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   const NavContent = () => (
     <div className="flex flex-col h-full">
