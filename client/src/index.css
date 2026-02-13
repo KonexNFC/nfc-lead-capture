@@ -132,6 +132,26 @@
   .btn-secondary:hover {
     @apply bg-muted;
   }
+
+  .konex-benefits {
+    @apply py-24 px-4;
+  }
+
+  .benefits-grid {
+    @apply max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-6;
+  }
+
+  .benefit-item {
+    @apply flex flex-col items-center text-center gap-3;
+  }
+
+  .benefit-icon {
+    @apply text-primary text-2xl;
+  }
+
+  .benefit-item p {
+    @apply text-sm font-medium leading-snug;
+  }
 }
 
 @keyframes animateIn {

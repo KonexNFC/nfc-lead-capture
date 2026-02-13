@@ -73,14 +73,6 @@ export const konexTiers: KonexTier[] = [
   },
 ];
 
-export const benefits = [
-  { icon: Nfc, text: "One-tap instant contact sharing" },
-  { icon: Smartphone, text: "Works on iPhone & Android" },
-  { icon: UserCheck, text: "No app required for recipients" },
-  { icon: RefreshCw, text: "Update your profile anytime" },
-  { icon: Leaf, text: "Eco-friendly alternative to paper cards" },
-];
-
 export const comparisonSnapshot = [
   {
     id: "basic" as const,
