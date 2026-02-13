@@ -17,62 +17,6 @@ import {
 
 export type KonexTierId = "basic" | "premium" | "elite";
 
-export type KonexTier = {
-  id: KonexTierId;
-  name: string;
-  tagline: string;
-  shortDescription: string;
-  benefits: string[];
-  ctaLabel: string;
-  ctaHref: string;
-  icon: typeof Sparkles;
-  accent: string;
-  gradientFrom: string;
-  gradientTo: string;
-};
-
-export const konexTiers: KonexTier[] = [
-  {
-    id: "basic",
-    name: "KONEX Basic",
-    tagline: "Simple. Smart. Always connected.",
-    shortDescription: "Clean, everyday digital business card.",
-    benefits: ["One-tap sharing", "Matte finish", "No app required", "Custom profile link", "Lead capture"],
-    ctaLabel: "Order KONEX Basic",
-    ctaHref: "/konex-cards/basic",
-    icon: Sparkles,
-    accent: "text-primary",
-    gradientFrom: "from-primary/20",
-    gradientTo: "to-primary/5",
-  },
-  {
-    id: "premium",
-    name: "KONEX Premium",
-    tagline: "Elevated presence. Premium impression.",
-    shortDescription: "Premium metal and matte finishes.",
-    benefits: ["Brushed metal finish", "Micro-logo engraving", "Ultra-slim feel", "Priority support", "Advanced analytics"],
-    ctaLabel: "Upgrade to Premium",
-    ctaHref: "/konex-cards/premium",
-    icon: Crown,
-    accent: "text-accent",
-    gradientFrom: "from-accent/20",
-    gradientTo: "to-accent/5",
-  },
-  {
-    id: "elite",
-    name: "KONEX Elite",
-    tagline: "For those who move differently.",
-    shortDescription: "Ultra-premium status card.",
-    benefits: ["Luxury finishes", "Discreet branding", "Executive-grade NFC", "White-glove onboarding", "Custom domain support"],
-    ctaLabel: "Access Elite",
-    ctaHref: "/konex-cards/elite",
-    icon: Gem,
-    accent: "text-purple-400",
-    gradientFrom: "from-purple-500/20",
-    gradientTo: "to-purple-500/5",
-  },
-];
-
 export const comparisonSnapshot = [
   {
     id: "basic" as const,

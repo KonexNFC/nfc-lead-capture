@@ -152,6 +152,63 @@
   .benefit-item p {
     @apply text-sm font-medium leading-snug;
   }
+
+  .konex-tiers {
+    @apply py-24 px-4 bg-muted/30 border-y border-border/50;
+  }
+
+  .tier-grid {
+    @apply max-w-7xl mx-auto grid md:grid-cols-3 gap-6 lg:gap-8;
+  }
+
+  .tier-card {
+    @apply rounded-md border border-border/50 p-6 md:p-8 flex flex-col gap-4 transition-all duration-300;
+  }
+
+  .tier-card h3 {
+    @apply text-2xl font-bold;
+  }
+
+  .tier-tagline {
+    @apply text-sm font-medium text-muted-foreground;
+  }
+
+  .tier-card ul {
+    @apply space-y-2 flex-1 mb-4;
+  }
+
+  .tier-card li {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .tier-card li::before {
+    content: "✓ ";
+    @apply text-primary font-bold;
+  }
+
+  .tier-premium .tier-tagline {
+    @apply text-accent;
+  }
+
+  .tier-premium li::before {
+    @apply text-accent;
+  }
+
+  .tier-elite .tier-tagline {
+    @apply text-purple-400;
+  }
+
+  .tier-elite li::before {
+    @apply text-purple-400;
+  }
+
+  .btn-outline {
+    @apply border border-border bg-transparent text-foreground;
+  }
+
+  .btn-outline:hover {
+    @apply bg-muted;
+  }
 }
 
 @keyframes animateIn {
