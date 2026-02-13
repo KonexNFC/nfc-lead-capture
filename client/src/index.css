@@ -241,6 +241,19 @@
   .comparison-col a:hover {
     @apply brightness-125;
   }
+
+  .konex-final-cta {
+    @apply relative py-32 px-4 text-center;
+    background: radial-gradient(ellipse at center, hsl(var(--primary) / 0.15), hsl(var(--background)) 70%);
+  }
+
+  .konex-final-cta .container {
+    @apply max-w-3xl mx-auto space-y-8;
+  }
+
+  .konex-final-cta h2 {
+    @apply text-4xl md:text-5xl font-bold tracking-tight;
+  }
 }
 
 @keyframes animateIn {
