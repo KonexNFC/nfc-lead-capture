@@ -89,6 +89,51 @@
   }
 }
 
+/* KONEX product page styles */
+@layer components {
+  .konex-hero {
+    @apply relative pt-20 pb-24 px-4 text-center;
+    background: radial-gradient(ellipse at top, hsl(var(--primary) / 0.1), hsl(var(--background)) 70%);
+  }
+
+  .konex-hero .container {
+    @apply max-w-4xl mx-auto space-y-8;
+  }
+
+  .konex-hero h1 {
+    @apply text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1];
+  }
+
+  .konex-hero p {
+    @apply text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto;
+  }
+
+  .cta-row {
+    @apply flex flex-col sm:flex-row items-center gap-4 justify-center;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center font-semibold rounded-full text-lg transition-all duration-200;
+    @apply h-14 px-8;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground shadow-xl shadow-primary/20;
+  }
+
+  .btn-primary:hover {
+    @apply brightness-110;
+  }
+
+  .btn-secondary {
+    @apply border border-border bg-transparent text-foreground;
+  }
+
+  .btn-secondary:hover {
+    @apply bg-muted;
+  }
+}
+
 @keyframes animateIn {
   from {
     opacity: 0;
