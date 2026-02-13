@@ -21,6 +21,8 @@ import AdminUsers from "@/pages/dashboard/admin/users";
 import AdminUserDetail from "@/pages/dashboard/admin/user-detail";
 import AdminLeads from "@/pages/dashboard/admin/leads";
 import PublicProfile from "@/pages/public-profile";
+import KonexCardsPage from "@/pages/konex-cards";
+import KonexCardsTierPage from "@/pages/konex-cards-tier";
 import WhatIsNfcPage from "@/pages/what-is-nfc";
 import ForgotPasswordPage from "@/pages/forgot-password";
 import ResetPasswordPage from "@/pages/reset-password";
@@ -62,6 +64,10 @@ function Router() {
       <Route path="/" component={LandingPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/u/:slug" component={PublicProfile} />
+      <Route path="/konex-cards" component={KonexCardsPage} />
+      <Route path="/konex-cards/:tierId">
+        {(params) => <KonexCardsTierPage tierId={params.tierId} />}
+      </Route>
       <Route path="/what-is-nfc" component={WhatIsNfcPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />

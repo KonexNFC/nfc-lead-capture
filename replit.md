@@ -23,7 +23,7 @@ Preferred communication style: Simple, everyday language.
 - **Build Tool**: Vite with HMR support
 
 The frontend follows a feature-based structure with:
-- Public routes (`/`, `/auth`, `/u/:slug`) for landing, authentication, and public profiles
+- Public routes (`/`, `/auth`, `/u/:slug`, `/konex-cards`, `/konex-cards/:tierId`) for landing, authentication, public profiles, and product overview pages
 - Protected routes (`/dashboard/*`) wrapped in `LayoutShell` with sidebar navigation
 - Admin routes (`/dashboard/admin/*`) visible only to users with `isAdmin` flag
 - Custom hooks for auth, profiles, leads, and file uploads

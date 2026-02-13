@@ -1,0 +1,207 @@
+PRD: KONEX NFC – Product Overview Section (Website)
+
+1. Objective
+
+Add a high-conversion Product Overview section to the KONEX website that clearly explains the value of KONEX NFC cards and presents the three product tiers (Basic, Premium, Elite) with clear CTAs.
+
+This section should educate first-time visitors, position KONEX as a premium NFC solution, and route users into tier-specific product pages or a waitlist/preorder flow.
+
+⸻
+
+2. Scope
+
+Build a new, responsive Product Overview module to be added to the homepage and accessible at /konex-cards.
+
+Includes:
+	•	Hero introduction to KONEX NFC
+	•	Three-tier product cards (Basic, Premium, Elite)
+	•	Key benefits strip
+	•	Comparison snapshot
+	•	Primary CTAs (Order / Join Waitlist)
+
+Out of scope (Phase 2):
+	•	Payments & checkout
+	•	User profile dashboard
+	•	NFC profile management
+
+⸻
+
+3. User Stories
+	•	As a visitor, I want to quickly understand what KONEX NFC is.
+	•	As a professional, I want to see which card tier fits my needs.
+	•	As a buyer, I want a clear call-to-action to order or join a waitlist.
+	•	As a mobile user, I want the section to be fully responsive and fast-loading.
+
+⸻
+
+4. Page Structure & Components
+
+4.1 Hero Section
+
+Component: KonexHero
+
+Content
+	•	Headline: Tap once. Share everything.
+	•	Subheadline: KONEX NFC cards replace paper business cards with instant digital profiles.
+	•	Primary CTA: Get your KONEX card
+	•	Secondary CTA: Join the waitlist
+
+Acceptance Criteria
+	•	CTA buttons route to /konex-cards and /waitlist (or modal).
+	•	Optimized for mobile (headline max 2 lines on mobile).
+
+⸻
+
+4.2 Product Tier Cards
+
+Component: KonexTierGrid
+
+Each tier displayed as a card with:
+	•	Tier name
+	•	Positioning line
+	•	3–5 key benefits
+	•	CTA button
+
+Tiers
+
+Basic
+	•	Title: KONEX Basic
+	•	Tagline: Simple. Smart. Always connected.
+	•	CTA: Order KONEX Basic → /konex-cards/basic
+
+Premium
+	•	Title: KONEX Premium
+	•	Tagline: Elevated presence. Premium impression.
+	•	CTA: Upgrade to Premium → /konex-cards/premium
+
+Elite
+	•	Title: KONEX Elite
+	•	Tagline: For those who move differently.
+	•	CTA: Access Elite → /konex-cards/elite
+
+Acceptance Criteria
+	•	Cards must be equal height.
+	•	Hover state shows subtle elevation.
+	•	Mobile stacks vertically.
+
+⸻
+
+4.3 Key Benefits Strip
+
+Component: KonexBenefits
+
+Bullets
+	•	One-tap instant contact sharing
+	•	Works on iPhone & Android
+	•	No app required for recipients
+	•	Update your profile anytime
+	•	Eco-friendly alternative to paper cards
+
+Acceptance Criteria
+	•	Render as icons + text.
+	•	Responsive grid (2x2 mobile, 5-column desktop).
+
+⸻
+
+4.4 Comparison Snapshot
+
+Component: KonexComparisonMini
+
+Layout
+	•	3-column comparison: Basic / Premium / Elite
+	•	3 bullet points per tier
+
+Acceptance Criteria
+	•	Not a full pricing table, just a positioning snapshot.
+	•	Clickable to tier pages.
+
+⸻
+
+4.5 Final CTA Section
+
+Component: KonexFinalCTA
+
+Copy
+	•	Headline: The last business card you’ll ever need.
+	•	CTA: Get your KONEX card
+
+Acceptance Criteria
+	•	High-contrast CTA.
+	•	Sticky CTA on mobile optional.
+
+⸻
+
+5. Routes
+	•	/konex-cards → Product overview page
+	•	/konex-cards/basic
+	•	/konex-cards/premium
+	•	/konex-cards/elite
+
+⸻
+
+6. Data Model (Frontend-Driven, Static for v1)
+
+type KonexTier = {
+  id: 'basic' | 'premium' | 'elite'
+  name: string
+  tagline: string
+  shortDescription: string
+  benefits: string[]
+  ctaLabel: string
+  ctaHref: string
+}
+
+const konexTiers: KonexTier[] = [
+  {
+    id: 'basic',
+    name: 'KONEX Basic',
+    tagline: 'Simple. Smart. Always connected.',
+    shortDescription: 'Clean, everyday digital business card.',
+    benefits: ['One-tap sharing', 'Matte finish', 'No app required'],
+    ctaLabel: 'Order KONEX Basic',
+    ctaHref: '/konex-cards/basic'
+  },
+  {
+    id: 'premium',
+    name: 'KONEX Premium',
+    tagline: 'Elevated presence. Premium impression.',
+    shortDescription: 'Premium metal and matte finishes.',
+    benefits: ['Brushed metal', 'Micro-logo', 'Ultra-slim feel'],
+    ctaLabel: 'Upgrade to Premium',
+    ctaHref: '/konex-cards/premium'
+  },
+  {
+    id: 'elite',
+    name: 'KONEX Elite',
+    tagline: 'For those who move differently.',
+    shortDescription: 'Ultra-premium status card.',
+    benefits: ['Luxury finishes', 'Discreet branding', 'Executive-grade'],
+    ctaLabel: 'Access Elite',
+    ctaHref: '/konex-cards/elite'
+  }
+]
+
+7. Non-Functional Requirements
+	•	Page load under 2s
+	•	Fully responsive (mobile-first)
+	•	SEO-friendly headings (H1–H3)
+	•	Accessible CTAs (ARIA labels)
+	•	Clean, premium UI (dark theme compatible)
+
+⸻
+
+8. Success Metrics
+	•	CTR on “Get your KONEX card”
+	•	Tier page visits
+	•	Waitlist conversions
+	•	Time on page
+
+⸻
+
+9. Delivery Definition
+
+This PRD is complete when:
+	•	Product overview renders on homepage and /konex-cards.
+	•	All CTAs route correctly.
+	•	Mobile and desktop layouts validated.
+	•	Content matches KONEX brand positioning.

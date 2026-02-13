@@ -24,6 +24,11 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto rounded" />
             <div className="hidden md:flex items-center gap-1 ml-4">
+              <Link href="/konex-cards">
+                <Button variant="ghost" size="sm" className="font-medium text-muted-foreground" data-testid="nav-konex-cards">
+                  KONEX Cards
+                </Button>
+              </Link>
               <Button variant="ghost" size="sm" className="font-medium text-muted-foreground" onClick={() => scrollTo("how-it-works")} data-testid="nav-how-it-works">
                 How It Works
               </Button>
@@ -45,6 +50,14 @@ export default function LandingPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
+                <Link href="/konex-cards">
+                  <DropdownMenuItem data-testid="menu-konex-cards">
+                    <Nfc className="h-4 w-4 mr-2" />
+                    KONEX Cards
+                    <ChevronRight className="h-4 w-4 ml-auto" />
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => scrollTo("how-it-works")} data-testid="menu-how-it-works">
                   <Eye className="h-4 w-4 mr-2" />
                   How It Works
