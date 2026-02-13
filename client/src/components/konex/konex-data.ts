@@ -17,33 +17,6 @@ import {
 
 export type KonexTierId = "basic" | "premium" | "elite";
 
-export const comparisonSnapshot = [
-  {
-    id: "basic" as const,
-    name: "Basic",
-    bullets: ["NFC tap sharing", "Matte finish", "Lead capture"],
-    href: "/konex-cards/basic",
-    accent: "text-primary",
-    icon: Sparkles,
-  },
-  {
-    id: "premium" as const,
-    name: "Premium",
-    bullets: ["Brushed metal finish", "Logo engraving", "Advanced analytics"],
-    href: "/konex-cards/premium",
-    accent: "text-accent",
-    icon: Crown,
-  },
-  {
-    id: "elite" as const,
-    name: "Elite",
-    bullets: ["Luxury finishes", "Custom domain", "White-glove onboarding"],
-    href: "/konex-cards/elite",
-    accent: "text-purple-400",
-    icon: Gem,
-  },
-];
-
 export interface TierDetail {
   id: KonexTierId;
   name: string;

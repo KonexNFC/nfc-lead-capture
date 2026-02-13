@@ -209,6 +209,38 @@
   .btn-outline:hover {
     @apply bg-muted;
   }
+
+  .konex-comparison {
+    @apply py-24 px-4 bg-muted/30 border-y border-border/50;
+  }
+
+  .comparison-grid {
+    @apply max-w-5xl mx-auto grid md:grid-cols-3 gap-6;
+  }
+
+  .comparison-col {
+    @apply rounded-md border border-border/50 p-6 space-y-4;
+  }
+
+  .comparison-col h4 {
+    @apply text-lg font-bold;
+  }
+
+  .comparison-col ul {
+    @apply space-y-2;
+  }
+
+  .comparison-col li {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .comparison-col a {
+    @apply text-sm font-medium text-primary inline-block pt-2 transition-colors;
+  }
+
+  .comparison-col a:hover {
+    @apply brightness-125;
+  }
 }
 
 @keyframes animateIn {
