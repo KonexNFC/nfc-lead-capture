@@ -19,6 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { downloadVCard, type VCardData } from "@/lib/vcard";
 import type { Profile, ProfileBranding } from "@shared/schema";
 
 interface ProfilePreviewProps {
@@ -216,7 +217,20 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
           <Button 
             className="w-full rounded-xl h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" 
             size="lg"
-            onClick={onSaveContact}
+            onClick={() => {
+              const links = (profile.links as Record<string, string>) || {};
+              const vcardData: VCardData = {
+                name: profile.name,
+                title: profile.title || undefined,
+                company: profile.company || undefined,
+                phone: links.phone,
+                whatsapp: links.whatsapp,
+                email: links.email,
+                website: links.website,
+                photoUrl: profile.photoUrl || undefined,
+              };
+              downloadVCard(vcardData);
+            }}
             data-testid="button-save-contact"
           >
             Save Contact
