@@ -315,6 +315,46 @@
   background: hsl(var(--muted));
 }
 
+.konex-save-contact-btn {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #1EA1FF, #3B82F6);
+  color: #fff;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.konex-save-contact-btn:hover {
+  opacity: 0.9;
+}
+
+.konex-save-contact-btn:active {
+  transform: scale(0.98);
+}
+
+.konex-save-contact-feedback {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.konex-save-contact-success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.konex-save-contact-error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
 @keyframes animateIn {
   from {
     opacity: 0;

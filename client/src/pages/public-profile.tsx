@@ -18,6 +18,7 @@ import { Loader2, Share2, UserPlus } from "lucide-react";
 import { SiFacebook } from "react-icons/si";
 import { z } from "zod";
 import { ProfileModulesRenderer } from "@/components/profile-modules";
+import KonexSaveContactCTA from "@/components/konex/KonexSaveContactCTA";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/schema";
 
@@ -128,6 +129,9 @@ export default function PublicProfile() {
 
       {/* Modules */}
       <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
+
+      {/* Add to Contacts CTA */}
+      <KonexSaveContactCTA profile={profile} />
 
       {/* Contact Save Sheet */}
       {isDesktop ? (
