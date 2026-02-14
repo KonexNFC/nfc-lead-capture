@@ -80,7 +80,7 @@ export default function LandingPage() {
               <Button variant="ghost" className="font-medium" data-testid="button-login">Log in</Button>
             </Link>
             <Link href="/auth?tab=register">
-              <Button className="font-semibold shadow-lg shadow-primary/20" data-testid="button-get-started">Get Started</Button>
+              <Button className="font-semibold shadow-lg shadow-primary/20" data-testid="button-get-started">Sign Up Free</Button>
             </Link>
           </div>
         </div>
@@ -103,13 +103,13 @@ export default function LandingPage() {
               </h1>
               
               <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto md:mx-0">
-                Create a stunning digital business card, share it instantly via NFC or QR, and capture leads effortlessly. No app required.
+                Create your free digital business card, share it instantly via NFC or QR, and capture leads effortlessly. No app required.
               </p>
               
               <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
                 <Link href="/auth?tab=register">
                   <Button size="lg" className="h-14 px-8 rounded-full text-lg font-semibold shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all hover:-translate-y-1">
-                    Create Your Card
+                    Sign Up Free
                   </Button>
                 </Link>
                 <Button 
@@ -250,11 +250,18 @@ export default function LandingPage() {
               <p className="text-muted-foreground text-lg leading-relaxed">
                 The KONEX NFC card is your all-in-one networking tool. Sleek, professional, and always ready. Just tap it on any smartphone to instantly share your digital profile — no app needed.
               </p>
-              <Link href="/auth?tab=register">
-                <Button size="lg" className="h-14 px-8 rounded-full text-lg font-semibold shadow-xl shadow-primary/20 mt-4" data-testid="button-get-your-card">
-                  Get Your Card
-                </Button>
-              </Link>
+              <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 justify-center md:justify-start">
+                <Link href="/auth?tab=register">
+                  <Button size="lg" className="h-14 px-8 rounded-full text-lg font-semibold shadow-xl shadow-primary/20" data-testid="button-create-free-profile">
+                    Create Free Profile
+                  </Button>
+                </Link>
+                <Link href="/konex-cards">
+                  <Button variant="outline" size="lg" className="h-14 px-8 rounded-full text-lg" data-testid="button-get-your-card">
+                    View NFC Cards
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </section>

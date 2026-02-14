@@ -122,6 +122,13 @@
   margin: 24px auto 0;
 }
 
+.konex-free-note {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 16px;
+  opacity: 0.7;
+}
+
 .konex-final-cta {
   text-align: center;
 }
@@ -158,6 +165,25 @@
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
+.tiers-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.tiers-header h2 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.tiers-subheading {
+  font-size: 1.125rem;
+  color: hsl(var(--muted-foreground));
+  max-width: 480px;
+  margin: 0 auto;
+}
+
 .tier-card {
   border: 1px solid hsl(var(--border));
   border-radius: 12px;
@@ -166,6 +192,43 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: relative;
+}
+
+.tier-popular {
+  border-color: hsl(var(--primary));
+  border-width: 2px;
+}
+
+.tier-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 16px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.tier-price {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.price-amount {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.price-note {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
 }
 
 .tier-card h3 {
@@ -245,6 +308,11 @@
 
 .comparison-col h4 {
   font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.comparison-price {
+  font-size: 1.5rem;
   font-weight: 700;
 }
 

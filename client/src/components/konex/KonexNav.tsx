@@ -130,7 +130,7 @@ export default function KonexNav({ variant = "overview" }: KonexNavProps) {
             <Button variant="ghost" className="font-medium" data-testid="button-login">Log in</Button>
           </Link>
           <Link href="/auth?tab=register">
-            <Button className="font-semibold shadow-lg shadow-primary/20" data-testid="button-get-started">Get Started</Button>
+            <Button className="font-semibold shadow-lg shadow-primary/20" data-testid="button-get-started">Sign Up Free</Button>
           </Link>
         </div>
       </div>

@@ -22,9 +22,9 @@ export default function AuthPage() {
   const [location, setLocation] = useLocation();
   const { login, register, isLoggingIn, isRegistering, user } = useAuth();
   
-  // URL param parsing for tab selection could be added here, 
-  // but for simplicity defaulting to login or getting from query param manually if needed
-  const [activeTab, setActiveTab] = useState("login");
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialTab = urlParams.get("tab") === "register" ? "register" : "login";
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   if (user) {
     setLocation("/dashboard");
@@ -41,7 +41,7 @@ export default function AuthPage() {
             </div>
           </div>
           <h1 className="text-3xl font-display font-bold">Welcome to KONEX</h1>
-          <p className="text-muted-foreground">Your digital identity starts here.</p>
+          <p className="text-muted-foreground">Create your free digital business card.</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -160,8 +160,8 @@ function RegisterForm({ onSubmit, isLoading, onSuccess }: {
   return (
     <Card className="border-border/50 shadow-xl">
       <CardHeader>
-        <CardTitle>Create Account</CardTitle>
-        <CardDescription>Start building your professional presence</CardDescription>
+        <CardTitle>Create Free Account</CardTitle>
+        <CardDescription>Sign up for free and build your digital business card</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -193,7 +193,7 @@ function RegisterForm({ onSubmit, isLoading, onSuccess }: {
               )}
             />
             <Button type="submit" className="w-full mt-2" disabled={isLoading}>
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Create Account"}
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Create Free Account"}
             </Button>
           </form>
         </Form>

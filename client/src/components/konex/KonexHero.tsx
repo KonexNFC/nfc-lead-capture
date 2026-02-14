@@ -10,13 +10,17 @@ export default function KonexHero() {
         </p>
 
         <div className="cta-row">
-          <a href="/konex-cards" className="btn btn-primary" data-testid="button-hero-get-card">
-            Get your KONEX card
+          <a href="/auth?tab=register" className="btn btn-primary" data-testid="button-hero-signup-free">
+            Create Free Profile
           </a>
-          <a href="/waitlist" className="btn btn-secondary" data-testid="button-hero-waitlist">
-            Join the waitlist
+          <a href="#pricing" className="btn btn-secondary" data-testid="button-hero-view-pricing">
+            View Card Pricing
           </a>
         </div>
+
+        <p className="konex-free-note" data-testid="text-free-note">
+          Your digital profile is always free. NFC cards sold separately.
+        </p>
       </div>
     </section>
   );

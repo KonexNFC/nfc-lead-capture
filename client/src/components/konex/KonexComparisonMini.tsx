@@ -4,6 +4,7 @@ export default function KonexComparisonMini() {
       <div className="container comparison-grid">
         <div className="comparison-col" data-testid="card-compare-basic">
           <h4>Basic</h4>
+          <span className="comparison-price">£9.99</span>
           <ul>
             <li>Matte finish</li>
             <li>Everyday use</li>
@@ -14,6 +15,7 @@ export default function KonexComparisonMini() {
 
         <div className="comparison-col" data-testid="card-compare-premium">
           <h4>Premium</h4>
+          <span className="comparison-price">£24.99</span>
           <ul>
             <li>Brushed metal / matte black</li>
             <li>Premium feel</li>
@@ -24,6 +26,7 @@ export default function KonexComparisonMini() {
 
         <div className="comparison-col" data-testid="card-compare-elite">
           <h4>Elite</h4>
+          <span className="comparison-price">£49.99</span>
           <ul>
             <li>Ultra-premium finishes</li>
             <li>Luxury positioning</li>

@@ -48,6 +48,12 @@ export default function KonexCardsTierPage({ tierId }: { tierId: string }) {
               {tier.name}
             </h1>
             <p className={`text-xl font-medium ${tier.accent}`} data-testid="text-tier-tagline">{tier.tagline}</p>
+
+            <div className="flex items-baseline justify-center gap-2" data-testid="text-tier-price">
+              <span className="text-5xl md:text-6xl font-display font-bold">{tier.price}</span>
+              <span className="text-lg text-muted-foreground">{tier.priceNote}</span>
+            </div>
+
             <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto" data-testid="text-tier-description">
               {tier.heroDescription}
             </p>
