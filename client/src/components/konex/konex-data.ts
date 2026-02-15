@@ -38,7 +38,7 @@ export const tierDetails: Record<string, TierDetail> = {
     id: "basic",
     name: "KONEX Basic",
     tagline: "Simple. Smart. Always connected.",
-    price: "£9.99",
+    price: "£19.99",
     priceNote: "One-time purchase",
     heroDescription:
       "The KONEX Basic is your entry into modern networking. A clean, professional NFC card that lets you share your digital profile with a single tap. No frills, just results.",
@@ -61,7 +61,7 @@ export const tierDetails: Record<string, TierDetail> = {
     id: "premium",
     name: "KONEX Premium",
     tagline: "Elevated presence. Premium impression.",
-    price: "£24.99",
+    price: "£49.99",
     priceNote: "One-time purchase",
     heroDescription:
       "The KONEX Premium is for professionals who want to stand out. Brushed metal finish, micro-logo engraving, and advanced features that elevate every interaction.",
@@ -84,7 +84,7 @@ export const tierDetails: Record<string, TierDetail> = {
     id: "elite",
     name: "KONEX Elite",
     tagline: "For those who move differently.",
-    price: "£49.99",
+    price: "£79.99",
     priceNote: "One-time purchase",
     heroDescription:
       "The KONEX Elite is the ultimate networking statement. Luxury finishes, white-glove onboarding, and exclusive features for executives and founders who demand the best.",

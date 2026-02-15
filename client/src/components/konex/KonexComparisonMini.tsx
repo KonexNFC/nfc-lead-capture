@@ -16,9 +16,9 @@ const features = [
 ];
 
 const tiers = [
-  { key: "basic" as const, name: "Basic", price: "£9.99", href: "/konex-cards/basic" },
-  { key: "premium" as const, name: "Premium", price: "£24.99", href: "/konex-cards/premium", popular: true },
-  { key: "elite" as const, name: "Elite", price: "£49.99", href: "/konex-cards/elite" },
+  { key: "basic" as const, name: "Basic", price: "£19.99", href: "/konex-cards/basic" },
+  { key: "premium" as const, name: "Premium", price: "£49.99", href: "/konex-cards/premium", popular: true },
+  { key: "elite" as const, name: "Elite", price: "£79.99", href: "/konex-cards/elite" },
 ];
 
 export default function KonexComparisonMini() {
