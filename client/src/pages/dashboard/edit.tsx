@@ -11,7 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProfilePreview } from "@/components/profile-preview";
-import { Loader2, Plus, Trash2, Upload, Phone, MessageCircle, MessageSquare, AlertTriangle } from "lucide-react";
+import { Loader2, Plus, Trash2, Upload, Phone, MessageCircle, MessageSquare, AlertTriangle, Copy } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -381,30 +382,64 @@ export default function EditProfile() {
                 <FormField
                   control={form.control}
                   name="links.whatsapp"
-                  render={({ field }) => (
-                    <FormItem data-testid="field-whatsapp">
-                      <FormLabel>WhatsApp Number</FormLabel>
-                      <FormControl>
-                        <Input type="tel" inputMode="tel" placeholder="+971 50 123 4567" {...field} value={field.value || ''} data-testid="input-whatsapp" />
-                      </FormControl>
-                      <FormDescription>Include country code for WhatsApp messaging</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const phoneValue = form.watch("links.phone") || "";
+                    const isSame = !!phoneValue && field.value === phoneValue;
+                    return (
+                      <FormItem data-testid="field-whatsapp">
+                        <FormLabel>WhatsApp Number</FormLabel>
+                        <FormControl>
+                          <Input type="tel" inputMode="tel" placeholder="+971 50 123 4567" {...field} value={field.value || ''} data-testid="input-whatsapp" />
+                        </FormControl>
+                        <div className="flex items-center gap-2 pt-1">
+                          <Checkbox
+                            id="whatsapp-same"
+                            checked={isSame}
+                            disabled={!phoneValue}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked ? phoneValue : "");
+                            }}
+                            data-testid="checkbox-whatsapp-same"
+                          />
+                          <label htmlFor="whatsapp-same" className="text-sm text-muted-foreground cursor-pointer select-none">
+                            Same as phone number
+                          </label>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
                 <FormField
                   control={form.control}
                   name="links.sms"
-                  render={({ field }) => (
-                    <FormItem data-testid="field-sms">
-                      <FormLabel>SMS Number</FormLabel>
-                      <FormControl>
-                        <Input type="tel" inputMode="tel" placeholder="+971 50 123 4567" {...field} value={field.value || ''} data-testid="input-sms" />
-                      </FormControl>
-                      <FormDescription>Leave empty to use your phone number for SMS</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const phoneValue = form.watch("links.phone") || "";
+                    const isSame = !!phoneValue && field.value === phoneValue;
+                    return (
+                      <FormItem data-testid="field-sms">
+                        <FormLabel>SMS Number</FormLabel>
+                        <FormControl>
+                          <Input type="tel" inputMode="tel" placeholder="+971 50 123 4567" {...field} value={field.value || ''} data-testid="input-sms" />
+                        </FormControl>
+                        <div className="flex items-center gap-2 pt-1">
+                          <Checkbox
+                            id="sms-same"
+                            checked={isSame}
+                            disabled={!phoneValue}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked ? phoneValue : "");
+                            }}
+                            data-testid="checkbox-sms-same"
+                          />
+                          <label htmlFor="sms-same" className="text-sm text-muted-foreground cursor-pointer select-none">
+                            Same as phone number
+                          </label>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
                 <FormField
                   control={form.control}
