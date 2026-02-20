@@ -280,37 +280,35 @@ export default function EditProfile() {
                   )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} data-testid="input-name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Profile URL</FormLabel>
+                      <div className="flex items-center">
+                        <span className="bg-muted px-2 sm:px-3 py-2 border border-r-0 rounded-l-md text-muted-foreground text-xs sm:text-sm whitespace-nowrap shrink-0">konex.app/u/</span>
                         <FormControl>
-                          <Input placeholder="John Doe" {...field} />
+                          <Input className="rounded-l-none min-w-0" placeholder="john-doe" {...field} data-testid="input-slug" />
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="slug"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Profile URL</FormLabel>
-                        <div className="flex items-center">
-                          <span className="bg-muted px-3 py-2 border border-r-0 rounded-l-md text-muted-foreground text-sm">konex.app/u/</span>
-                          <FormControl>
-                            <Input className="rounded-l-none" placeholder="john-doe" {...field} />
-                          </FormControl>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="grid grid-cols-2 gap-4">
                    <FormField
