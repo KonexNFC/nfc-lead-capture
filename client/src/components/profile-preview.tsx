@@ -215,7 +215,7 @@ export function ProfilePreview({ profile, mock, onSaveContact, extraActions }: P
         </div>
 
         <div className="w-full px-6 pb-5 pt-2 mt-auto flex flex-col gap-3">
-          <div className={extraActions ? "grid grid-cols-2 gap-3" : ""}>
+          <div className={extraActions ? "grid grid-cols-2 gap-3 items-stretch" : ""}>
             <Button 
               className="w-full rounded-xl h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" 
               size="lg"
