@@ -26,9 +26,10 @@ interface ProfilePreviewProps {
   profile: Profile;
   mock?: boolean;
   onSaveContact?: () => void;
+  extraActions?: React.ReactNode;
 }
 
-export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewProps) {
+export function ProfilePreview({ profile, mock, onSaveContact, extraActions }: ProfilePreviewProps) {
   const branding = (profile.branding as ProfileBranding) || {};
   const coverSrc = branding.coverUrl
     ? branding.coverUrl.startsWith("http") ? branding.coverUrl
@@ -213,28 +214,31 @@ export function ProfilePreview({ profile, mock, onSaveContact }: ProfilePreviewP
           </div>
         </div>
 
-        <div className="w-full px-6 pb-5 pt-2 mt-auto">
-          <Button 
-            className="w-full rounded-xl h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" 
-            size="lg"
-            onClick={() => {
-              const links = (profile.links as Record<string, string>) || {};
-              const vcardData: VCardData = {
-                name: profile.name,
-                title: profile.title || undefined,
-                company: profile.company || undefined,
-                phone: links.phone,
-                whatsapp: links.whatsapp,
-                email: links.email,
-                website: links.website,
-                photoUrl: profile.photoUrl || undefined,
-              };
-              downloadVCard(vcardData);
-            }}
-            data-testid="button-save-contact"
-          >
-            Save Contact
-          </Button>
+        <div className="w-full px-6 pb-5 pt-2 mt-auto flex flex-col gap-3">
+          <div className={extraActions ? "grid grid-cols-2 gap-3" : ""}>
+            <Button 
+              className="w-full rounded-xl h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" 
+              size="lg"
+              onClick={() => {
+                const links = (profile.links as Record<string, string>) || {};
+                const vcardData: VCardData = {
+                  name: profile.name,
+                  title: profile.title || undefined,
+                  company: profile.company || undefined,
+                  phone: links.phone,
+                  whatsapp: links.whatsapp,
+                  email: links.email,
+                  website: links.website,
+                  photoUrl: profile.photoUrl || undefined,
+                };
+                downloadVCard(vcardData);
+              }}
+              data-testid="button-save-contact"
+            >
+              Save Contact
+            </Button>
+            {extraActions}
+          </div>
         </div>
       </Card>
     </div>

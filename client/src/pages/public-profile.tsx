@@ -5,7 +5,7 @@ import { ProfilePreview } from "@/components/profile-preview";
 import { ContactCard } from "@/components/contact-card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -122,77 +122,69 @@ export default function PublicProfile() {
       </div>
 
       {/* Profile Card */}
-      <ProfilePreview profile={profile} />
+      <ProfilePreview 
+        profile={profile} 
+        extraActions={
+          <Button 
+            size="lg" 
+            className="w-full rounded-xl h-12 text-base font-semibold shadow-lg"
+            variant="outline"
+            style={branding.primaryColor ? { borderColor: branding.primaryColor, color: branding.primaryColor } : undefined}
+            onClick={() => setIsOpen(true)}
+            data-testid="button-exchange-contact"
+          >
+            <Share2 className="mr-2 h-5 w-5" />
+            {ctaLabel}
+          </Button>
+        }
+      />
 
 
       {/* Modules */}
       <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
 
-      {/* Floating Action Button for Lead Capture */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-        {isDesktop ? (
-           <Dialog open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : handleClose()}>
-            <Button 
-              size="lg" 
-              className="rounded-full shadow-2xl px-8 h-14 text-base font-semibold animate-in slide-in-from-bottom-4" 
-              style={branding.primaryColor ? { backgroundColor: branding.primaryColor, color: "#fff", borderColor: branding.primaryColor } : undefined}
-              onClick={() => setIsOpen(true)}
-              data-testid="button-exchange-contact"
-            >
-              <Share2 className="mr-2 h-5 w-5" />
-              {ctaLabel}
-            </Button>
-            <DialogContent className="max-w-md sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle data-testid="text-form-title">
-                  {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
-                </DialogTitle>
-                <DialogDescription data-testid="text-form-description">
-                  {isSubmitted ? "" : "Your details will be sent directly to them."}
-                </DialogDescription>
-              </DialogHeader>
+      {/* Lead Capture Dialog/Drawer */}
+      {isDesktop ? (
+        <Dialog open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : handleClose()}>
+          <DialogContent className="max-w-md sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle data-testid="text-form-title">
+                {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
+              </DialogTitle>
+              <DialogDescription data-testid="text-form-description">
+                {isSubmitted ? "" : "Your details will be sent directly to them."}
+              </DialogDescription>
+            </DialogHeader>
+            {FormContent}
+            {!isSubmitted && (
+              <p className="text-xs text-muted-foreground text-center mt-4 pt-4 border-t" data-testid="text-trust-line">
+                Powered by KONEX · Secure contact exchange
+              </p>
+            )}
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : handleClose()}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle data-testid="text-form-title">
+                {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
+              </DrawerTitle>
+              <DrawerDescription data-testid="text-form-description">
+                {isSubmitted ? "" : "Your details will be sent directly to them."}
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="p-4 pb-8">
               {FormContent}
               {!isSubmitted && (
                 <p className="text-xs text-muted-foreground text-center mt-4 pt-4 border-t" data-testid="text-trust-line">
                   Powered by KONEX · Secure contact exchange
                 </p>
               )}
-            </DialogContent>
-           </Dialog>
-        ) : (
-          <Drawer open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : handleClose()}>
-            <DrawerTrigger asChild>
-              <Button 
-                size="lg" 
-                className="rounded-full shadow-2xl px-8 h-14 text-base font-semibold animate-in slide-in-from-bottom-4"
-                style={branding.primaryColor ? { backgroundColor: branding.primaryColor, color: "#fff", borderColor: branding.primaryColor } : undefined}
-                data-testid="button-exchange-contact"
-              >
-                <Share2 className="mr-2 h-5 w-5" />
-                {ctaLabel}
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent>
-              <DrawerHeader>
-                <DrawerTitle data-testid="text-form-title">
-                  {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
-                </DrawerTitle>
-                <DrawerDescription data-testid="text-form-description">
-                  {isSubmitted ? "" : "Your details will be sent directly to them."}
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="p-4 pb-8">
-                {FormContent}
-                {!isSubmitted && (
-                  <p className="text-xs text-muted-foreground text-center mt-4 pt-4 border-t" data-testid="text-trust-line">
-                    Powered by KONEX · Secure contact exchange
-                  </p>
-                )}
-              </div>
-            </DrawerContent>
-          </Drawer>
-        )}
-      </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
+      )}
 
       {/* Footer Branding */}
       <div className="fixed bottom-4 right-4 hidden md:flex items-center gap-2 text-xs text-muted-foreground/50">
