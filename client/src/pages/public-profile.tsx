@@ -125,17 +125,19 @@ export default function PublicProfile() {
       <ProfilePreview 
         profile={profile} 
         extraActions={
-          <Button 
-            size="lg" 
-            className="w-full rounded-xl h-12 text-base font-semibold shadow-lg !border-2 !border-primary !bg-primary/20 !text-primary hover:!bg-primary/30"
-            variant="outline"
-            style={branding.primaryColor ? { borderColor: branding.primaryColor, color: branding.primaryColor, backgroundColor: `${branding.primaryColor}33` } : undefined}
+          <button
+            className="w-full rounded-xl h-12 text-base font-semibold shadow-lg flex items-center justify-center gap-2"
+            style={{
+              border: `2px solid ${branding.primaryColor || 'hsl(var(--primary))'}`,
+              color: branding.primaryColor || 'hsl(var(--primary))',
+              backgroundColor: branding.primaryColor ? `${branding.primaryColor}40` : 'hsl(var(--primary) / 0.25)',
+            }}
             onClick={() => setIsOpen(true)}
             data-testid="button-exchange-contact"
           >
-            <Share2 className="mr-2 h-5 w-5" />
+            <Share2 className="h-5 w-5" />
             {ctaLabel}
-          </Button>
+          </button>
         }
       />
 
