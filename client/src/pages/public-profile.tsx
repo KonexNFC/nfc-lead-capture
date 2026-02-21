@@ -126,11 +126,9 @@ export default function PublicProfile() {
         profile={profile} 
         extraActions={
           <button
-            className="w-full rounded-xl min-h-[48px] py-2 px-3 text-sm font-semibold shadow-lg flex items-center justify-center gap-1.5 leading-tight"
+            className="w-full rounded-xl min-h-[48px] py-2 px-3 text-sm font-semibold shadow-lg flex items-center justify-center gap-1.5 leading-tight text-white"
             style={{
-              border: `2px solid ${branding.primaryColor || 'hsl(var(--primary))'}`,
-              color: branding.primaryColor || 'hsl(var(--primary))',
-              backgroundColor: branding.primaryColor ? `${branding.primaryColor}40` : 'hsl(var(--primary) / 0.25)',
+              backgroundColor: branding.primaryColor || 'hsl(var(--primary))',
             }}
             onClick={() => setIsOpen(true)}
             data-testid="button-exchange-contact"
