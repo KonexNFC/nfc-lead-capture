@@ -1,4 +1,4 @@
-import konexCard from "@assets/FD0746A1-9C5E-4D81-A4DC-743ECFD7C4F5_1770810117183.png";
+import cardStack from "@assets/IMG_7744_1771669634221.jpeg";
 
 export default function KonexHero() {
   return (
@@ -29,8 +29,8 @@ export default function KonexHero() {
 
           <div style={{ flex: "1 1 350px", minWidth: 0 }}>
             <img
-              src={konexCard}
-              alt="KONEX NFC Business Cards"
+              src={cardStack}
+              alt="Stack of KONEX NFC Business Cards"
               style={{ width: "100%", maxWidth: "500px", borderRadius: "1rem", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }}
               data-testid="img-konex-hero-card"
             />

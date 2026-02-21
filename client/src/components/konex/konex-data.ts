@@ -14,9 +14,9 @@ import {
   CreditCard,
   Paintbrush,
 } from "lucide-react";
-import cardBasic from "@/assets/images/card-basic.png";
-import cardPremium from "@/assets/images/card-premium.png";
-import cardElite from "@/assets/images/card-elite.png";
+import cardBasic from "@assets/IMG_7774_1771669634221.png";
+import cardPremium from "@assets/IMG_7776_1771669634221.png";
+import cardElite from "@assets/IMG_7775_1771669634221.png";
 
 export type KonexTierId = "basic" | "premium" | "elite";
 

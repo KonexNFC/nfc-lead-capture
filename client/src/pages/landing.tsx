@@ -9,10 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
-import konexCard from "@assets/FD0746A1-9C5E-4D81-A4DC-743ECFD7C4F5_1770810117183.png";
-import cardBasic from "@/assets/images/card-basic.png";
-import cardPremium from "@/assets/images/card-premium.png";
-import cardElite from "@/assets/images/card-elite.png";
+import cardBasic from "@assets/IMG_7774_1771669634221.png";
+import cardPremium from "@assets/IMG_7776_1771669634221.png";
+import cardElite from "@assets/IMG_7775_1771669634221.png";
+import cardThreeTiers from "@assets/41A7CAD6-1759-450E-83FE-47CF37A2B9D8_1771669634221.png";
+import cardInHand from "@assets/IMG_7743_1771669634221.jpeg";
+import cardPersonalized from "@assets/IMG_7777_1771669634221.png";
 
 export default function LandingPage() {
   const scrollTo = (id: string) => {
@@ -130,8 +132,8 @@ export default function LandingPage() {
             <div className="flex-1 relative w-full max-w-lg md:max-w-full">
               <div className="relative z-10">
                 <img 
-                  src={konexCard} 
-                  alt="KONEX NFC Business Cards" 
+                  src={cardInHand} 
+                  alt="Hand holding a KONEX NFC Business Card" 
                   className="w-full max-w-lg mx-auto rounded-2xl shadow-2xl shadow-primary/20" 
                   data-testid="img-hero-card"
                 />
@@ -233,9 +235,9 @@ export default function LandingPage() {
             <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-20 mb-16">
               <div className="flex-1">
                 <img 
-                  src={konexCard} 
-                  alt="KONEX NFC Business Cards" 
-                  className="w-full max-w-lg mx-auto rounded-md" 
+                  src={cardThreeTiers} 
+                  alt="KONEX NFC Cards — Black, Gold, and Silver" 
+                  className="w-full max-w-lg mx-auto rounded-2xl shadow-xl" 
                   data-testid="img-konex-card"
                 />
               </div>
@@ -258,6 +260,25 @@ export default function LandingPage() {
                     </Button>
                   </Link>
                 </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-20 mb-16">
+              <div className="flex-1 text-center md:text-left space-y-6 order-2 md:order-1">
+                <h2 className="text-3xl md:text-4xl font-display font-bold" data-testid="text-personalized-title">
+                  Make it yours.
+                </h2>
+                <p className="text-muted-foreground text-lg leading-relaxed">
+                  Add your name, title, photo, and social links to create a card that's uniquely you. Every tap shares your complete professional identity instantly.
+                </p>
+              </div>
+              <div className="flex-1 order-1 md:order-2">
+                <img 
+                  src={cardPersonalized} 
+                  alt="Personalized KONEX card with photo, name, and social links" 
+                  className="w-full max-w-lg mx-auto rounded-2xl shadow-xl" 
+                  data-testid="img-personalized-card"
+                />
               </div>
             </div>
 
