@@ -1,32 +1,9 @@
+import { tierDetails } from "./konex-data";
+
 const tiers = [
-  {
-    id: "basic",
-    name: "KONEX Basic",
-    tagline: "Simple. Smart. Always connected.",
-    price: "£19.99",
-    benefits: ["Matte finish", "Everyday networking", "No app required"],
-    ctaLabel: "Order Basic",
-    href: "/konex-cards/basic",
-  },
-  {
-    id: "premium",
-    name: "KONEX Premium",
-    tagline: "Elevated presence. Premium impression.",
-    price: "£49.99",
-    popular: true,
-    benefits: ["Brushed metal options", "Micro-logo detail", "Ultra-slim feel"],
-    ctaLabel: "Order Premium",
-    href: "/konex-cards/premium",
-  },
-  {
-    id: "elite",
-    name: "KONEX Elite",
-    tagline: "For those who move differently.",
-    price: "£79.99",
-    benefits: ["Luxury finishes", "Discreet branding", "Executive-grade"],
-    ctaLabel: "Order Elite",
-    href: "/konex-cards/elite",
-  },
+  { ...tierDetails.basic, ctaLabel: "Order Basic" },
+  { ...tierDetails.premium, ctaLabel: "Order Premium", popular: true },
+  { ...tierDetails.elite, ctaLabel: "Order Elite" },
 ];
 
 export default function KonexTierGrid() {
@@ -44,21 +21,31 @@ export default function KonexTierGrid() {
           {tiers.map((tier) => (
             <div key={tier.id} className={`tier-card tier-${tier.id} ${tier.popular ? 'tier-popular' : ''}`} data-testid={`card-tier-${tier.id}`}>
               {tier.popular && <span className="tier-badge" data-testid="badge-popular">Most Popular</span>}
+              
+              <div className="tier-card-image" style={{ marginBottom: "1.25rem" }}>
+                <img
+                  src={tier.image}
+                  alt={tier.name}
+                  style={{ width: "100%", borderRadius: "0.75rem", boxShadow: "0 10px 25px rgba(0,0,0,0.3)" }}
+                  data-testid={`img-tier-${tier.id}`}
+                />
+              </div>
+
               <h3 data-testid={`text-tier-name-${tier.id}`}>{tier.name}</h3>
               <p className="tier-tagline">{tier.tagline}</p>
 
               <div className="tier-price" data-testid={`text-tier-price-${tier.id}`}>
                 <span className="price-amount">{tier.price}</span>
-                <span className="price-note">One-time purchase</span>
+                <span className="price-note">{tier.priceNote}</span>
               </div>
 
               <ul>
-                {tier.benefits.map((b, i) => (
+                {tier.specs.slice(0, 3).map((b, i) => (
                   <li key={i}>{b}</li>
                 ))}
               </ul>
 
-              <a href={tier.href} className={`btn ${tier.popular ? 'btn-primary' : 'btn-outline'}`} data-testid={`button-tier-cta-${tier.id}`}>
+              <a href={`/konex-cards/${tier.id}`} className={`btn ${tier.popular ? 'btn-primary' : 'btn-outline'}`} data-testid={`button-tier-cta-${tier.id}`}>
                 {tier.ctaLabel}
               </a>
             </div>

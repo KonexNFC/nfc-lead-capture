@@ -14,6 +14,9 @@ import {
   CreditCard,
   Paintbrush,
 } from "lucide-react";
+import cardBasic from "@/assets/images/card-basic.png";
+import cardPremium from "@/assets/images/card-premium.png";
+import cardElite from "@/assets/images/card-elite.png";
 
 export type KonexTierId = "basic" | "premium" | "elite";
 
@@ -25,6 +28,7 @@ export interface TierDetail {
   priceNote: string;
   heroDescription: string;
   icon: typeof Sparkles;
+  image: string;
   accent: string;
   accentBg: string;
   gradientFrom: string;
@@ -43,6 +47,7 @@ export const tierDetails: Record<string, TierDetail> = {
     heroDescription:
       "The KONEX Basic is your entry into modern networking. A clean, professional NFC card that lets you share your digital profile with a single tap. No frills, just results.",
     icon: Sparkles,
+    image: cardBasic,
     accent: "text-primary",
     accentBg: "bg-primary/10",
     gradientFrom: "from-primary/15",
@@ -66,6 +71,7 @@ export const tierDetails: Record<string, TierDetail> = {
     heroDescription:
       "The KONEX Premium is for professionals who want to stand out. Brushed metal finish, micro-logo engraving, and advanced features that elevate every interaction.",
     icon: Crown,
+    image: cardPremium,
     accent: "text-accent",
     accentBg: "bg-accent/10",
     gradientFrom: "from-accent/15",
@@ -89,6 +95,7 @@ export const tierDetails: Record<string, TierDetail> = {
     heroDescription:
       "The KONEX Elite is the ultimate networking statement. Luxury finishes, white-glove onboarding, and exclusive features for executives and founders who demand the best.",
     icon: Gem,
+    image: cardElite,
     accent: "text-purple-400",
     accentBg: "bg-purple-500/10",
     gradientFrom: "from-purple-500/15",

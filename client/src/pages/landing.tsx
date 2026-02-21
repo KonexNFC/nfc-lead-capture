@@ -10,6 +10,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 import konexCard from "@assets/FD0746A1-9C5E-4D81-A4DC-743ECFD7C4F5_1770810117183.png";
+import cardBasic from "@/assets/images/card-basic.png";
+import cardPremium from "@/assets/images/card-premium.png";
+import cardElite from "@/assets/images/card-elite.png";
 
 export default function LandingPage() {
   const scrollTo = (id: string) => {
@@ -124,47 +127,39 @@ export default function LandingPage() {
               </div>
             </div>
             
-            <div className="flex-1 relative w-full max-w-md md:max-w-full perspective-1000">
-              <div className="relative z-10 transform rotate-y-12 rotate-x-6 hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-700 ease-out">
-                {/* Mock Phone UI */}
-                <div className="bg-foreground text-background rounded-[2.5rem] p-3 shadow-2xl border-4 border-border/50">
-                  <div className="bg-background rounded-[2rem] overflow-hidden h-[600px] border border-border">
-                    {/* Header */}
-                    <div className="h-32 bg-gradient-to-br from-primary via-purple-600 to-accent relative">
-                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
-                        <div className="h-24 w-24 rounded-full bg-background p-1 shadow-xl">
-                          <div className="h-full w-full rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                             <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop" alt="Profile" className="object-cover h-full w-full" />
-                             {/* stock image of professional male */}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Content */}
-                    <div className="pt-14 pb-8 px-6 text-center space-y-4">
-                      <div>
-                        <h3 className="text-2xl font-bold text-foreground">Alex Morgan</h3>
-                        <p className="text-muted-foreground font-medium">Product Designer @ Stripe</p>
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        Building digital experiences that matter. Passionate about UX, clean code, and coffee.
-                      </p>
-                      <div className="grid grid-cols-4 gap-3 pt-4">
-                        {[Linkedin, Share2, Globe, QrCode].map((Icon, i) => (
-                          <div key={i} className="aspect-square rounded-2xl bg-secondary flex items-center justify-center text-foreground hover:bg-primary hover:text-white transition-colors cursor-pointer">
-                            <Icon className="h-5 w-5" />
-                          </div>
-                        ))}
-                      </div>
-                      <Button className="w-full h-12 rounded-xl mt-6 font-semibold shadow-lg shadow-primary/20">
-                        Save Contact
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+            <div className="flex-1 relative w-full max-w-lg md:max-w-full">
+              <div className="relative z-10">
+                <img 
+                  src={konexCard} 
+                  alt="KONEX NFC Business Cards" 
+                  className="w-full max-w-lg mx-auto rounded-2xl shadow-2xl shadow-primary/20" 
+                  data-testid="img-hero-card"
+                />
               </div>
               
-              {/* Decorative Elements */}
+              <div className="grid grid-cols-3 gap-4 mt-8">
+                {[
+                  { img: cardBasic, label: "Basic", price: "£19.99" },
+                  { img: cardPremium, label: "Premium", price: "£49.99" },
+                  { img: cardElite, label: "Elite", price: "£79.99" },
+                ].map((card, i) => (
+                  <Link key={i} href={`/konex-cards/${card.label.toLowerCase()}`}>
+                    <div className="group cursor-pointer" data-testid={`hero-card-${card.label.toLowerCase()}`}>
+                      <img 
+                        src={card.img} 
+                        alt={`KONEX ${card.label}`} 
+                        className="w-full rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300" 
+                        data-testid={`img-hero-tier-${card.label.toLowerCase()}`}
+                      />
+                      <div className="text-center mt-2">
+                        <p className="text-sm font-semibold text-foreground">{card.label}</p>
+                        <p className="text-xs text-muted-foreground">{card.price}</p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              
               <div className="absolute -top-10 -right-10 h-64 w-64 bg-primary/20 rounded-full blur-3xl -z-10 animate-pulse" />
               <div className="absolute -bottom-10 -left-10 h-64 w-64 bg-accent/20 rounded-full blur-3xl -z-10 animate-pulse delay-700" />
             </div>
@@ -234,34 +229,62 @@ export default function LandingPage() {
         {/* KONEX Card Showcase */}
         <section className="py-24 bg-background relative overflow-hidden">
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-          <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center gap-12 lg:gap-20">
-            <div className="flex-1">
-              <img 
-                src={konexCard} 
-                alt="KONEX NFC Business Cards" 
-                className="w-full max-w-lg mx-auto rounded-md" 
-                data-testid="img-konex-card"
-              />
-            </div>
-            <div className="flex-1 text-center md:text-left space-y-6">
-              <h2 className="text-3xl md:text-4xl font-display font-bold" data-testid="text-card-showcase-title">
-                One card. Unlimited connections.
-              </h2>
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                The KONEX NFC card is your all-in-one networking tool. Sleek, professional, and always ready. Just tap it on any smartphone to instantly share your digital profile — no app needed.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 justify-center md:justify-start">
-                <Link href="/auth?tab=register">
-                  <Button size="lg" className="h-14 px-8 rounded-full text-lg font-semibold shadow-xl shadow-primary/20" data-testid="button-create-free-profile">
-                    Create Free Profile
-                  </Button>
-                </Link>
-                <Link href="/konex-cards">
-                  <Button variant="outline" size="lg" className="h-14 px-8 rounded-full text-lg" data-testid="button-get-your-card">
-                    View NFC Cards
-                  </Button>
-                </Link>
+          <div className="max-w-7xl mx-auto px-4 md:px-6">
+            <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-20 mb-16">
+              <div className="flex-1">
+                <img 
+                  src={konexCard} 
+                  alt="KONEX NFC Business Cards" 
+                  className="w-full max-w-lg mx-auto rounded-md" 
+                  data-testid="img-konex-card"
+                />
               </div>
+              <div className="flex-1 text-center md:text-left space-y-6">
+                <h2 className="text-3xl md:text-4xl font-display font-bold" data-testid="text-card-showcase-title">
+                  One card. Unlimited connections.
+                </h2>
+                <p className="text-muted-foreground text-lg leading-relaxed">
+                  The KONEX NFC card is your all-in-one networking tool. Sleek, professional, and always ready. Just tap it on any smartphone to instantly share your digital profile — no app needed.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 justify-center md:justify-start">
+                  <Link href="/auth?tab=register">
+                    <Button size="lg" className="h-14 px-8 rounded-full text-lg font-semibold shadow-xl shadow-primary/20" data-testid="button-create-free-profile">
+                      Create Free Profile
+                    </Button>
+                  </Link>
+                  <Link href="/konex-cards">
+                    <Button variant="outline" size="lg" className="h-14 px-8 rounded-full text-lg" data-testid="button-get-your-card">
+                      View NFC Cards
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-display font-bold mb-2">Available in three tiers</h3>
+              <p className="text-muted-foreground">Choose the KONEX card that matches your style.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {[
+                { img: cardBasic, name: "Basic", price: "£19.99", desc: "Matte finish. Clean & professional.", href: "/konex-cards/basic" },
+                { img: cardPremium, name: "Premium", price: "£49.99", desc: "Brushed metal. Stand out.", href: "/konex-cards/premium" },
+                { img: cardElite, name: "Elite", price: "£79.99", desc: "Luxury finish. Executive grade.", href: "/konex-cards/elite" },
+              ].map((card, i) => (
+                <Link key={i} href={card.href}>
+                  <div className="group bg-card border border-border/50 rounded-2xl p-4 hover:shadow-lg transition-shadow duration-300 cursor-pointer" data-testid={`showcase-card-${card.name.toLowerCase()}`}>
+                    <img 
+                      src={card.img} 
+                      alt={`KONEX ${card.name}`} 
+                      className="w-full rounded-xl mb-4"
+                      data-testid={`img-showcase-${card.name.toLowerCase()}`}
+                    />
+                    <h4 className="font-bold text-lg text-foreground">{card.name}</h4>
+                    <p className="text-sm text-muted-foreground mb-1">{card.desc}</p>
+                    <p className="text-primary font-semibold">{card.price}</p>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         </section>

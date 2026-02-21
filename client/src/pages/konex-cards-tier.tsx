@@ -22,8 +22,6 @@ export default function KonexCardsTierPage({ tierId }: { tierId: string }) {
     );
   }
 
-  const TierIcon = tier.icon;
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <KonexNav variant="tier" />
@@ -40,9 +38,13 @@ export default function KonexCardsTierPage({ tierId }: { tierId: string }) {
               </Button>
             </Link>
 
-            <div className={`inline-flex h-20 w-20 rounded-3xl ${tier.accentBg} items-center justify-center mx-auto`}>
-              <TierIcon className={`h-10 w-10 ${tier.accent}`} />
-            </div>
+            <img
+              src={tier.image}
+              alt={tier.name}
+              className="w-full max-w-md mx-auto rounded-2xl shadow-2xl"
+              style={{ boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }}
+              data-testid="img-tier-hero-card"
+            />
 
             <h1 className="text-5xl md:text-6xl font-display font-bold tracking-tight" data-testid="text-tier-hero-name">
               {tier.name}
