@@ -126,7 +126,7 @@ export default function PublicProfile() {
         profile={profile} 
         extraActions={
           <button
-            className="w-full rounded-xl h-12 text-base font-semibold shadow-lg flex items-center justify-center gap-2"
+            className="w-full rounded-xl min-h-[48px] py-2 px-3 text-sm font-semibold shadow-lg flex items-center justify-center gap-1.5 leading-tight"
             style={{
               border: `2px solid ${branding.primaryColor || 'hsl(var(--primary))'}`,
               color: branding.primaryColor || 'hsl(var(--primary))',
@@ -135,8 +135,8 @@ export default function PublicProfile() {
             onClick={() => setIsOpen(true)}
             data-testid="button-exchange-contact"
           >
-            <Share2 className="h-5 w-5" />
-            {ctaLabel}
+            <Share2 className="h-4 w-4 shrink-0" />
+            <span>{ctaLabel}</span>
           </button>
         }
       />
