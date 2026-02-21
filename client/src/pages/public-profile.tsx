@@ -127,9 +127,9 @@ export default function PublicProfile() {
         extraActions={
           <Button 
             size="lg" 
-            className="w-full rounded-xl h-12 text-base font-semibold shadow-lg border-2 border-primary bg-primary/10 text-primary hover:bg-primary/20"
+            className="w-full rounded-xl h-12 text-base font-semibold shadow-lg !border-2 !border-primary !bg-primary/20 !text-primary hover:!bg-primary/30"
             variant="outline"
-            style={branding.primaryColor ? { borderColor: branding.primaryColor, color: branding.primaryColor, backgroundColor: `${branding.primaryColor}15` } : undefined}
+            style={branding.primaryColor ? { borderColor: branding.primaryColor, color: branding.primaryColor, backgroundColor: `${branding.primaryColor}33` } : undefined}
             onClick={() => setIsOpen(true)}
             data-testid="button-exchange-contact"
           >
