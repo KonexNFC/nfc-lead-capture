@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette, Nfc, Eye, Users, Menu, Zap, ChevronRight } from "lucide-react";
+import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette, Nfc, Eye, Users, Menu, Zap, ChevronRight, Star, Quote } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -342,6 +342,53 @@ export default function LandingPage() {
                   </div>
                   <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
                   <p className="text-muted-foreground leading-relaxed">{feature.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials */}
+        <section id="testimonials" className="py-24">
+          <div className="max-w-7xl mx-auto px-4 md:px-6">
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">What our users say</h2>
+              <p className="text-muted-foreground text-lg">Professionals around the world trust KONEX to make meaningful connections.</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  name: "Sarah Mitchell",
+                  title: "Marketing Director",
+                  quote: "KONEX completely changed how I network at events. One tap and my new contacts have everything they need. I've tripled my follow-up rate since switching.",
+                  rating: 5
+                },
+                {
+                  name: "James Okafor",
+                  title: "Real Estate Agent",
+                  quote: "My clients love it. I hand them my KONEX card and they instantly have my listings, contact info, and social links. It's the best investment I've made for my business.",
+                  rating: 5
+                },
+                {
+                  name: "Priya Sharma",
+                  title: "Freelance Designer",
+                  quote: "As a creative, first impressions matter. KONEX lets me showcase my portfolio, links, and brand all in one place. It's sleek, modern, and always up to date.",
+                  rating: 5
+                }
+              ].map((testimonial, i) => (
+                <div key={i} className="bg-background border border-border/50 p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow flex flex-col" data-testid={`testimonial-card-${i}`}>
+                  <Quote className="h-8 w-8 text-primary/30 mb-4" />
+                  <p className="text-muted-foreground leading-relaxed mb-6 flex-1" data-testid={`testimonial-quote-${i}`}>"{testimonial.quote}"</p>
+                  <div className="flex items-center gap-1 mb-4" data-testid={`testimonial-rating-${i}`}>
+                    {Array.from({ length: testimonial.rating }).map((_, s) => (
+                      <Star key={s} className="h-4 w-4 fill-primary text-primary" />
+                    ))}
+                  </div>
+                  <div>
+                    <p className="font-semibold" data-testid={`testimonial-name-${i}`}>{testimonial.name}</p>
+                    <p className="text-sm text-muted-foreground" data-testid={`testimonial-title-${i}`}>{testimonial.title}</p>
+                  </div>
                 </div>
               ))}
             </div>
