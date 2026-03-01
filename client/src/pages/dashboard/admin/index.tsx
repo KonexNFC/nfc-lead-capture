@@ -5,7 +5,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Users, Eye, UserPlus, ArrowRight, BarChart3, TrendingUp, Activity, Trophy, Clock } from "lucide-react";
+import { Users, Eye, UserPlus, ArrowRight, BarChart3, TrendingUp, Activity, Trophy, Clock, MessageSquareQuote } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 interface GrowthData {
@@ -261,6 +261,24 @@ export default function AdminDashboard() {
               <Link href="/dashboard/admin/leads">
                 <Button className="w-full" data-testid="link-admin-leads">
                   View All Leads
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/50 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <MessageSquareQuote className="h-4 w-4" />
+                Testimonials
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm mb-3">Review and approve user testimonials.</p>
+              <Link href="/dashboard/admin/testimonials">
+                <Button className="w-full" data-testid="link-admin-testimonials">
+                  Manage Testimonials
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>

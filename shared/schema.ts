@@ -125,6 +125,24 @@ export const leadsRelations = relations(leads, ({ one }) => ({
   }),
 }));
 
+export const testimonials = pgTable("testimonials", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  name: text("name").notNull(),
+  title: text("title"),
+  quote: text("quote").notNull(),
+  rating: integer("rating").notNull().default(5),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const testimonialsRelations = relations(testimonials, ({ one }) => ({
+  user: one(users, {
+    fields: [testimonials.userId],
+    references: [users.id],
+  }),
+}));
+
 export const siteSettings = pgTable("site_settings", {
   id: serial("id").primaryKey(),
   key: text("key").notNull().unique(),
@@ -139,6 +157,7 @@ export type InsertSiteSetting = typeof siteSettings.$inferInsert;
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, isAdmin: true });
 export const insertProfileSchema = createInsertSchema(profiles).omit({ id: true, userId: true, createdAt: true });
 export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, profileId: true, createdAt: true });
+export const insertTestimonialSchema = createInsertSchema(testimonials).omit({ id: true, userId: true, status: true, createdAt: true });
 export const insertSiteSettingSchema = createInsertSchema(siteSettings).omit({ id: true, updatedAt: true });
 
 // Types
@@ -148,6 +167,9 @@ export type Profile = typeof profiles.$inferSelect;
 export type InsertProfile = z.infer<typeof insertProfileSchema>;
 export type Lead = typeof leads.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
+
+export type Testimonial = typeof testimonials.$inferSelect;
+export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 
 export type CreateProfileRequest = InsertProfile;
 export type UpdateProfileRequest = Partial<InsertProfile>;

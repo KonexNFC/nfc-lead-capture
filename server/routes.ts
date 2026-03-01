@@ -483,6 +483,66 @@ export async function registerRoutes(
     res.json({ message: "Account deleted successfully" });
   });
 
+  // === Testimonials ===
+
+  const testimonialSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    title: z.string().optional(),
+    quote: z.string().min(10, "Review must be at least 10 characters"),
+    rating: z.number().int().min(1).max(5),
+  });
+
+  app.post("/api/testimonials", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const parsed = testimonialSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+
+    const existing = await storage.getTestimonialsByUser(req.user.id);
+    if (existing.length > 0) {
+      return res.status(400).json({ message: "You have already submitted a testimonial" });
+    }
+
+    const testimonial = await storage.createTestimonial({
+      ...parsed.data,
+      title: parsed.data.title || null,
+      userId: req.user.id,
+    });
+    res.status(201).json(testimonial);
+  });
+
+  app.get("/api/testimonials/mine", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const testimonials = await storage.getTestimonialsByUser(req.user.id);
+    res.json(testimonials);
+  });
+
+  app.get("/api/public/testimonials", async (_req, res) => {
+    const testimonials = await storage.getApprovedTestimonials();
+    res.json(testimonials);
+  });
+
+  app.get("/api/admin/testimonials", requireAdmin, async (_req, res) => {
+    const testimonials = await storage.getAllTestimonials();
+    res.json(testimonials);
+  });
+
+  app.patch("/api/admin/testimonials/:id", requireAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
+    const statusSchema = z.object({ status: z.enum(["approved", "rejected", "pending"]) });
+    const parsed = statusSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Invalid status" });
+    const updated = await storage.updateTestimonialStatus(id, parsed.data.status);
+    res.json(updated);
+  });
+
+  app.delete("/api/admin/testimonials/:id", requireAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
+    await storage.deleteTestimonial(id);
+    res.json({ message: "Testimonial deleted" });
+  });
+
   // === Site Settings (Public) ===
   app.get("/api/public/settings/:key", async (req, res) => {
     try {

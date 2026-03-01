@@ -26,6 +26,8 @@ import KonexCardsTierPage from "@/pages/konex-cards-tier";
 import WhatIsNfcPage from "@/pages/what-is-nfc";
 import ForgotPasswordPage from "@/pages/forgot-password";
 import ResetPasswordPage from "@/pages/reset-password";
+import TestimonialPage from "@/pages/dashboard/testimonial";
+import AdminTestimonials from "@/pages/dashboard/admin/testimonials";
 import NotFound from "@/pages/not-found";
 
 // Protected Route Wrapper
@@ -88,6 +90,9 @@ function Router() {
       <Route path="/dashboard/settings">
         <ProtectedRoute component={SettingsPage} />
       </Route>
+      <Route path="/dashboard/testimonial">
+        <ProtectedRoute component={TestimonialPage} />
+      </Route>
 
       {/* Admin shortcut redirect */}
       <Route path="/admin">
@@ -108,6 +113,9 @@ function Router() {
       </Route>
       <Route path="/dashboard/admin/leads">
         <ProtectedRoute component={AdminLeads} adminOnly />
+      </Route>
+      <Route path="/dashboard/admin/testimonials">
+        <ProtectedRoute component={AdminTestimonials} adminOnly />
       </Route>
 
       {/* 404 */}

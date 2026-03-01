@@ -77,12 +77,28 @@ Core tables:
 - Admin middleware checks `req.user.isAdmin` and returns 403 for non-admins
 - Frontend admin pages at `/dashboard/admin/*`: overview (with growth charts, top profiles, recent activity), user management (with search/filter/toggle admin), all leads (with search/filter/CSV export)
 - Admin link in sidebar only visible to admin users
+- Admin testimonials management at `/dashboard/admin/testimonials`: approve, reject, or delete user-submitted testimonials
 - Current admin account: info@konexnfc.com
 - Admin dashboard uses Recharts for growth area charts (signups and leads over 30 days)
 - Users page supports search by email/name/company and filter by role (all/admin/user/no-profile)
 - Leads page supports search by name/email/company/phone and filter by source (nfc/qr/etc)
 - Admin can toggle other users' admin status via shield icon (with confirmation dialog)
 - `ensureAdminAccount()` runs on app startup to reset admin password and ensure admin flag
+
+### Testimonials System
+- Users can submit testimonials from their dashboard at `/dashboard/testimonial` (one per user)
+- Testimonials require admin approval before appearing on the homepage
+- Table: `testimonials` (id, userId, name, title, quote, rating, status, createdAt)
+- Status values: `pending` (default), `approved`, `rejected`
+- API routes:
+  - `POST /api/testimonials` - submit testimonial (authenticated, one per user)
+  - `GET /api/testimonials/mine` - get current user's testimonials
+  - `GET /api/public/testimonials` - get approved testimonials (public)
+  - `GET /api/admin/testimonials` - get all testimonials (admin)
+  - `PATCH /api/admin/testimonials/:id` - update status (admin)
+  - `DELETE /api/admin/testimonials/:id` - delete testimonial (admin)
+- Landing page shows approved testimonials; falls back to 3 static testimonials if none are approved
+- "Leave a Review" link in sidebar for all authenticated users
 
 ### Shared Code
 The `shared/` directory contains code used by both frontend and backend:

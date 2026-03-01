@@ -1,6 +1,8 @@
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { QrCode, Share2, Smartphone, Linkedin, Globe, Palette, Nfc, Eye, Users, Menu, Zap, ChevronRight, Star, Quote } from "lucide-react";
+import type { Testimonial } from "@shared/schema";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +18,39 @@ import cardThreeTiers from "@assets/41A7CAD6-1759-450E-83FE-47CF37A2B9D8_1771669
 import cardInHand from "@assets/IMG_7743_1771669634221.jpeg";
 import cardPersonalized from "@assets/IMG_7777_1771669634221.png";
 
+const fallbackTestimonials = [
+  {
+    name: "Sarah Mitchell",
+    title: "Marketing Director",
+    quote: "KONEX completely changed how I network at events. One tap and my new contacts have everything they need. I've tripled my follow-up rate since switching.",
+    rating: 5
+  },
+  {
+    name: "James Okafor",
+    title: "Real Estate Agent",
+    quote: "My clients love it. I hand them my KONEX card and they instantly have my listings, contact info, and social links. It's the best investment I've made for my business.",
+    rating: 5
+  },
+  {
+    name: "Priya Sharma",
+    title: "Freelance Designer",
+    quote: "As a creative, first impressions matter. KONEX lets me showcase my portfolio, links, and brand all in one place. It's sleek, modern, and always up to date.",
+    rating: 5
+  }
+];
+
 export default function LandingPage() {
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const { data: approvedTestimonials } = useQuery<Testimonial[]>({
+    queryKey: ["/api/public/testimonials"],
+  });
+
+  const displayTestimonials = approvedTestimonials && approvedTestimonials.length > 0
+    ? approvedTestimonials.map(t => ({ name: t.name, title: t.title, quote: t.quote, rating: t.rating }))
+    : fallbackTestimonials;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -357,26 +388,7 @@ export default function LandingPage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              {[
-                {
-                  name: "Sarah Mitchell",
-                  title: "Marketing Director",
-                  quote: "KONEX completely changed how I network at events. One tap and my new contacts have everything they need. I've tripled my follow-up rate since switching.",
-                  rating: 5
-                },
-                {
-                  name: "James Okafor",
-                  title: "Real Estate Agent",
-                  quote: "My clients love it. I hand them my KONEX card and they instantly have my listings, contact info, and social links. It's the best investment I've made for my business.",
-                  rating: 5
-                },
-                {
-                  name: "Priya Sharma",
-                  title: "Freelance Designer",
-                  quote: "As a creative, first impressions matter. KONEX lets me showcase my portfolio, links, and brand all in one place. It's sleek, modern, and always up to date.",
-                  rating: 5
-                }
-              ].map((testimonial, i) => (
+              {displayTestimonials.map((testimonial, i) => (
                 <div key={i} className="bg-background border border-border/50 p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow flex flex-col" data-testid={`testimonial-card-${i}`}>
                   <Quote className="h-8 w-8 text-primary/30 mb-4" />
                   <p className="text-muted-foreground leading-relaxed mb-6 flex-1" data-testid={`testimonial-quote-${i}`}>"{testimonial.quote}"</p>

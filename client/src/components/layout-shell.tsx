@@ -13,7 +13,8 @@ import {
   Shield,
   ChevronDown,
   Plus,
-  Check
+  Check,
+  MessageSquareQuote
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
     { name: 'My Profile', href: '/dashboard/edit', icon: UserCircle },
     { name: 'Modules', href: '/dashboard/modules', icon: Blocks },
     { name: 'Leads', href: '/dashboard/leads', icon: Users },
+    { name: 'Leave a Review', href: '/dashboard/testimonial', icon: MessageSquareQuote },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
     ...(user?.isAdmin ? [{ name: 'Admin Panel', href: '/dashboard/admin', icon: Shield }] : []),
   ];

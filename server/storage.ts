@@ -1,10 +1,11 @@
 import { db } from "./db";
 import {
-  users, profiles, leads, siteSettings,
+  users, profiles, leads, siteSettings, testimonials,
   type User, type InsertUser,
   type Profile, type InsertProfile, type UpdateProfileRequest,
   type Lead, type InsertLead,
-  type SiteSetting
+  type SiteSetting,
+  type Testimonial, type InsertTestimonial
 } from "@shared/schema";
 import { eq, desc, sql, count, gte, and } from "drizzle-orm";
 
@@ -37,6 +38,14 @@ export interface IStorage {
   // Site Settings
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<SiteSetting>;
+
+  // Testimonials
+  createTestimonial(testimonial: InsertTestimonial & { userId: number }): Promise<Testimonial>;
+  getTestimonialsByUser(userId: number): Promise<Testimonial[]>;
+  getApprovedTestimonials(): Promise<Testimonial[]>;
+  getAllTestimonials(): Promise<Testimonial[]>;
+  updateTestimonialStatus(id: number, status: string): Promise<Testimonial>;
+  deleteTestimonial(id: number): Promise<void>;
 
   // Admin
   listAllUsers(): Promise<User[]>;
@@ -346,6 +355,33 @@ export class DatabaseStorage implements IStorage {
 
   async toggleAdmin(userId: number, isAdmin: boolean): Promise<void> {
     await db.update(users).set({ isAdmin }).where(eq(users.id, userId));
+  }
+
+  // Testimonials
+  async createTestimonial(testimonial: InsertTestimonial & { userId: number }): Promise<Testimonial> {
+    const [created] = await db.insert(testimonials).values(testimonial).returning();
+    return created;
+  }
+
+  async getTestimonialsByUser(userId: number): Promise<Testimonial[]> {
+    return await db.select().from(testimonials).where(eq(testimonials.userId, userId)).orderBy(desc(testimonials.createdAt));
+  }
+
+  async getApprovedTestimonials(): Promise<Testimonial[]> {
+    return await db.select().from(testimonials).where(eq(testimonials.status, "approved")).orderBy(desc(testimonials.createdAt));
+  }
+
+  async getAllTestimonials(): Promise<Testimonial[]> {
+    return await db.select().from(testimonials).orderBy(desc(testimonials.createdAt));
+  }
+
+  async updateTestimonialStatus(id: number, status: string): Promise<Testimonial> {
+    const [updated] = await db.update(testimonials).set({ status }).where(eq(testimonials.id, id)).returning();
+    return updated;
+  }
+
+  async deleteTestimonial(id: number): Promise<void> {
+    await db.delete(testimonials).where(eq(testimonials.id, id));
   }
 }
 
