@@ -87,10 +87,14 @@ export default function PublicProfile() {
   );
 
   const heroUrl = branding.heroUrl
-    ? branding.heroUrl.startsWith("http") ? branding.heroUrl : `/objects/${branding.heroUrl}`
+    ? branding.heroUrl.startsWith("http") ? branding.heroUrl
+      : branding.heroUrl.startsWith("/objects/") ? branding.heroUrl
+      : `/objects/${branding.heroUrl}`
     : null;
   const logoUrl = branding.logoUrl
-    ? branding.logoUrl.startsWith("http") ? branding.logoUrl : `/objects/${branding.logoUrl}`
+    ? branding.logoUrl.startsWith("http") ? branding.logoUrl
+      : branding.logoUrl.startsWith("/objects/") ? branding.logoUrl
+      : `/objects/${branding.logoUrl}`
     : null;
 
   return (

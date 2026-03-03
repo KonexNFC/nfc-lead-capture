@@ -610,6 +610,8 @@ export default function ModulesPage() {
                     src={
                       branding.logoUrl.startsWith("http")
                         ? branding.logoUrl
+                        : branding.logoUrl.startsWith("/objects/")
+                        ? branding.logoUrl
                         : `/objects/${branding.logoUrl}`
                     }
                     alt="Logo"
@@ -659,6 +661,8 @@ export default function ModulesPage() {
                     src={
                       branding.coverUrl.startsWith("http")
                         ? branding.coverUrl
+                        : branding.coverUrl.startsWith("/objects/")
+                        ? branding.coverUrl
                         : `/objects/${branding.coverUrl}`
                     }
                     alt="Cover Banner"
@@ -706,6 +710,8 @@ export default function ModulesPage() {
                   <img
                     src={
                       branding.heroUrl.startsWith("http")
+                        ? branding.heroUrl
+                        : branding.heroUrl.startsWith("/objects/")
                         ? branding.heroUrl
                         : `/objects/${branding.heroUrl}`
                     }
