@@ -19,6 +19,7 @@ import { SiFacebook } from "react-icons/si";
 import { z } from "zod";
 import { ProfileModulesRenderer } from "@/components/profile-modules";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
+import { socialHandleToUrl } from "@/lib/social-utils";
 import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/schema";
 
 const STORAGE_KEY_PREFIX = "konex_contact_";
@@ -212,7 +213,7 @@ function CTAIcons({ links }: { links: Record<string, string> }) {
           aria-label="Open Facebook"
           data-testid="cta-facebook"
         >
-          <a href={facebook.startsWith('http') ? facebook : `https://${facebook}`} target="_blank" rel="noopener noreferrer">
+          <a href={socialHandleToUrl('facebook', facebook)} target="_blank" rel="noopener noreferrer">
             <SiFacebook className="h-5 w-5" />
           </a>
         </Button>

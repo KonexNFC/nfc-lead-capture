@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/hooks/use-upload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLocation, useSearch } from "wouter";
+import { getSocialPlaceholder } from "@/lib/social-utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -469,8 +470,11 @@ export default function EditProfile() {
                       <FormItem data-testid={`field-link-${key}`}>
                         <FormLabel className="capitalize">{key}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Username or URL" {...field} value={field.value || ''} data-testid={`input-link-${key}`} />
+                          <Input placeholder={getSocialPlaceholder(key)} {...field} value={field.value || ''} data-testid={`input-link-${key}`} />
                         </FormControl>
+                        {key !== 'website' && (
+                          <p className="text-xs text-muted-foreground">Just type your handle like @yourname</p>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}

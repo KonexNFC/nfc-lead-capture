@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { downloadVCard, type VCardData } from "@/lib/vcard";
+import { socialHandleToUrl } from "@/lib/social-utils";
 import type { Profile, ProfileBranding } from "@shared/schema";
 
 interface ProfilePreviewProps {
@@ -186,8 +187,7 @@ export function ProfilePreview({ profile, mock, onSaveContact, extraActions }: P
                 const config = socialConfig[key] || { icon: LinkIcon, color: "#6B7280", label: key };
                 const Icon = config.icon;
                 
-                let href = value;
-                if (!value.startsWith('http')) href = `https://${value}`;
+                const href = socialHandleToUrl(key, value);
 
                 const isSnapchat = key === "snapchat";
 
