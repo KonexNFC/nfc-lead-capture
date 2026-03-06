@@ -1,0 +1,381 @@
+You are updating an existing live SaaS platform called KONEX NFC, built as a digital business card and lead capture platform. The system already has:
+
+- user authentication
+- dashboard
+- public profile pages
+- social/contact modules
+- lead capture
+- analytics
+- QR code generation
+- admin dashboard
+- reviews/video/modules
+
+DO NOT rebuild the app from scratch.
+DO NOT remove existing working functionality.
+This is an upgrade to add the missing NFC card infrastructure layer.
+
+GOAL
+Transform KONEX from a profile-sharing platform into a full NFC card management platform by adding:
+
+1. physical card database and ownership
+2. NFC tap router
+3. card activation flow
+4. card management UI in dashboard
+5. tap analytics tied to cards
+6. support for multiple cards per user
+7. admin card inventory management
+
+TECHNICAL APPROACH
+Use the existing stack, patterns, auth system, routing, database approach, UI style, and component architecture already present in the app.
+Preserve the current dark premium mobile-first design language.
+
+==================================================
+PHASE 1 — DATABASE / DATA MODEL
+==================================================
+
+Add a new table/model called `cards`.
+
+Required fields:
+- id
+- card_code (unique short public identifier, e.g. A93K1X)
+- chip_uid (nullable, for future UID-based support)
+- owner_id (nullable until activated)
+- profile_id (nullable if profile linked separately)
+- product_tier (enum: basic, premium, elite, custom)
+- status (enum: unassigned, active, suspended, lost, archived)
+- nickname (nullable, e.g. “Main Card”, “Desk Stand”, “Event Card”)
+- tap_count (default 0)
+- qr_scan_count (default 0)
+- last_tap_at (nullable)
+- created_at
+- updated_at
+- activated_at (nullable)
+
+Create indexes/constraints:
+- card_code must be unique
+- chip_uid must be unique if present
+
+Add a second table/model called `card_tap_events`.
+
+Fields:
+- id
+- card_id
+- owner_id (nullable for unassigned cards)
+- event_type (enum: nfc_tap, qr_scan, direct_visit)
+- timestamp
+- user_agent
+- referer
+- ip_address (if current stack already captures safely)
+- country (nullable)
+- city (nullable)
+- destination_url
+- created_at
+
+Add a third optional table/model called `card_assignments_history`.
+
+Fields:
+- id
+- card_id
+- previous_owner_id (nullable)
+- new_owner_id (nullable)
+- action_type (enum: activated, reassigned, deactivated, suspended, restored)
+- note (nullable)
+- created_at
+
+==================================================
+PHASE 2 — NFC TAP ROUTER
+==================================================
+
+Create a new public route:
+
+/t/:cardCode
+
+Behavior:
+1. look up the card by card_code
+2. if card does not exist, show branded “Card not found” page
+3. if card exists but status = unassigned:
+   redirect to activation flow
+4. if card exists but status = suspended or lost:
+   show branded inactive card page
+5. if card exists and is active:
+   determine destination profile/page
+   log a card_tap_event with event_type = nfc_tap
+   increment card.tap_count
+   update last_tap_at
+   redirect to the linked public profile page
+
+If profile exists, destination should resolve to current public profile URL format already used in the app, for example:
+/u/top
+
+Do not break existing public profile links.
+
+==================================================
+PHASE 3 — ACTIVATION FLOW
+==================================================
+
+Create a new branded activation flow:
+
+/activate/:cardCode
+
+Logic:
+- if user is not logged in:
+  prompt login or signup first
+- after auth, resume activation automatically
+- if card is already assigned to the logged-in user:
+  show success state and option to go to My Cards
+- if card is assigned to someone else:
+  block activation and show support message
+- if card is unassigned:
+  assign owner_id = current user
+  status = active
+  activated_at = now
+  auto-link card to the user’s primary profile
+  create assignment history entry
+  show success screen
+
+Activation success screen copy:
+Headline: “Your Konex card is now active”
+Body: “Your card is linked to your profile and ready to share.”
+Buttons:
+- View My Card
+- Go to Dashboard
+- View Public Profile
+
+If the user has no profile yet, send them into a short onboarding flow:
+1. upload avatar / logo
+2. enter name
+3. enter title
+4. enter company
+5. add phone/email/website
+6. publish profile
+
+==================================================
+PHASE 4 — DASHBOARD: MY CARDS
+==================================================
+
+Add a new sidebar/menu item in the authenticated user dashboard:
+
+My Cards
+
+This should be placed prominently near:
+- Dashboard
+- My Profile
+- Leads
+- Settings
+
+Build a “My Cards” page showing all cards owned by the logged-in user.
+
+Each card tile/card row should show:
+- nickname or default card name
+- card_code
+- product_tier
+- status
+- tap_count
+- last_tap_at
+- linked public profile
+- QR code preview if available
+
+Actions per card:
+- View Public Profile
+- Copy Tap Link
+- Rename Card
+- Download QR
+- Suspend Card
+- Reactivate Card
+- Mark Lost
+- Unlink / Remove (admin-safe rules only)
+
+Add a “Primary Card” badge if needed.
+
+Add an empty state:
+“No cards linked yet”
+Buttons:
+- Activate a Card
+- Buy a Card (placeholder button or existing store link)
+
+==================================================
+PHASE 5 — QR + ANALYTICS UNIFICATION
+==================================================
+
+Current system already has profile views and QR functionality.
+Update analytics so the app differentiates traffic sources:
+
+- NFC taps
+- QR scans
+- direct profile visits
+- total profile views
+- leads captured
+- link clicks (only if current system supports this already; otherwise scaffold for future)
+
+Add a lightweight analytics breakdown on dashboard and My Cards page.
+
+Suggested KPI cards:
+- Total NFC Taps
+- Total QR Scans
+- Total Leads
+- Conversion Rate (leads / total visits if possible)
+
+Add a recent activity feed:
+- “NFC tap from iPhone”
+- “QR scan”
+- “Lead submitted”
+- “Public profile viewed”
+
+Do not remove current analytics cards. Extend them.
+
+==================================================
+PHASE 6 — ADMIN CARD INVENTORY
+==================================================
+
+In the admin dashboard add a new section:
+
+Card Inventory
+
+Admin can:
+- create cards in batch
+- generate unique card codes
+- assign product tiers
+- search cards
+- filter by status
+- view activation status
+- manually assign/reassign cards
+- suspend/reactivate cards
+- export cards CSV
+
+Add batch generation tool:
+Inputs:
+- quantity
+- product_tier
+- optional prefix
+- optional default nickname pattern
+
+Example output:
+KONEX-B-0001
+KONEX-B-0002
+KONEX-P-0001
+
+If current architecture prefers shorter public-safe codes, generate short unique codes and store internal serial separately.
+
+Admin should also be able to view:
+- total cards issued
+- cards activated
+- activation rate
+- most tapped cards
+
+==================================================
+PHASE 7 — UI / UX IMPROVEMENTS
+==================================================
+
+Keep current brand style:
+- dark background
+- premium blue highlight accents
+- mobile-first layout
+- clear rounded cards and buttons
+
+Update copy throughout product to position KONEX as:
+“Smart NFC digital business card platform”
+
+Improve homepage messaging without fully redesigning everything.
+
+Recommended hero copy:
+Headline: “One Card. Tap. Connect.”
+Subheadline: “Share your contact details, socials, portfolio and business links instantly with Konex NFC.”
+CTAs:
+- Get Started
+- Activate Card
+- View Demo
+
+Add a simple “How it Works” section:
+1. Tap your Konex card
+2. Your profile opens instantly
+3. Save contact or exchange details
+
+If possible, add a card-focused section showcasing:
+- Basic Card
+- Premium Card
+- Custom Card
+
+==================================================
+PHASE 8 — BACKEND API / SERVICE LAYER
+==================================================
+
+Add service methods / endpoints for:
+
+User-facing:
+- GET /api/cards/my
+- POST /api/cards/activate
+- PATCH /api/cards/:id
+- POST /api/cards/:id/suspend
+- POST /api/cards/:id/reactivate
+- POST /api/cards/:id/lost
+- GET /api/cards/:id/analytics
+
+Public:
+- GET /t/:cardCode
+- GET /activate/:cardCode
+
+Admin:
+- GET /api/admin/cards
+- POST /api/admin/cards/batch-create
+- PATCH /api/admin/cards/:id/assign
+- PATCH /api/admin/cards/:id/status
+- GET /api/admin/cards/export
+
+Respect existing auth roles and middleware patterns already in the app.
+
+==================================================
+PHASE 9 — BUSINESS RULES
+==================================================
+
+Implement these rules:
+
+- unassigned card can be activated by first authenticated user
+- active card cannot be claimed by another user without admin intervention
+- suspended/lost card should not redirect to public profile
+- one user can own multiple cards
+- many cards can point to one public profile
+- tap router must never expose internal database IDs publicly
+- use card_code in public URLs
+- preserve all existing profile URLs and current sharing features
+
+==================================================
+PHASE 10 — NON-DESTRUCTIVE IMPLEMENTATION
+==================================================
+
+Important constraints:
+- do not break existing login/auth flows
+- do not break existing public profiles
+- do not remove dashboard features already working
+- do not replace current profile architecture
+- build incrementally and safely
+- reuse existing components where possible
+- migrate data cleanly
+- provide seed/demo data for at least 3 cards:
+  - one unassigned basic card
+  - one active premium card
+  - one suspended elite card
+
+==================================================
+DELIVERABLES REQUIRED
+==================================================
+
+1. implement database migration/schema updates
+2. implement backend logic
+3. implement frontend dashboard pages/components
+4. implement public tap router and activation screens
+5. implement admin inventory UI
+6. seed demo card data
+7. update navigation/menu
+8. add clean error/success states
+9. ensure responsive mobile UI
+10. provide a short README section summarizing:
+   - new routes
+   - new models
+   - activation flow
+   - admin workflow
+
+FINAL INSTRUCTION
+Ship this as a structured feature upgrade to the current KONEX codebase.
+Do not output pseudocode only.
+Make the actual implementation changes in the project.
+Prioritize working end-to-end functionality over visual perfection.
