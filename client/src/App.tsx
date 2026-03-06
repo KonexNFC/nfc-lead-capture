@@ -83,6 +83,9 @@ function Router() {
       <Route path="/activate/:cardCode">
         {(params) => <ActivateCard cardCode={params.cardCode} />}
       </Route>
+      <Route path="/activate">
+        <ActivateCard />
+      </Route>
       
       {/* Protected Routes */}
       <Route path="/dashboard">
