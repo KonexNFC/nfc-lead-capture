@@ -13,10 +13,13 @@ import {
   ExternalLink, 
   Download,
   Copy,
-  Eye
+  Eye,
+  Nfc,
+  CreditCard
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import type { Card as CardType } from "@shared/schema";
 
 export default function Dashboard() {
   const { activeProfile: profile, isLoading: profileLoading } = useActiveProfile();
@@ -30,7 +33,13 @@ export default function Dashboard() {
     },
     enabled: !!profile,
   });
+  const { data: userCards } = useQuery<CardType[]>({
+    queryKey: ["/api/cards/my"],
+  });
   const { toast } = useToast();
+
+  const totalNfcTaps = userCards?.reduce((sum, c) => sum + (c.tapCount || 0), 0) || 0;
+  const activeCards = userCards?.filter(c => c.status === "active").length || 0;
 
   if (profileLoading || leadsLoading) {
     return <DashboardSkeleton />;
@@ -120,7 +129,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {/* Profile Views Card */}
         <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
@@ -177,6 +186,25 @@ export default function Dashboard() {
                 <Download className="h-3 w-3 mr-2" />
                 Download PNG
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* NFC Taps Card */}
+        <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
+            <CardTitle className="text-sm font-medium">NFC Taps</CardTitle>
+            <Nfc className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold" data-testid="text-nfc-taps">{totalNfcTaps}</div>
+            <p className="text-xs text-muted-foreground">
+              Total card taps
+            </p>
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <Link href="/dashboard/cards" className="text-sm text-primary hover:underline flex items-center">
+                {activeCards} active card{activeCards !== 1 ? "s" : ""} <ArrowRight className="h-3 w-3 ml-1" />
+              </Link>
             </div>
           </CardContent>
         </Card>

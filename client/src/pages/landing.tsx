@@ -135,28 +135,29 @@ export default function LandingPage() {
               </div>
               
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight text-foreground leading-[1.1]">
-                Share your world with a <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">single tap.</span>
+                One Card. Tap. <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Connect.</span>
               </h1>
               
               <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto md:mx-0">
-                Create your free digital business card, share it instantly via NFC or QR, and capture leads effortlessly. No app required.
+                Share your contact details, socials, portfolio and business links instantly with Konex NFC. No app required.
               </p>
               
               <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
                 <Link href="/auth?tab=register">
-                  <Button size="lg" className="h-14 px-8 rounded-full text-lg font-semibold shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all hover:-translate-y-1">
-                    Sign Up Free
+                  <Button size="lg" className="h-14 px-8 rounded-full text-lg font-semibold shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all hover:-translate-y-1" data-testid="button-get-started-hero">
+                    Get Started
                   </Button>
                 </Link>
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="h-14 px-8 rounded-full text-lg" 
-                  data-testid="button-how-it-works"
-                  onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-                >
-                  How it Works
-                </Button>
+                <Link href="/u/arivera">
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="h-14 px-8 rounded-full text-lg" 
+                    data-testid="button-view-demo"
+                  >
+                    View Demo
+                  </Button>
+                </Link>
               </div>
             </div>
             

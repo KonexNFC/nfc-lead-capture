@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -153,12 +153,73 @@ export const siteSettings = pgTable("site_settings", {
 export type SiteSetting = typeof siteSettings.$inferSelect;
 export type InsertSiteSetting = typeof siteSettings.$inferInsert;
 
+export const cards = pgTable("cards", {
+  id: serial("id").primaryKey(),
+  cardCode: text("card_code").notNull().unique(),
+  chipUid: text("chip_uid"),
+  ownerId: integer("owner_id"),
+  profileId: integer("profile_id"),
+  productTier: text("product_tier").notNull().default("basic"),
+  status: text("status").notNull().default("unassigned"),
+  nickname: text("nickname"),
+  tapCount: integer("tap_count").notNull().default(0),
+  qrScanCount: integer("qr_scan_count").notNull().default(0),
+  lastTapAt: timestamp("last_tap_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  activatedAt: timestamp("activated_at"),
+}, (table) => [
+  uniqueIndex("cards_chip_uid_unique").on(table.chipUid),
+]);
+
+export const cardTapEvents = pgTable("card_tap_events", {
+  id: serial("id").primaryKey(),
+  cardId: integer("card_id").notNull(),
+  ownerId: integer("owner_id"),
+  eventType: text("event_type").notNull().default("nfc_tap"),
+  userAgent: text("user_agent"),
+  referer: text("referer"),
+  ipAddress: text("ip_address"),
+  country: text("country"),
+  city: text("city"),
+  destinationUrl: text("destination_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const cardAssignmentsHistory = pgTable("card_assignments_history", {
+  id: serial("id").primaryKey(),
+  cardId: integer("card_id").notNull(),
+  previousOwnerId: integer("previous_owner_id"),
+  newOwnerId: integer("new_owner_id"),
+  actionType: text("action_type").notNull(),
+  note: text("note"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const cardsRelations = relations(cards, ({ one, many }) => ({
+  owner: one(users, { fields: [cards.ownerId], references: [users.id] }),
+  profile: one(profiles, { fields: [cards.profileId], references: [profiles.id] }),
+  tapEvents: many(cardTapEvents),
+  assignmentHistory: many(cardAssignmentsHistory),
+}));
+
+export const cardTapEventsRelations = relations(cardTapEvents, ({ one }) => ({
+  card: one(cards, { fields: [cardTapEvents.cardId], references: [cards.id] }),
+}));
+
+export const cardAssignmentsHistoryRelations = relations(cardAssignmentsHistory, ({ one }) => ({
+  card: one(cards, { fields: [cardAssignmentsHistory.cardId], references: [cards.id] }),
+}));
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, isAdmin: true });
 export const insertProfileSchema = createInsertSchema(profiles).omit({ id: true, userId: true, createdAt: true });
 export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, profileId: true, createdAt: true });
 export const insertTestimonialSchema = createInsertSchema(testimonials).omit({ id: true, userId: true, status: true, createdAt: true });
 export const insertSiteSettingSchema = createInsertSchema(siteSettings).omit({ id: true, updatedAt: true });
+export const insertCardSchema = createInsertSchema(cards).omit({ id: true, createdAt: true, updatedAt: true, tapCount: true, qrScanCount: true });
+export const insertCardTapEventSchema = createInsertSchema(cardTapEvents).omit({ id: true, createdAt: true });
+export const insertCardAssignmentSchema = createInsertSchema(cardAssignmentsHistory).omit({ id: true, createdAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -170,6 +231,13 @@ export type InsertLead = z.infer<typeof insertLeadSchema>;
 
 export type Testimonial = typeof testimonials.$inferSelect;
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
+
+export type Card = typeof cards.$inferSelect;
+export type InsertCard = z.infer<typeof insertCardSchema>;
+export type CardTapEvent = typeof cardTapEvents.$inferSelect;
+export type InsertCardTapEvent = z.infer<typeof insertCardTapEventSchema>;
+export type CardAssignment = typeof cardAssignmentsHistory.$inferSelect;
+export type InsertCardAssignment = z.infer<typeof insertCardAssignmentSchema>;
 
 export type CreateProfileRequest = InsertProfile;
 export type UpdateProfileRequest = Partial<InsertProfile>;

@@ -1,12 +1,13 @@
-# KONEX - Digital Business Card Platform
+# KONEX - Smart NFC Digital Business Card Platform
 
 ## Overview
 
-KONEX is a web-based MVP that enables NFC tap → live professional profile → lead capture → basic analytics flow. Users can create digital business cards, share them via NFC or QR codes, and capture leads from visitors without requiring a mobile app.
+KONEX is a full-featured NFC digital business card and lead capture platform. It enables NFC tap → live professional profile → lead capture → analytics flow. Users create digital business cards, share them via NFC cards or QR codes, and capture leads from visitors without requiring a mobile app.
 
-The platform serves two user types:
-- **Profile Owners**: Create accounts, manage profiles, view analytics, and receive lead notifications
+The platform serves three user types:
+- **Profile Owners**: Create accounts, manage profiles, activate NFC cards, view analytics, and receive lead notifications
 - **Visitors**: Tap NFC cards or scan QR codes to view profiles and submit contact information
+- **Admins**: Manage users, card inventory, testimonials, and view platform analytics
 
 ## User Preferences
 
@@ -23,7 +24,7 @@ Preferred communication style: Simple, everyday language.
 - **Build Tool**: Vite with HMR support
 
 The frontend follows a feature-based structure with:
-- Public routes (`/`, `/auth`, `/u/:slug`, `/konex-cards`, `/konex-cards/:tierId`) for landing, authentication, public profiles, and product overview pages
+- Public routes (`/`, `/auth`, `/u/:slug`, `/t/:cardCode`, `/activate/:cardCode`, `/konex-cards`, `/konex-cards/:tierId`) for landing, authentication, public profiles, NFC tap routing, card activation, and product pages
 - Protected routes (`/dashboard/*`) wrapped in `LayoutShell` with sidebar navigation
 - Admin routes (`/dashboard/admin/*`) visible only to users with `isAdmin` flag
 - Custom hooks for auth, profiles, leads, and file uploads
@@ -53,8 +54,52 @@ Users can create and manage multiple digital business cards (e.g., personal, bus
   - `DELETE /api/profiles/:id` - delete profile and its leads (ownership validated)
 - **Legacy Compat**: `GET /api/profile` and `PUT /api/profile` still work (first profile)
 - **Leads Filtering**: `GET /api/leads?profileId=X` filters by profile; without param returns all with profileName attached
-- **Dashboard Pages**: All pages (Dashboard, Edit, Modules, Leads) use `useActiveProfile()` hook to operate on the currently selected profile
+- **Dashboard Pages**: All pages (Dashboard, Edit, Modules, Leads, Cards) use `useActiveProfile()` hook to operate on the currently selected profile
 - **Edit Page**: Supports `?new=1` query param for creating new profiles; includes delete profile confirmation dialog
+
+### NFC Card Management System
+Physical NFC card tracking, activation, and analytics infrastructure.
+
+#### Database Tables
+- `cards`: Physical card registry with cardCode (unique public ID), chipUid (nullable), ownerId, profileId, productTier (basic/premium/elite/custom), status (unassigned/active/suspended/lost/archived), nickname, tapCount, qrScanCount, lastTapAt, activatedAt
+- `card_tap_events`: Detailed tap analytics with cardId, ownerId, eventType (nfc_tap/qr_scan/direct_visit), userAgent, referer, ipAddress, country, city, destinationUrl
+- `card_assignments_history`: Audit log with cardId, previousOwnerId, newOwnerId, actionType (activated/reassigned/deactivated/suspended/restored), note
+
+#### NFC Tap Router (`/t/:cardCode`)
+- Public route that resolves card_code to profile redirect
+- Active cards → log tap event, increment counters, redirect to `/u/:slug`
+- Unassigned cards → redirect to activation flow
+- Suspended/lost cards → show branded inactive page
+- Unknown codes → branded 404 page
+
+#### Card Activation Flow (`/activate/:cardCode`)
+- Requires authentication (redirects to `/auth?redirect=/activate/:cardCode`)
+- Validates card ownership (prevents claiming already-owned cards)
+- Assigns card to user, links to primary profile, creates assignment history
+- Success screen with navigation to dashboard/cards/profile
+
+#### User Card Routes
+- `GET /api/cards/my` - list user's cards
+- `POST /api/cards/activate` - activate a card
+- `PATCH /api/cards/:id` - update card (nickname, profileId)
+- `POST /api/cards/:id/suspend` - suspend a card
+- `POST /api/cards/:id/reactivate` - reactivate a card
+- `POST /api/cards/:id/lost` - mark card as lost
+- `GET /api/cards/:id/analytics` - card tap analytics
+
+#### Admin Card Routes
+- `GET /api/admin/cards` - list all cards (with status/tier/search filters)
+- `GET /api/admin/cards/stats` - card inventory stats
+- `POST /api/admin/cards/batch-create` - batch generate cards (quantity, tier, prefix, nickname pattern)
+- `PATCH /api/admin/cards/:id/assign` - assign/reassign card to user
+- `PATCH /api/admin/cards/:id/status` - change card status
+- `GET /api/admin/cards/export` - export cards as CSV
+
+#### Frontend Pages
+- `client/src/pages/tap-router.tsx` - NFC tap resolution page
+- `client/src/pages/activate-card.tsx` - Card activation flow
+- `client/src/pages/dashboard/cards.tsx` - My Cards management (KPIs, card grid, actions)
+- `client/src/pages/dashboard/admin/cards.tsx` - Admin card inventory (batch create, search, assign, export)
 
 ### Database
 - **ORM**: Drizzle ORM with PostgreSQL dialect
@@ -70,19 +115,19 @@ Core tables:
   - `branding` (jsonb): Visual customization - logoUrl, heroUrl, heroVideoUrl, primaryColor, accentColor, fontFamily
   - `textOverrides` (jsonb): Multilingual text - headline, subheadline, ctaLabel, bioOverride, locale
 - `leads`: Captured contacts (name, telephone, whatsapp, email, company, note, source)
+- `cards`: Physical NFC card inventory (see NFC Card Management System above)
+- `card_tap_events`: Tap analytics (see above)
+- `card_assignments_history`: Assignment audit log (see above)
 
 ### Admin Panel
 - Admin users have `isAdmin: true` flag in the users table
 - Admin routes: `/api/admin/analytics`, `/api/admin/users`, `/api/admin/users/:id`, `/api/admin/users/:id/profile`, `/api/admin/leads`, `DELETE /api/admin/users/:id`, `/api/admin/growth`, `/api/admin/top-profiles`, `/api/admin/activity`, `PATCH /api/admin/users/:id/toggle-admin`
+- Admin card inventory: `/api/admin/cards`, `/api/admin/cards/stats`, `/api/admin/cards/batch-create`, `/api/admin/cards/:id/assign`, `/api/admin/cards/:id/status`, `/api/admin/cards/export`
 - Admin middleware checks `req.user.isAdmin` and returns 403 for non-admins
-- Frontend admin pages at `/dashboard/admin/*`: overview (with growth charts, top profiles, recent activity), user management (with search/filter/toggle admin), all leads (with search/filter/CSV export)
+- Frontend admin pages at `/dashboard/admin/*`: overview, user management, all leads, card inventory, testimonials
 - Admin link in sidebar only visible to admin users
-- Admin testimonials management at `/dashboard/admin/testimonials`: approve, reject, or delete user-submitted testimonials
 - Current admin account: info@konexnfc.com
 - Admin dashboard uses Recharts for growth area charts (signups and leads over 30 days)
-- Users page supports search by email/name/company and filter by role (all/admin/user/no-profile)
-- Leads page supports search by name/email/company/phone and filter by source (nfc/qr/etc)
-- Admin can toggle other users' admin status via shield icon (with confirmation dialog)
 - `ensureAdminAccount()` runs on app startup to reset admin password and ensure admin flag
 
 ### Testimonials System

@@ -27,7 +27,11 @@ import WhatIsNfcPage from "@/pages/what-is-nfc";
 import ForgotPasswordPage from "@/pages/forgot-password";
 import ResetPasswordPage from "@/pages/reset-password";
 import TestimonialPage from "@/pages/dashboard/testimonial";
+import MyCardsPage from "@/pages/dashboard/cards";
 import AdminTestimonials from "@/pages/dashboard/admin/testimonials";
+import AdminCards from "@/pages/dashboard/admin/cards";
+import TapRouter from "@/pages/tap-router";
+import ActivateCard from "@/pages/activate-card";
 import NotFound from "@/pages/not-found";
 
 // Protected Route Wrapper
@@ -73,6 +77,12 @@ function Router() {
       <Route path="/what-is-nfc" component={WhatIsNfcPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
+      <Route path="/t/:cardCode">
+        {(params) => <TapRouter cardCode={params.cardCode} />}
+      </Route>
+      <Route path="/activate/:cardCode">
+        {(params) => <ActivateCard cardCode={params.cardCode} />}
+      </Route>
       
       {/* Protected Routes */}
       <Route path="/dashboard">
@@ -92,6 +102,9 @@ function Router() {
       </Route>
       <Route path="/dashboard/testimonial">
         <ProtectedRoute component={TestimonialPage} />
+      </Route>
+      <Route path="/dashboard/cards">
+        <ProtectedRoute component={MyCardsPage} />
       </Route>
 
       {/* Admin shortcut redirect */}
@@ -116,6 +129,9 @@ function Router() {
       </Route>
       <Route path="/dashboard/admin/testimonials">
         <ProtectedRoute component={AdminTestimonials} adminOnly />
+      </Route>
+      <Route path="/dashboard/admin/cards">
+        <ProtectedRoute component={AdminCards} adminOnly />
       </Route>
 
       {/* 404 */}

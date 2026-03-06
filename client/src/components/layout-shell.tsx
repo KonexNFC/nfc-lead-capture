@@ -14,7 +14,8 @@ import {
   ChevronDown,
   Plus,
   Check,
-  MessageSquareQuote
+  MessageSquareQuote,
+  CreditCard
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -36,9 +37,13 @@ export function LayoutShell({ children }: LayoutShellProps) {
     { name: 'My Profile', href: '/dashboard/edit', icon: UserCircle },
     { name: 'Modules', href: '/dashboard/modules', icon: Blocks },
     { name: 'Leads', href: '/dashboard/leads', icon: Users },
+    { name: 'My Cards', href: '/dashboard/cards', icon: CreditCard },
     { name: 'Leave a Review', href: '/dashboard/testimonial', icon: MessageSquareQuote },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-    ...(user?.isAdmin ? [{ name: 'Admin Panel', href: '/dashboard/admin', icon: Shield }] : []),
+    ...(user?.isAdmin ? [
+      { name: 'Admin Panel', href: '/dashboard/admin', icon: Shield },
+      { name: 'Card Inventory', href: '/dashboard/admin/cards', icon: CreditCard },
+    ] : []),
   ];
 
   const [switcherOpen, setSwitcherOpen] = useState(false);

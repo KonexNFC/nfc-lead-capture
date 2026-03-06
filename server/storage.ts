@@ -1,13 +1,17 @@
 import { db } from "./db";
 import {
   users, profiles, leads, siteSettings, testimonials,
+  cards, cardTapEvents, cardAssignmentsHistory,
   type User, type InsertUser,
   type Profile, type InsertProfile, type UpdateProfileRequest,
   type Lead, type InsertLead,
   type SiteSetting,
-  type Testimonial, type InsertTestimonial
+  type Testimonial, type InsertTestimonial,
+  type Card, type InsertCard,
+  type CardTapEvent, type InsertCardTapEvent,
+  type CardAssignment, type InsertCardAssignment
 } from "@shared/schema";
-import { eq, desc, sql, count, gte, and } from "drizzle-orm";
+import { eq, desc, sql, count, gte, and, like, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User
@@ -57,6 +61,27 @@ export interface IStorage {
   getTopProfiles(limit: number): Promise<{ id: number; name: string; slug: string; views: number; leadCount: number; photoUrl: string | null }[]>;
   getRecentActivity(limit: number): Promise<{ type: string; description: string; timestamp: string; meta?: Record<string, any> }[]>;
   toggleAdmin(userId: number, isAdmin: boolean): Promise<void>;
+
+  // Cards
+  getCardByCode(code: string): Promise<Card | undefined>;
+  getCardById(id: number): Promise<Card | undefined>;
+  getCardsByOwnerId(userId: number): Promise<Card[]>;
+  createCard(card: InsertCard): Promise<Card>;
+  updateCard(id: number, updates: Partial<Card>): Promise<Card>;
+  batchCreateCards(cardsData: InsertCard[]): Promise<Card[]>;
+  listAllCards(filters?: { status?: string; productTier?: string; search?: string }): Promise<Card[]>;
+  getCardStats(): Promise<{ total: number; activated: number; unassigned: number; suspended: number; lost: number }>;
+  incrementCardTapCount(cardId: number): Promise<void>;
+
+  // Card Tap Events
+  createTapEvent(event: InsertCardTapEvent): Promise<CardTapEvent>;
+  getTapEventsByCardId(cardId: number): Promise<CardTapEvent[]>;
+  getTapEventsByOwnerId(ownerId: number): Promise<CardTapEvent[]>;
+  getCardAnalytics(cardId: number): Promise<{ totalTaps: number; totalQrScans: number; recentEvents: CardTapEvent[] }>;
+
+  // Card Assignment History
+  createAssignmentHistory(entry: InsertCardAssignment): Promise<CardAssignment>;
+  getAssignmentHistoryByCardId(cardId: number): Promise<CardAssignment[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -382,6 +407,102 @@ export class DatabaseStorage implements IStorage {
 
   async deleteTestimonial(id: number): Promise<void> {
     await db.delete(testimonials).where(eq(testimonials.id, id));
+  }
+
+  // Cards
+  async getCardByCode(code: string): Promise<Card | undefined> {
+    const [card] = await db.select().from(cards).where(eq(cards.cardCode, code));
+    return card;
+  }
+
+  async getCardById(id: number): Promise<Card | undefined> {
+    const [card] = await db.select().from(cards).where(eq(cards.id, id));
+    return card;
+  }
+
+  async getCardsByOwnerId(userId: number): Promise<Card[]> {
+    return await db.select().from(cards).where(eq(cards.ownerId, userId)).orderBy(desc(cards.createdAt));
+  }
+
+  async createCard(card: InsertCard): Promise<Card> {
+    const [created] = await db.insert(cards).values(card).returning();
+    return created;
+  }
+
+  async updateCard(id: number, updates: Partial<Card>): Promise<Card> {
+    const [updated] = await db.update(cards).set({ ...updates, updatedAt: new Date() }).where(eq(cards.id, id)).returning();
+    return updated;
+  }
+
+  async batchCreateCards(cardsData: InsertCard[]): Promise<Card[]> {
+    if (cardsData.length === 0) return [];
+    return await db.insert(cards).values(cardsData).returning();
+  }
+
+  async listAllCards(filters?: { status?: string; productTier?: string; search?: string }): Promise<Card[]> {
+    let query = db.select().from(cards);
+    const conditions = [];
+    if (filters?.status) conditions.push(eq(cards.status, filters.status));
+    if (filters?.productTier) conditions.push(eq(cards.productTier, filters.productTier));
+    if (filters?.search) conditions.push(like(cards.cardCode, `%${filters.search}%`));
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+    return await (query as any).orderBy(desc(cards.createdAt));
+  }
+
+  async incrementCardTapCount(cardId: number): Promise<void> {
+    await db.update(cards).set({
+      tapCount: sql`${cards.tapCount} + 1`,
+      lastTapAt: new Date(),
+      updatedAt: new Date(),
+    }).where(eq(cards.id, cardId));
+  }
+
+  async getCardStats(): Promise<{ total: number; activated: number; unassigned: number; suspended: number; lost: number }> {
+    const [total] = await db.select({ count: count() }).from(cards);
+    const [activated] = await db.select({ count: count() }).from(cards).where(eq(cards.status, "active"));
+    const [unassigned] = await db.select({ count: count() }).from(cards).where(eq(cards.status, "unassigned"));
+    const [suspended] = await db.select({ count: count() }).from(cards).where(eq(cards.status, "suspended"));
+    const [lost] = await db.select({ count: count() }).from(cards).where(eq(cards.status, "lost"));
+    return {
+      total: total.count,
+      activated: activated.count,
+      unassigned: unassigned.count,
+      suspended: suspended.count,
+      lost: lost.count,
+    };
+  }
+
+  // Card Tap Events
+  async createTapEvent(event: InsertCardTapEvent): Promise<CardTapEvent> {
+    const [created] = await db.insert(cardTapEvents).values(event).returning();
+    return created;
+  }
+
+  async getTapEventsByCardId(cardId: number): Promise<CardTapEvent[]> {
+    return await db.select().from(cardTapEvents).where(eq(cardTapEvents.cardId, cardId)).orderBy(desc(cardTapEvents.createdAt));
+  }
+
+  async getTapEventsByOwnerId(ownerId: number): Promise<CardTapEvent[]> {
+    return await db.select().from(cardTapEvents).where(eq(cardTapEvents.ownerId, ownerId)).orderBy(desc(cardTapEvents.createdAt));
+  }
+
+  async getCardAnalytics(cardId: number): Promise<{ totalTaps: number; totalQrScans: number; recentEvents: CardTapEvent[] }> {
+    const [taps] = await db.select({ count: count() }).from(cardTapEvents).where(and(eq(cardTapEvents.cardId, cardId), eq(cardTapEvents.eventType, "nfc_tap")));
+    const [scans] = await db.select({ count: count() }).from(cardTapEvents).where(and(eq(cardTapEvents.cardId, cardId), eq(cardTapEvents.eventType, "qr_scan")));
+    const recentEvents = await db.select().from(cardTapEvents).where(eq(cardTapEvents.cardId, cardId)).orderBy(desc(cardTapEvents.createdAt)).limit(20);
+    return { totalTaps: taps.count, totalQrScans: scans.count, recentEvents };
+  }
+
+  // Card Assignment History
+  async createAssignmentHistory(entry: InsertCardAssignment): Promise<CardAssignment> {
+    const [created] = await db.insert(cardAssignmentsHistory).values(entry).returning();
+    return created;
+  }
+
+  async getAssignmentHistoryByCardId(cardId: number): Promise<CardAssignment[]> {
+    return await db.select().from(cardAssignmentsHistory).where(eq(cardAssignmentsHistory.cardId, cardId)).orderBy(desc(cardAssignmentsHistory.createdAt));
   }
 }
 

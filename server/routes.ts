@@ -1,9 +1,10 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth, hashPassword, comparePasswords } from "./auth";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { sendLeadNotificationEmail } from "./email";
 
@@ -53,6 +54,47 @@ async function seedDatabase() {
     });
     
     console.log("Database seeded successfully!");
+  }
+
+  // Seed demo cards
+  const existingCard = await storage.getCardByCode("KONEX-B-0001");
+  if (!existingCard) {
+    const demoUser = await storage.getUserByEmail("demo@konex.app");
+    const demoProfile = demoUser ? await storage.getProfile(demoUser.id) : null;
+
+    await storage.createCard({
+      cardCode: "KONEX-B-0001",
+      productTier: "basic",
+      status: "unassigned",
+      nickname: null,
+    });
+
+    if (demoUser && demoProfile) {
+      const premiumCard = await storage.createCard({
+        cardCode: "KONEX-P-0001",
+        productTier: "premium",
+        status: "active",
+        nickname: "Main Card",
+        ownerId: demoUser.id,
+        profileId: demoProfile.id,
+        activatedAt: new Date(),
+      });
+      await storage.createAssignmentHistory({
+        cardId: premiumCard.id,
+        newOwnerId: demoUser.id,
+        actionType: "activated",
+        note: "Demo card activation",
+      });
+    }
+
+    await storage.createCard({
+      cardCode: "KONEX-E-0001",
+      productTier: "elite",
+      status: "suspended",
+      nickname: "Event Card",
+    });
+
+    console.log("Demo cards seeded successfully!");
   }
 
   await ensureAdminAccount();
@@ -567,6 +609,255 @@ export async function registerRoutes(
     } catch (error) {
       res.status(500).json({ message: "Failed to update setting" });
     }
+  });
+
+  // === NFC Tap Router (Public) ===
+  app.get("/api/tap/:cardCode", async (req, res) => {
+    const card = await storage.getCardByCode(req.params.cardCode);
+    if (!card) return res.status(404).json({ status: "not_found" });
+
+    if (card.status === "unassigned") {
+      return res.json({ status: "unassigned", cardCode: card.cardCode });
+    }
+
+    if (card.status === "suspended" || card.status === "lost") {
+      return res.json({ status: "inactive", cardCode: card.cardCode });
+    }
+
+    if (card.status === "active" && card.profileId) {
+      const profile = await storage.getProfileById(card.profileId);
+      if (profile) {
+        await storage.incrementCardTapCount(card.id);
+        await storage.createTapEvent({
+          cardId: card.id,
+          ownerId: card.ownerId,
+          eventType: "nfc_tap",
+          userAgent: req.headers["user-agent"] || null,
+          referer: req.headers["referer"] || null,
+          ipAddress: req.ip || null,
+          destinationUrl: `/u/${profile.slug}`,
+        });
+        await storage.incrementProfileViews(profile.id);
+        return res.json({ status: "active", redirectTo: `/u/${profile.slug}`, profileSlug: profile.slug });
+      }
+    }
+
+    return res.json({ status: "active", redirectTo: null, cardCode: card.cardCode });
+  });
+
+  // === Card Activation (Public but needs auth) ===
+  app.post("/api/cards/activate", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const { cardCode } = req.body;
+    if (!cardCode) return res.status(400).json({ message: "Card code is required" });
+
+    const card = await storage.getCardByCode(cardCode);
+    if (!card) return res.status(404).json({ message: "Card not found" });
+
+    if (card.ownerId === req.user.id) {
+      return res.json({ message: "Card already belongs to you", card });
+    }
+
+    if (card.ownerId && card.ownerId !== req.user.id) {
+      return res.status(403).json({ message: "This card is already assigned to another user. Please contact support." });
+    }
+
+    if (card.status !== "unassigned") {
+      return res.status(400).json({ message: "This card cannot be activated" });
+    }
+
+    const userProfile = await storage.getProfile(req.user.id);
+    const updated = await storage.updateCard(card.id, {
+      ownerId: req.user.id,
+      profileId: userProfile?.id || null,
+      status: "active",
+      activatedAt: new Date(),
+    });
+
+    await storage.createAssignmentHistory({
+      cardId: card.id,
+      newOwnerId: req.user.id,
+      actionType: "activated",
+      note: "User-initiated activation",
+    });
+
+    res.json({ message: "Card activated successfully", card: updated, hasProfile: !!userProfile });
+  });
+
+  // === User Card Routes ===
+  app.get("/api/cards/my", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userCards = await storage.getCardsByOwnerId(req.user.id);
+    res.json(userCards);
+  });
+
+  app.patch("/api/cards/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const cardId = parseInt(req.params.id);
+    if (isNaN(cardId)) return res.status(400).json({ message: "Invalid card ID" });
+    const card = await storage.getCardById(cardId);
+    if (!card) return res.status(404).json({ message: "Card not found" });
+    if (card.ownerId !== req.user.id) return res.status(403).json({ message: "Not your card" });
+
+    const allowedFields = z.object({
+      nickname: z.string().optional(),
+      profileId: z.number().optional(),
+    });
+    const parsed = allowedFields.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
+
+    if (parsed.data.profileId) {
+      const targetProfile = await storage.getProfileById(parsed.data.profileId);
+      if (!targetProfile || targetProfile.userId !== req.user.id) {
+        return res.status(403).json({ message: "You can only link cards to your own profiles" });
+      }
+    }
+
+    const updated = await storage.updateCard(cardId, parsed.data);
+    res.json(updated);
+  });
+
+  app.post("/api/cards/:id/suspend", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const cardId = parseInt(req.params.id);
+    const card = await storage.getCardById(cardId);
+    if (!card) return res.status(404).json({ message: "Card not found" });
+    if (card.ownerId !== req.user.id) return res.status(403).json({ message: "Not your card" });
+    const updated = await storage.updateCard(cardId, { status: "suspended" });
+    await storage.createAssignmentHistory({ cardId, previousOwnerId: req.user.id, newOwnerId: req.user.id, actionType: "suspended" });
+    res.json(updated);
+  });
+
+  app.post("/api/cards/:id/reactivate", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const cardId = parseInt(req.params.id);
+    const card = await storage.getCardById(cardId);
+    if (!card) return res.status(404).json({ message: "Card not found" });
+    if (card.ownerId !== req.user.id) return res.status(403).json({ message: "Not your card" });
+    const updated = await storage.updateCard(cardId, { status: "active" });
+    await storage.createAssignmentHistory({ cardId, previousOwnerId: req.user.id, newOwnerId: req.user.id, actionType: "restored" });
+    res.json(updated);
+  });
+
+  app.post("/api/cards/:id/lost", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const cardId = parseInt(req.params.id);
+    const card = await storage.getCardById(cardId);
+    if (!card) return res.status(404).json({ message: "Card not found" });
+    if (card.ownerId !== req.user.id) return res.status(403).json({ message: "Not your card" });
+    const updated = await storage.updateCard(cardId, { status: "lost" });
+    await storage.createAssignmentHistory({ cardId, previousOwnerId: req.user.id, newOwnerId: req.user.id, actionType: "suspended", note: "Marked as lost" });
+    res.json(updated);
+  });
+
+  app.get("/api/cards/:id/analytics", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const cardId = parseInt(req.params.id);
+    const card = await storage.getCardById(cardId);
+    if (!card) return res.status(404).json({ message: "Card not found" });
+    if (card.ownerId !== req.user.id) return res.status(403).json({ message: "Not your card" });
+    const analytics = await storage.getCardAnalytics(cardId);
+    res.json(analytics);
+  });
+
+  // === Admin Card Routes ===
+  app.get("/api/admin/cards", requireAdmin, async (req, res) => {
+    const filters = {
+      status: req.query.status as string | undefined,
+      productTier: req.query.productTier as string | undefined,
+      search: req.query.search as string | undefined,
+    };
+    const allCards = await storage.listAllCards(filters);
+    res.json(allCards);
+  });
+
+  app.get("/api/admin/cards/stats", requireAdmin, async (_req, res) => {
+    const stats = await storage.getCardStats();
+    res.json(stats);
+  });
+
+  app.post("/api/admin/cards/batch-create", requireAdmin, async (req, res) => {
+    const batchSchema = z.object({
+      quantity: z.number().int().min(1).max(500),
+      productTier: z.enum(["basic", "premium", "elite", "custom"]),
+      prefix: z.string().optional(),
+      nicknamePattern: z.string().optional(),
+    });
+    const parsed = batchSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+
+    const { quantity, productTier, prefix, nicknamePattern } = parsed.data;
+    const tierCode = productTier === "basic" ? "B" : productTier === "premium" ? "P" : productTier === "elite" ? "E" : "C";
+    const pfx = prefix || "KONEX";
+
+    const cardsToCreate = [];
+    for (let i = 0; i < quantity; i++) {
+      const shortId = crypto.randomBytes(3).toString("hex").toUpperCase();
+      const cardCode = `${pfx}-${tierCode}-${shortId}`;
+      cardsToCreate.push({
+        cardCode,
+        productTier,
+        status: "unassigned" as const,
+        nickname: nicknamePattern ? `${nicknamePattern} ${i + 1}` : null,
+      });
+    }
+
+    const created = await storage.batchCreateCards(cardsToCreate);
+    res.status(201).json({ message: `${created.length} cards created`, cards: created });
+  });
+
+  app.patch("/api/admin/cards/:id/assign", requireAdmin, async (req, res) => {
+    const cardId = parseInt(req.params.id);
+    if (isNaN(cardId)) return res.status(400).json({ message: "Invalid card ID" });
+    const card = await storage.getCardById(cardId);
+    if (!card) return res.status(404).json({ message: "Card not found" });
+
+    const assignSchema = z.object({ userId: z.number().nullable(), profileId: z.number().nullable().optional() });
+    const parsed = assignSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
+
+    const previousOwnerId = card.ownerId;
+    const updated = await storage.updateCard(cardId, {
+      ownerId: parsed.data.userId,
+      profileId: parsed.data.profileId ?? null,
+      status: parsed.data.userId ? "active" : "unassigned",
+      activatedAt: parsed.data.userId ? new Date() : null,
+    });
+
+    await storage.createAssignmentHistory({
+      cardId,
+      previousOwnerId,
+      newOwnerId: parsed.data.userId,
+      actionType: parsed.data.userId ? "reassigned" : "deactivated",
+      note: "Admin-initiated",
+    });
+
+    res.json(updated);
+  });
+
+  app.patch("/api/admin/cards/:id/status", requireAdmin, async (req, res) => {
+    const cardId = parseInt(req.params.id);
+    if (isNaN(cardId)) return res.status(400).json({ message: "Invalid card ID" });
+    const card = await storage.getCardById(cardId);
+    if (!card) return res.status(404).json({ message: "Card not found" });
+
+    const statusSchema = z.object({ status: z.enum(["unassigned", "active", "suspended", "lost", "archived"]) });
+    const parsed = statusSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Invalid status" });
+
+    const updated = await storage.updateCard(cardId, { status: parsed.data.status });
+    res.json(updated);
+  });
+
+  app.get("/api/admin/cards/export", requireAdmin, async (_req, res) => {
+    const allCards = await storage.listAllCards();
+    const csv = ["card_code,product_tier,status,owner_id,profile_id,tap_count,qr_scan_count,nickname,activated_at,created_at"];
+    for (const c of allCards) {
+      csv.push(`${c.cardCode},${c.productTier},${c.status},${c.ownerId || ""},${c.profileId || ""},${c.tapCount},${c.qrScanCount},${c.nickname || ""},${c.activatedAt || ""},${c.createdAt || ""}`);
+    }
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=konex-cards-export.csv");
+    res.send(csv.join("\n"));
   });
 
   return httpServer;

@@ -26,8 +26,11 @@ export default function AuthPage() {
   const initialTab = urlParams.get("tab") === "register" ? "register" : "login";
   const [activeTab, setActiveTab] = useState(initialTab);
 
+  const redirectParam = urlParams.get("redirect");
+  const redirectTo = redirectParam && redirectParam.startsWith("/") ? redirectParam : "/dashboard";
+
   if (user) {
-    setLocation("/dashboard");
+    setLocation(redirectTo);
     return null;
   }
 
@@ -54,7 +57,7 @@ export default function AuthPage() {
             <LoginForm 
               onSubmit={login} 
               isLoading={isLoggingIn} 
-              onSuccess={() => setLocation("/dashboard")}
+              onSuccess={() => setLocation(redirectTo)}
             />
           </TabsContent>
 
