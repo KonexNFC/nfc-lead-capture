@@ -235,11 +235,11 @@ export default function AdminCards() {
                 Generate Cards
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>Generate Cards</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4">
+              <div className="space-y-4 py-4 overflow-y-auto flex-1">
                 <div className="space-y-2">
                   <Label>Quantity (1-500)</Label>
                   <Input
