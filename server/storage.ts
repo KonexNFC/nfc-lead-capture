@@ -2,6 +2,7 @@ import { db } from "./db";
 import {
   users, profiles, leads, siteSettings, testimonials,
   cards, cardTapEvents, cardAssignmentsHistory,
+  organizations, organizationMembers, organizationInvitations, organizationCards,
   type User, type InsertUser,
   type Profile, type InsertProfile, type UpdateProfileRequest,
   type Lead, type InsertLead,
@@ -9,7 +10,11 @@ import {
   type Testimonial, type InsertTestimonial,
   type Card, type InsertCard,
   type CardTapEvent, type InsertCardTapEvent,
-  type CardAssignment, type InsertCardAssignment
+  type CardAssignment, type InsertCardAssignment,
+  type Organization, type InsertOrganization,
+  type OrganizationMember, type InsertOrganizationMember,
+  type OrganizationInvitation, type InsertOrganizationInvitation,
+  type OrganizationCard, type InsertOrganizationCard
 } from "@shared/schema";
 import { eq, desc, sql, count, gte, and, like, inArray } from "drizzle-orm";
 
@@ -83,6 +88,34 @@ export interface IStorage {
   // Card Assignment History
   createAssignmentHistory(entry: InsertCardAssignment): Promise<CardAssignment>;
   getAssignmentHistoryByCardId(cardId: number): Promise<CardAssignment[]>;
+
+  // Organizations
+  createOrganization(org: InsertOrganization): Promise<Organization>;
+  getOrganization(id: number): Promise<Organization | undefined>;
+  getOrganizationBySlug(slug: string): Promise<Organization | undefined>;
+  updateOrganization(id: number, updates: Partial<Organization>): Promise<Organization>;
+  getUserOrganizations(userId: number): Promise<(Organization & { role: string })[]>;
+
+  // Organization Members
+  addOrganizationMember(member: InsertOrganizationMember): Promise<OrganizationMember>;
+  getOrganizationMember(orgId: number, userId: number): Promise<OrganizationMember | undefined>;
+  getOrganizationMembers(orgId: number): Promise<(OrganizationMember & { email: string; name?: string })[]>;
+  updateOrganizationMemberRole(id: number, role: string): Promise<OrganizationMember>;
+  removeOrganizationMember(id: number): Promise<void>;
+
+  // Organization Invitations
+  createOrganizationInvitation(invitation: InsertOrganizationInvitation): Promise<OrganizationInvitation>;
+  getOrganizationInvitationByToken(token: string): Promise<OrganizationInvitation | undefined>;
+  getOrganizationInvitations(orgId: number): Promise<OrganizationInvitation[]>;
+  updateOrganizationInvitationStatus(id: number, status: string): Promise<void>;
+
+  // Organization Cards
+  assignCardToOrganization(entry: InsertOrganizationCard): Promise<OrganizationCard>;
+  getOrganizationCards(orgId: number): Promise<(OrganizationCard & { cardCode: string; status: string; productTier: string })[]>;
+  removeOrganizationCard(id: number): Promise<void>;
+
+  // Organization Analytics
+  getOrganizationAnalytics(orgId: number): Promise<{ totalCards: number; activeCards: number; totalTaps: number; totalLeads: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -509,6 +542,167 @@ export class DatabaseStorage implements IStorage {
 
   async getAssignmentHistoryByCardId(cardId: number): Promise<CardAssignment[]> {
     return await db.select().from(cardAssignmentsHistory).where(eq(cardAssignmentsHistory.cardId, cardId)).orderBy(desc(cardAssignmentsHistory.createdAt));
+  }
+
+  async createOrganization(org: InsertOrganization): Promise<Organization> {
+    const [created] = await db.insert(organizations).values(org).returning();
+    return created;
+  }
+
+  async getOrganization(id: number): Promise<Organization | undefined> {
+    const [org] = await db.select().from(organizations).where(eq(organizations.id, id));
+    return org;
+  }
+
+  async getOrganizationBySlug(slug: string): Promise<Organization | undefined> {
+    const [org] = await db.select().from(organizations).where(eq(organizations.slug, slug));
+    return org;
+  }
+
+  async updateOrganization(id: number, updates: Partial<Organization>): Promise<Organization> {
+    const [updated] = await db.update(organizations).set({ ...updates, updatedAt: new Date() }).where(eq(organizations.id, id)).returning();
+    return updated;
+  }
+
+  async getUserOrganizations(userId: number): Promise<(Organization & { role: string })[]> {
+    const rows = await db
+      .select({
+        id: organizations.id,
+        name: organizations.name,
+        slug: organizations.slug,
+        logoUrl: organizations.logoUrl,
+        ownerUserId: organizations.ownerUserId,
+        planType: organizations.planType,
+        createdAt: organizations.createdAt,
+        updatedAt: organizations.updatedAt,
+        role: organizationMembers.role,
+      })
+      .from(organizationMembers)
+      .innerJoin(organizations, eq(organizationMembers.organizationId, organizations.id))
+      .where(and(eq(organizationMembers.userId, userId), eq(organizationMembers.status, "active")));
+    return rows;
+  }
+
+  async addOrganizationMember(member: InsertOrganizationMember): Promise<OrganizationMember> {
+    const [created] = await db.insert(organizationMembers).values(member).returning();
+    return created;
+  }
+
+  async getOrganizationMember(orgId: number, userId: number): Promise<OrganizationMember | undefined> {
+    const [member] = await db.select().from(organizationMembers)
+      .where(and(eq(organizationMembers.organizationId, orgId), eq(organizationMembers.userId, userId)));
+    return member;
+  }
+
+  async getOrganizationMembers(orgId: number): Promise<(OrganizationMember & { email: string; name?: string })[]> {
+    const rows = await db
+      .select({
+        id: organizationMembers.id,
+        organizationId: organizationMembers.organizationId,
+        userId: organizationMembers.userId,
+        role: organizationMembers.role,
+        department: organizationMembers.department,
+        status: organizationMembers.status,
+        createdAt: organizationMembers.createdAt,
+        updatedAt: organizationMembers.updatedAt,
+        email: users.email,
+        name: profiles.name,
+      })
+      .from(organizationMembers)
+      .innerJoin(users, eq(organizationMembers.userId, users.id))
+      .leftJoin(profiles, eq(organizationMembers.userId, profiles.userId))
+      .where(eq(organizationMembers.organizationId, orgId))
+      .orderBy(organizationMembers.createdAt);
+    return rows;
+  }
+
+  async updateOrganizationMemberRole(id: number, role: string): Promise<OrganizationMember> {
+    const [updated] = await db.update(organizationMembers).set({ role, updatedAt: new Date() }).where(eq(organizationMembers.id, id)).returning();
+    return updated;
+  }
+
+  async removeOrganizationMember(id: number): Promise<void> {
+    await db.delete(organizationMembers).where(eq(organizationMembers.id, id));
+  }
+
+  async createOrganizationInvitation(invitation: InsertOrganizationInvitation): Promise<OrganizationInvitation> {
+    const [created] = await db.insert(organizationInvitations).values(invitation).returning();
+    return created;
+  }
+
+  async getOrganizationInvitationByToken(token: string): Promise<OrganizationInvitation | undefined> {
+    const [inv] = await db.select().from(organizationInvitations).where(eq(organizationInvitations.token, token));
+    return inv;
+  }
+
+  async getOrganizationInvitations(orgId: number): Promise<OrganizationInvitation[]> {
+    return await db.select().from(organizationInvitations)
+      .where(eq(organizationInvitations.organizationId, orgId))
+      .orderBy(desc(organizationInvitations.createdAt));
+  }
+
+  async updateOrganizationInvitationStatus(id: number, status: string): Promise<void> {
+    await db.update(organizationInvitations).set({ status }).where(eq(organizationInvitations.id, id));
+  }
+
+  async assignCardToOrganization(entry: InsertOrganizationCard): Promise<OrganizationCard> {
+    const [created] = await db.insert(organizationCards).values(entry).returning();
+    return created;
+  }
+
+  async getOrganizationCards(orgId: number): Promise<(OrganizationCard & { cardCode: string; status: string; productTier: string })[]> {
+    const rows = await db
+      .select({
+        id: organizationCards.id,
+        organizationId: organizationCards.organizationId,
+        cardId: organizationCards.cardId,
+        assignedUserId: organizationCards.assignedUserId,
+        createdAt: organizationCards.createdAt,
+        cardCode: cards.cardCode,
+        status: cards.status,
+        productTier: cards.productTier,
+      })
+      .from(organizationCards)
+      .innerJoin(cards, eq(organizationCards.cardId, cards.id))
+      .where(eq(organizationCards.organizationId, orgId));
+    return rows;
+  }
+
+  async removeOrganizationCard(id: number): Promise<void> {
+    await db.delete(organizationCards).where(eq(organizationCards.id, id));
+  }
+
+  async getOrganizationAnalytics(orgId: number): Promise<{ totalCards: number; activeCards: number; totalTaps: number; totalLeads: number }> {
+    const orgCards = await db.select({ cardId: organizationCards.cardId }).from(organizationCards)
+      .where(eq(organizationCards.organizationId, orgId));
+    const cardIds = orgCards.map(c => c.cardId);
+
+    if (cardIds.length === 0) {
+      return { totalCards: 0, activeCards: 0, totalTaps: 0, totalLeads: 0 };
+    }
+
+    const cardRows = await db.select().from(cards).where(inArray(cards.id, cardIds));
+    const totalCards = cardRows.length;
+    const activeCards = cardRows.filter(c => c.status === "active").length;
+    const totalTaps = cardRows.reduce((sum, c) => sum + c.tapCount, 0);
+
+    const memberRows = await db.select({ userId: organizationMembers.userId }).from(organizationMembers)
+      .where(eq(organizationMembers.organizationId, orgId));
+    const memberUserIds = memberRows.map(m => m.userId);
+
+    let totalLeads = 0;
+    if (memberUserIds.length > 0) {
+      const memberProfiles = await db.select({ id: profiles.id }).from(profiles)
+        .where(inArray(profiles.userId, memberUserIds));
+      const profileIds = memberProfiles.map(p => p.id);
+      if (profileIds.length > 0) {
+        const [leadCount] = await db.select({ count: sql<number>`count(*)::int` }).from(leads)
+          .where(inArray(leads.profileId, profileIds));
+        totalLeads = leadCount?.count ?? 0;
+      }
+    }
+
+    return { totalCards, activeCards, totalTaps, totalLeads };
   }
 }
 

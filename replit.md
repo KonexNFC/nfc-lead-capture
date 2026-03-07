@@ -119,6 +119,19 @@ Core tables:
 - `cards`: Physical NFC card inventory (see NFC Card Management System above)
 - `card_tap_events`: Tap analytics (see above)
 - `card_assignments_history`: Assignment audit log (see above)
+- `organizations`: Team/company workspaces (name, slug, logoUrl, ownerUserId, planType: free/pro/business/enterprise)
+- `organization_members`: Membership (organizationId, userId, role: owner/admin/manager/member, department, status: invited/active/suspended)
+- `organization_invitations`: Invite tokens (organizationId, email, role, token, status: pending/accepted/expired, expiresAt)
+- `organization_cards`: Cards assigned to orgs (organizationId, cardId, assignedUserId)
+
+### Organization System
+- Users can create organizations and invite team members via token-based invitations
+- Role-based permissions: owner (full), admin (manage members/cards), manager (view analytics/manage cards), member (own profile/cards)
+- Cards can belong to individuals OR organizations (non-destructive, parallel ownership)
+- Organization analytics: total cards, active cards, total taps, total leads (aggregated from member profiles)
+- API routes: `/api/organizations`, `/api/organizations/:id`, `/api/organizations/:id/invite`, `/api/organizations/accept-invite`, `/api/organizations/:id/members`, `/api/organizations/:id/cards`, `/api/organizations/:id/analytics`, `/api/organizations/:id/invitations`
+- Frontend pages: `/dashboard/organization`, `/dashboard/organization/members`, `/dashboard/organization/cards`, `/dashboard/organization/settings`
+- Sidebar shows "Organization" link for all logged-in users
 
 ### Admin Panel
 - Admin users have `isAdmin: true` flag in the users table

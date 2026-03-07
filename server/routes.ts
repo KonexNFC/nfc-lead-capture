@@ -98,6 +98,104 @@ async function seedDatabase() {
     console.log("Demo cards seeded successfully!");
   }
 
+  const existingOrgs = await storage.getUserOrganizations(
+    (await storage.getUserByEmail("demo@konex.app"))?.id ?? 0
+  );
+  if (existingOrgs.length === 0) {
+    const demoUser = await storage.getUserByEmail("demo@konex.app");
+    if (demoUser) {
+      const hashedPw = await hashPassword("team123");
+
+      const teamUser1 = await storage.getUserByEmail("team1@konex.app") ??
+        await storage.createUser({ email: "team1@konex.app", password: hashedPw });
+      await storage.getProfile(teamUser1.id) ??
+        await storage.createProfile({
+          userId: teamUser1.id,
+          name: "Jordan Lee",
+          title: "Sales Manager",
+          company: "Acme Inc",
+          slug: "jlee",
+          theme: "light",
+          links: { email: "jordan@acme.inc", linkedin: "https://linkedin.com/in/jlee" },
+        });
+
+      const teamUser2 = await storage.getUserByEmail("team2@konex.app") ??
+        await storage.createUser({ email: "team2@konex.app", password: hashedPw });
+      await storage.getProfile(teamUser2.id) ??
+        await storage.createProfile({
+          userId: teamUser2.id,
+          name: "Casey Tran",
+          title: "Marketing Lead",
+          company: "Acme Inc",
+          slug: "ctran",
+          theme: "dark",
+          links: { email: "casey@acme.inc", instagram: "https://instagram.com/caseyt" },
+        });
+
+      const org = await storage.createOrganization({
+        name: "Acme Inc",
+        slug: "acme-inc",
+        ownerUserId: demoUser.id,
+        planType: "business",
+      });
+
+      await storage.addOrganizationMember({
+        organizationId: org.id,
+        userId: demoUser.id,
+        role: "owner",
+        status: "active",
+      });
+
+      await storage.addOrganizationMember({
+        organizationId: org.id,
+        userId: teamUser1.id,
+        role: "admin",
+        status: "active",
+      });
+
+      await storage.addOrganizationMember({
+        organizationId: org.id,
+        userId: teamUser2.id,
+        role: "member",
+        status: "active",
+      });
+
+      const orgCardCodes = ["KONEX-B-00001", "KONEX-P-00001", "KONEX-E-00001"];
+      for (const code of orgCardCodes) {
+        const card = await storage.getCardByCode(code);
+        if (card) {
+          await storage.assignCardToOrganization({
+            organizationId: org.id,
+            cardId: card.id,
+            assignedUserId: code === "KONEX-P-00001" ? demoUser.id : null,
+          });
+        }
+      }
+
+      const orgOnlyCodes = [
+        { code: "KONEX-B-00002", tier: "basic" as const },
+        { code: "KONEX-B-00003", tier: "basic" as const },
+      ];
+      for (const { code, tier } of orgOnlyCodes) {
+        const existing = await storage.getCardByCode(code);
+        if (!existing) {
+          const newCard = await storage.createCard({
+            cardCode: code,
+            productTier: tier,
+            status: "unassigned",
+            nickname: null,
+          });
+          await storage.assignCardToOrganization({
+            organizationId: org.id,
+            cardId: newCard.id,
+          });
+        }
+      }
+
+      console.log("Demo organization seeded successfully!");
+    }
+  }
+
   await ensureAdminAccount();
 }
 
@@ -348,6 +446,12 @@ export async function registerRoutes(
     allLeads.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
     res.json({ totalLeads, recentLeads: allLeads.slice(0, 5), totalViews });
   });
+
+  // === Auth Middleware ===
+  function requireAuth(req: any, res: any, next: any) {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    next();
+  }
 
   // === Admin Routes ===
   function requireAdmin(req: any, res: any, next: any) {
@@ -889,6 +993,214 @@ export async function registerRoutes(
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", "attachment; filename=konex-encoding-csv.csv");
     res.send(csv.join("\n"));
+  });
+
+  // ==================== ORGANIZATION ROUTES ====================
+
+  const requireOrgRole = (allowedRoles: string[]) => {
+    return async (req: any, res: any, next: any) => {
+      if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+      const orgId = parseInt(req.params.orgId || req.params.id);
+      if (isNaN(orgId)) return res.status(400).json({ message: "Invalid organization ID" });
+      const member = await storage.getOrganizationMember(orgId, req.user.id);
+      if (!member || !allowedRoles.includes(member.role)) {
+        return res.status(403).json({ message: "You don't have permission for this action" });
+      }
+      (req as any).orgMember = member;
+      next();
+    };
+  };
+
+  app.post("/api/organizations", requireAuth, async (req, res) => {
+    const schema = z.object({
+      name: z.string().min(2).max(100),
+      slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/),
+      planType: z.enum(["free", "pro", "business", "enterprise"]).optional(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+
+    const existing = await storage.getOrganizationBySlug(parsed.data.slug);
+    if (existing) return res.status(409).json({ message: "Organization slug is already taken" });
+
+    const org = await storage.createOrganization({
+      name: parsed.data.name,
+      slug: parsed.data.slug,
+      ownerUserId: req.user!.id,
+      planType: parsed.data.planType || "free",
+    });
+
+    await storage.addOrganizationMember({
+      organizationId: org.id,
+      userId: req.user!.id,
+      role: "owner",
+      status: "active",
+    });
+
+    res.status(201).json(org);
+  });
+
+  app.get("/api/organizations", requireAuth, async (req, res) => {
+    const orgs = await storage.getUserOrganizations(req.user!.id);
+    res.json(orgs);
+  });
+
+  app.get("/api/organizations/:id", requireAuth, async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    if (isNaN(orgId)) return res.status(400).json({ message: "Invalid ID" });
+    const member = await storage.getOrganizationMember(orgId, req.user!.id);
+    if (!member) return res.status(403).json({ message: "Not a member of this organization" });
+    const org = await storage.getOrganization(orgId);
+    if (!org) return res.status(404).json({ message: "Organization not found" });
+    res.json({ ...org, role: member.role });
+  });
+
+  app.patch("/api/organizations/:id", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const schema = z.object({
+      name: z.string().min(2).max(100).optional(),
+      logoUrl: z.string().nullable().optional(),
+      planType: z.enum(["free", "pro", "business", "enterprise"]).optional(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+    const updated = await storage.updateOrganization(orgId, parsed.data);
+    res.json(updated);
+  });
+
+  app.post("/api/organizations/:id/invite", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const schema = z.object({
+      email: z.string().email(),
+      role: z.enum(["admin", "manager", "member"]),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    const invitation = await storage.createOrganizationInvitation({
+      organizationId: orgId,
+      email: parsed.data.email,
+      role: parsed.data.role,
+      token,
+      status: "pending",
+      invitedByUserId: req.user!.id,
+      expiresAt,
+    });
+
+    res.status(201).json(invitation);
+  });
+
+  app.post("/api/organizations/accept-invite", requireAuth, async (req, res) => {
+    const schema = z.object({ token: z.string() });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Invalid token" });
+
+    const invitation = await storage.getOrganizationInvitationByToken(parsed.data.token);
+    if (!invitation) return res.status(404).json({ message: "Invitation not found" });
+    if (invitation.status !== "pending") return res.status(400).json({ message: "Invitation is no longer valid" });
+    if (new Date() > new Date(invitation.expiresAt)) {
+      await storage.updateOrganizationInvitationStatus(invitation.id, "expired");
+      return res.status(400).json({ message: "Invitation has expired" });
+    }
+
+    const existingMember = await storage.getOrganizationMember(invitation.organizationId, req.user!.id);
+    if (existingMember) return res.status(400).json({ message: "Already a member of this organization" });
+
+    await storage.addOrganizationMember({
+      organizationId: invitation.organizationId,
+      userId: req.user!.id,
+      role: invitation.role,
+      status: "active",
+    });
+
+    await storage.updateOrganizationInvitationStatus(invitation.id, "accepted");
+    res.json({ message: "Invitation accepted" });
+  });
+
+  app.get("/api/organizations/:id/invitations", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const invitations = await storage.getOrganizationInvitations(orgId);
+    res.json(invitations);
+  });
+
+  app.get("/api/organizations/:id/members", requireAuth, requireOrgRole(["owner", "admin", "manager", "member"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const members = await storage.getOrganizationMembers(orgId);
+    res.json(members);
+  });
+
+  app.patch("/api/organizations/:id/members/:memberId", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const memberId = parseInt(req.params.memberId);
+    if (isNaN(memberId)) return res.status(400).json({ message: "Invalid member ID" });
+    const schema = z.object({ role: z.enum(["admin", "manager", "member"]) });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Invalid role" });
+    const members = await storage.getOrganizationMembers(orgId);
+    const target = members.find(m => m.id === memberId);
+    if (!target) return res.status(404).json({ message: "Member not found in this organization" });
+    if (target.role === "owner") return res.status(403).json({ message: "Cannot change owner role" });
+    const updated = await storage.updateOrganizationMemberRole(memberId, parsed.data.role);
+    res.json(updated);
+  });
+
+  app.delete("/api/organizations/:id/members/:memberId", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const memberId = parseInt(req.params.memberId);
+    if (isNaN(memberId)) return res.status(400).json({ message: "Invalid member ID" });
+    const members = await storage.getOrganizationMembers(orgId);
+    const target = members.find(m => m.id === memberId);
+    if (!target) return res.status(404).json({ message: "Member not found in this organization" });
+    if (target.role === "owner") return res.status(403).json({ message: "Cannot remove organization owner" });
+    await storage.removeOrganizationMember(memberId);
+    res.json({ message: "Member removed" });
+  });
+
+  app.get("/api/organizations/:id/cards", requireAuth, requireOrgRole(["owner", "admin", "manager", "member"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const orgCards = await storage.getOrganizationCards(orgId);
+    res.json(orgCards);
+  });
+
+  app.post("/api/organizations/:id/cards", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const schema = z.object({
+      cardId: z.number(),
+      assignedUserId: z.number().nullable().optional(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
+
+    const card = await storage.getCardById(parsed.data.cardId);
+    if (!card) return res.status(404).json({ message: "Card not found" });
+
+    if (parsed.data.assignedUserId) {
+      const member = await storage.getOrganizationMember(orgId, parsed.data.assignedUserId);
+      if (!member) return res.status(400).json({ message: "User is not a member of this organization" });
+    }
+
+    const orgCard = await storage.assignCardToOrganization({
+      organizationId: orgId,
+      cardId: parsed.data.cardId,
+      assignedUserId: parsed.data.assignedUserId || null,
+    });
+    res.status(201).json(orgCard);
+  });
+
+  app.delete("/api/organizations/:id/cards/:orgCardId", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
+    const orgCardId = parseInt(req.params.orgCardId);
+    if (isNaN(orgCardId)) return res.status(400).json({ message: "Invalid ID" });
+    await storage.removeOrganizationCard(orgCardId);
+    res.json({ message: "Card removed from organization" });
+  });
+
+  app.get("/api/organizations/:id/analytics", requireAuth, requireOrgRole(["owner", "admin", "manager"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const analytics = await storage.getOrganizationAnalytics(orgId);
+    res.json(analytics);
   });
 
   return httpServer;

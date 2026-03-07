@@ -30,6 +30,10 @@ import TestimonialPage from "@/pages/dashboard/testimonial";
 import MyCardsPage from "@/pages/dashboard/cards";
 import AdminTestimonials from "@/pages/dashboard/admin/testimonials";
 import AdminCards from "@/pages/dashboard/admin/cards";
+import OrganizationDashboard from "@/pages/dashboard/organization/index";
+import OrganizationMembers from "@/pages/dashboard/organization/members";
+import OrganizationCards from "@/pages/dashboard/organization/cards";
+import OrganizationSettings from "@/pages/dashboard/organization/settings";
 import TapRouter from "@/pages/tap-router";
 import ActivateCard from "@/pages/activate-card";
 import NotFound from "@/pages/not-found";
@@ -108,6 +112,20 @@ function Router() {
       </Route>
       <Route path="/dashboard/cards">
         <ProtectedRoute component={MyCardsPage} />
+      </Route>
+
+      {/* Organization Routes */}
+      <Route path="/dashboard/organization">
+        <ProtectedRoute component={OrganizationDashboard} />
+      </Route>
+      <Route path="/dashboard/organization/members">
+        <ProtectedRoute component={OrganizationMembers} />
+      </Route>
+      <Route path="/dashboard/organization/cards">
+        <ProtectedRoute component={OrganizationCards} />
+      </Route>
+      <Route path="/dashboard/organization/settings">
+        <ProtectedRoute component={OrganizationSettings} />
       </Route>
 
       {/* Admin shortcut redirect */}

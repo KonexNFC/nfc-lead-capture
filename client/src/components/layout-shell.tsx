@@ -15,7 +15,8 @@ import {
   Plus,
   Check,
   MessageSquareQuote,
-  CreditCard
+  CreditCard,
+  Building2
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
     { name: 'Modules', href: '/dashboard/modules', icon: Blocks },
     { name: 'Leads', href: '/dashboard/leads', icon: Users },
     { name: 'My Cards', href: '/dashboard/cards', icon: CreditCard },
+    { name: 'Organization', href: '/dashboard/organization', icon: Building2 },
     { name: 'Leave a Review', href: '/dashboard/testimonial', icon: MessageSquareQuote },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
     ...(user?.isAdmin ? [

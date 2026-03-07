@@ -1,0 +1,152 @@
+You are upgrading an existing live SaaS platform called KONEX NFC.
+
+IMPORTANT:
+Do NOT rebuild the application.
+Do NOT remove existing functionality.
+Extend the current architecture safely.
+
+Current system already includes:
+- authentication
+- dashboard
+- user profiles
+- NFC card activation
+- card inventory
+- card generator
+- card routing
+- lead capture
+- analytics
+
+Goal:
+Add enterprise team accounts so companies can manage multiple users, cards, and analytics from one workspace.
+
+==================================================
+DATABASE MODELS
+==================================================
+
+Create table: organizations
+
+Fields:
+- id
+- name
+- slug
+- logo_url (nullable)
+- owner_user_id
+- plan_type (enum: free, pro, business, enterprise)
+- created_at
+- updated_at
+
+Create table: organization_members
+
+Fields:
+- id
+- organization_id
+- user_id
+- role (enum: owner, admin, manager, member)
+- department (nullable)
+- status (enum: invited, active, suspended)
+- created_at
+- updated_at
+
+Create table: organization_invitations
+
+Fields:
+- id
+- organization_id
+- email
+- role
+- token
+- status (pending, accepted, expired)
+- invited_by_user_id
+- created_at
+- expires_at
+
+Create table: organization_cards
+
+Fields:
+- id
+- organization_id
+- card_id
+- assigned_user_id
+- created_at
+
+==================================================
+FEATURES
+==================================================
+
+Allow users to create an organization workspace.
+
+Add UI section:
+Dashboard → Organizations
+
+Pages required:
+
+/dashboard/organization
+/dashboard/organization/members
+/dashboard/organization/cards
+/dashboard/organization/settings
+
+Features:
+
+Create organization
+Invite team members
+Accept invitation
+Assign roles
+View members
+Remove members
+Assign cards to members
+View organization card inventory
+View basic organization analytics
+
+==================================================
+PERMISSIONS
+==================================================
+
+Owner
+- full control
+
+Admin
+- manage members
+- assign cards
+
+Manager
+- view analytics
+- manage assigned cards
+
+Member
+- manage own profile and assigned cards
+
+==================================================
+ANALYTICS
+==================================================
+
+Organization dashboard must show:
+
+Total cards
+Active cards
+Total NFC taps
+Total leads captured
+
+==================================================
+NON-DESTRUCTIVE RULES
+==================================================
+
+Existing personal accounts must continue working.
+
+Users without organizations should see the same dashboard as before.
+
+Cards can belong to:
+- individual users
+- organizations
+
+==================================================
+DELIVERABLE
+==================================================
+
+Implement database migrations
+Create API routes
+Create UI pages
+Add organization navigation
+Seed demo organization with 3 users and 5 cards
+
+Do not stop at planning.
+Implement the feature in the current codebase.

@@ -211,6 +211,72 @@ export const cardAssignmentsHistoryRelations = relations(cardAssignmentsHistory,
   card: one(cards, { fields: [cardAssignmentsHistory.cardId], references: [cards.id] }),
 }));
 
+// Organizations
+export const organizations = pgTable("organizations", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  logoUrl: text("logo_url"),
+  ownerUserId: integer("owner_user_id").notNull(),
+  planType: text("plan_type").notNull().default("free"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const organizationMembers = pgTable("organization_members", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").notNull(),
+  userId: integer("user_id").notNull(),
+  role: text("role").notNull().default("member"),
+  department: text("department"),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const organizationInvitations = pgTable("organization_invitations", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").notNull(),
+  email: text("email").notNull(),
+  role: text("role").notNull().default("member"),
+  token: text("token").notNull().unique(),
+  status: text("status").notNull().default("pending"),
+  invitedByUserId: integer("invited_by_user_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export const organizationCards = pgTable("organization_cards", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").notNull(),
+  cardId: integer("card_id").notNull(),
+  assignedUserId: integer("assigned_user_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const organizationsRelations = relations(organizations, ({ one, many }) => ({
+  owner: one(users, { fields: [organizations.ownerUserId], references: [users.id] }),
+  members: many(organizationMembers),
+  invitations: many(organizationInvitations),
+  cards: many(organizationCards),
+}));
+
+export const organizationMembersRelations = relations(organizationMembers, ({ one }) => ({
+  organization: one(organizations, { fields: [organizationMembers.organizationId], references: [organizations.id] }),
+  user: one(users, { fields: [organizationMembers.userId], references: [users.id] }),
+}));
+
+export const organizationInvitationsRelations = relations(organizationInvitations, ({ one }) => ({
+  organization: one(organizations, { fields: [organizationInvitations.organizationId], references: [organizations.id] }),
+  invitedBy: one(users, { fields: [organizationInvitations.invitedByUserId], references: [users.id] }),
+}));
+
+export const organizationCardsRelations = relations(organizationCards, ({ one }) => ({
+  organization: one(organizations, { fields: [organizationCards.organizationId], references: [organizations.id] }),
+  card: one(cards, { fields: [organizationCards.cardId], references: [cards.id] }),
+  assignedUser: one(users, { fields: [organizationCards.assignedUserId], references: [users.id] }),
+}));
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, isAdmin: true });
 export const insertProfileSchema = createInsertSchema(profiles).omit({ id: true, userId: true, createdAt: true });
@@ -220,6 +286,10 @@ export const insertSiteSettingSchema = createInsertSchema(siteSettings).omit({ i
 export const insertCardSchema = createInsertSchema(cards).omit({ id: true, createdAt: true, updatedAt: true, tapCount: true, qrScanCount: true });
 export const insertCardTapEventSchema = createInsertSchema(cardTapEvents).omit({ id: true, createdAt: true });
 export const insertCardAssignmentSchema = createInsertSchema(cardAssignmentsHistory).omit({ id: true, createdAt: true });
+export const insertOrganizationSchema = createInsertSchema(organizations).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertOrganizationMemberSchema = createInsertSchema(organizationMembers).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertOrganizationInvitationSchema = createInsertSchema(organizationInvitations).omit({ id: true, createdAt: true });
+export const insertOrganizationCardSchema = createInsertSchema(organizationCards).omit({ id: true, createdAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -238,6 +308,15 @@ export type CardTapEvent = typeof cardTapEvents.$inferSelect;
 export type InsertCardTapEvent = z.infer<typeof insertCardTapEventSchema>;
 export type CardAssignment = typeof cardAssignmentsHistory.$inferSelect;
 export type InsertCardAssignment = z.infer<typeof insertCardAssignmentSchema>;
+
+export type Organization = typeof organizations.$inferSelect;
+export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
+export type OrganizationMember = typeof organizationMembers.$inferSelect;
+export type InsertOrganizationMember = z.infer<typeof insertOrganizationMemberSchema>;
+export type OrganizationInvitation = typeof organizationInvitations.$inferSelect;
+export type InsertOrganizationInvitation = z.infer<typeof insertOrganizationInvitationSchema>;
+export type OrganizationCard = typeof organizationCards.$inferSelect;
+export type InsertOrganizationCard = z.infer<typeof insertOrganizationCardSchema>;
 
 export type CreateProfileRequest = InsertProfile;
 export type UpdateProfileRequest = Partial<InsertProfile>;
