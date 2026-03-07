@@ -235,59 +235,63 @@ export default function AdminCards() {
                 Generate Cards
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Generate Cards</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Quantity (1-500)</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={500}
-                    value={genQuantity}
-                    onChange={(e) => setGenQuantity(e.target.value)}
-                    data-testid="input-gen-quantity"
-                  />
+              <div className="space-y-3 py-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Quantity (1-500)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={500}
+                      value={genQuantity}
+                      onChange={(e) => setGenQuantity(e.target.value)}
+                      data-testid="input-gen-quantity"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Product Tier</Label>
+                    <Select value={genTier} onValueChange={setGenTier}>
+                      <SelectTrigger data-testid="select-gen-tier">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="basic">Basic</SelectItem>
+                        <SelectItem value="premium">Premium</SelectItem>
+                        <SelectItem value="elite">Elite</SelectItem>
+                        <SelectItem value="custom">Custom</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Product Tier</Label>
-                  <Select value={genTier} onValueChange={setGenTier}>
-                    <SelectTrigger data-testid="select-gen-tier">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="basic">Basic</SelectItem>
-                      <SelectItem value="premium">Premium</SelectItem>
-                      <SelectItem value="elite">Elite</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Prefix</Label>
+                    <Input
+                      value={genPrefix}
+                      onChange={(e) => setGenPrefix(e.target.value)}
+                      placeholder="KONEX"
+                      data-testid="input-gen-prefix"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Start Number</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={genStartNumber}
+                      onChange={(e) => setGenStartNumber(e.target.value)}
+                      placeholder="1"
+                      data-testid="input-gen-start-number"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Prefix</Label>
-                  <Input
-                    value={genPrefix}
-                    onChange={(e) => setGenPrefix(e.target.value)}
-                    placeholder="KONEX"
-                    data-testid="input-gen-prefix"
-                  />
-                  <p className="text-xs text-muted-foreground">Cards will be generated as PREFIX-00001, PREFIX-00002, etc.</p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Start Number</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={genStartNumber}
-                    onChange={(e) => setGenStartNumber(e.target.value)}
-                    placeholder="1"
-                    data-testid="input-gen-start-number"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nickname Pattern (optional)</Label>
+                <p className="text-xs text-muted-foreground">Cards: PREFIX-00001, PREFIX-00002, etc.</p>
+                <div className="space-y-1">
+                  <Label className="text-xs">Nickname Pattern (optional)</Label>
                   <Input
                     value={genNickname}
                     onChange={(e) => setGenNickname(e.target.value)}
