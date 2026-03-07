@@ -144,8 +144,23 @@ export default function AdminCards() {
     },
   });
 
-  const handleExportCSV = () => {
-    window.open("/api/admin/cards/export", "_blank");
+  const handleExportCSV = async () => {
+    try {
+      const res = await fetch("/api/admin/cards/export", { credentials: "include" });
+      if (!res.ok) throw new Error("Export failed");
+      const csvText = await res.text();
+      const blob = new Blob([csvText], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `konex-cards-export-${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({ title: "Export failed", description: "Could not download CSV.", variant: "destructive" });
+    }
   };
 
   const handleGenerate = () => {
