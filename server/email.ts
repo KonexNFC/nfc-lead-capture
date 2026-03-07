@@ -79,6 +79,56 @@ export async function sendPasswordResetEmail(toEmail: string, resetUrl: string):
   }
 }
 
+export async function sendOrganizationInviteEmail(
+  toEmail: string,
+  orgName: string,
+  inviterName: string,
+  role: string,
+  acceptUrl: string
+): Promise<void> {
+  try {
+    const { client, fromEmail } = await getUncachableSendGridClient();
+
+    await client.send({
+      to: toEmail,
+      from: { email: fromEmail, name: 'KONEX' },
+      subject: `You've been invited to join ${orgName} on KONEX`,
+      text: `${inviterName} has invited you to join "${orgName}" as a ${role} on KONEX.\n\nClick the link below to accept the invitation:\n${acceptUrl}\n\nThis invitation expires in 7 days.\n\nIf you don't have a KONEX account yet, you'll need to create one first.`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px;">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <h1 style="font-size: 24px; font-weight: 700; color: #111; margin: 0;">KONEX</h1>
+          </div>
+          <div style="background: #f9fafb; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+            <h2 style="font-size: 20px; font-weight: 600; color: #111; margin: 0 0 12px;">You're invited!</h2>
+            <p style="font-size: 15px; color: #555; line-height: 1.6; margin: 0 0 8px;">
+              <strong>${inviterName}</strong> has invited you to join <strong>${orgName}</strong> as a <strong>${role}</strong>.
+            </p>
+            <p style="font-size: 14px; color: #888; line-height: 1.5; margin: 0 0 24px;">
+              Accept the invitation to start collaborating with the team.
+            </p>
+            <div style="text-align: center; margin: 24px 0;">
+              <a href="${acceptUrl}" style="display: inline-block; background: #111; color: #fff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
+                Accept Invitation
+              </a>
+            </div>
+            <p style="font-size: 13px; color: #888; line-height: 1.5; margin: 24px 0 0;">
+              This invitation expires in 7 days. If you don't have a KONEX account yet, create one first and then click the link above.
+            </p>
+          </div>
+          <p style="font-size: 12px; color: #aaa; text-align: center; margin-top: 24px;">
+            KONEX - Digital Business Cards
+          </p>
+        </div>
+      `,
+    });
+
+    console.log(`[EMAIL] Organization invite sent to ${toEmail} for org: ${orgName}`);
+  } catch (err) {
+    console.error(`[EMAIL ERROR] Failed to send organization invite to ${toEmail}:`, err);
+  }
+}
+
 export async function sendLeadNotificationEmail(
   toEmail: string,
   profileName: string,

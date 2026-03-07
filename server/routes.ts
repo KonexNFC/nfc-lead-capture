@@ -6,7 +6,7 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
-import { sendLeadNotificationEmail } from "./email";
+import { sendLeadNotificationEmail, sendOrganizationInviteEmail } from "./email";
 
 async function seedDatabase() {
   const existingUser = await storage.getUserByEmail("demo@konex.app");
@@ -1089,6 +1089,20 @@ export async function registerRoutes(
       invitedByUserId: req.user!.id,
       expiresAt,
     });
+
+    const org = await storage.getOrganization(orgId);
+    const inviterProfile = await storage.getProfile(req.user!.id);
+    const inviterName = inviterProfile?.name || req.user!.email;
+    const baseUrl = process.env.NODE_ENV === "production" ? "https://konexnfc.com" : `${req.protocol}://${req.get("host")}`;
+    const acceptUrl = `${baseUrl}/dashboard/organization?invite=${token}`;
+
+    sendOrganizationInviteEmail(
+      parsed.data.email,
+      org?.name || "an organization",
+      inviterName,
+      parsed.data.role,
+      acceptUrl
+    ).catch(err => console.error("[EMAIL] Invite email failed:", err));
 
     res.status(201).json(invitation);
   });

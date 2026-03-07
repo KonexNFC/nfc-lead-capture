@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Building2, Users, CreditCard, MousePointerClick, UserPlus, Plus, Loader2 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -36,10 +36,42 @@ export default function OrganizationDashboard() {
   const [createOpen, setCreateOpen] = useState(false);
   const [orgName, setOrgName] = useState("");
   const [orgSlug, setOrgSlug] = useState("");
+  const [inviteProcessed, setInviteProcessed] = useState(false);
+
+  const searchString = useSearch();
+  const searchParams = new URLSearchParams(searchString);
+  const inviteToken = searchParams.get("invite");
 
   const { data: orgs, isLoading } = useQuery<OrgWithRole[]>({
     queryKey: ["/api/organizations"],
   });
+
+  const acceptInviteMutation = useMutation({
+    mutationFn: async (token: string) => {
+      const res = await apiRequest("POST", "/api/organizations/accept-invite", { token });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.message || "Failed to accept invitation");
+      }
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/organizations"] });
+      toast({ title: "Invitation accepted!", description: "You've joined the organization." });
+      window.history.replaceState({}, "", "/dashboard/organization");
+    },
+    onError: (error: Error) => {
+      toast({ title: "Invitation error", description: error.message, variant: "destructive" });
+      window.history.replaceState({}, "", "/dashboard/organization");
+    },
+  });
+
+  useEffect(() => {
+    if (inviteToken && !inviteProcessed) {
+      setInviteProcessed(true);
+      acceptInviteMutation.mutate(inviteToken);
+    }
+  }, [inviteToken, inviteProcessed]);
 
   const createMutation = useMutation({
     mutationFn: async (data: { name: string; slug: string }) => {
@@ -71,11 +103,17 @@ export default function OrganizationDashboard() {
     setOrgSlug(name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""));
   };
 
-  if (isLoading) {
+  if (isLoading || acceptInviteMutation.isPending) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-64 w-full" />
+        {acceptInviteMutation.isPending && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Accepting invitation...</span>
+          </div>
+        )}
       </div>
     );
   }
