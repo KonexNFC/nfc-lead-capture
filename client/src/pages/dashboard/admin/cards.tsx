@@ -68,7 +68,10 @@ export default function AdminCards() {
   const [genQuantity, setGenQuantity] = useState("10");
   const [genTier, setGenTier] = useState("basic");
   const [genPrefix, setGenPrefix] = useState("KONEX");
+  const [genStartNumber, setGenStartNumber] = useState("1");
   const [genNickname, setGenNickname] = useState("");
+  const [lastGeneratedCsv, setLastGeneratedCsv] = useState<string | null>(null);
+  const [lastGeneratedCount, setLastGeneratedCount] = useState(0);
 
   const buildQueryString = () => {
     const params = new URLSearchParams();
@@ -124,18 +127,17 @@ export default function AdminCards() {
   });
 
   const generateMutation = useMutation({
-    mutationFn: async (data: { quantity: number; productTier: string; prefix: string; nicknamePattern?: string }) => {
-      await apiRequest("POST", "/api/admin/cards/batch-create", data);
+    mutationFn: async (data: { quantity: number; productTier: string; prefix: string; startNumber: number; nicknamePattern?: string }) => {
+      const res = await apiRequest("POST", "/api/admin/cards/batch-create", data);
+      return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/cards"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/cards/stats"] });
+      setLastGeneratedCsv(data.csv);
+      setLastGeneratedCount(data.count);
       setGenerateOpen(false);
-      setGenQuantity("10");
-      setGenTier("basic");
-      setGenPrefix("KONEX");
-      setGenNickname("");
-      toast({ title: "Cards generated", description: "New cards have been created." });
+      toast({ title: "Cards generated", description: `${data.count} cards have been created.` });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -152,12 +154,31 @@ export default function AdminCards() {
       toast({ title: "Invalid quantity", description: "Enter a number between 1 and 500.", variant: "destructive" });
       return;
     }
+    const start = parseInt(genStartNumber, 10);
+    if (isNaN(start) || start < 1) {
+      toast({ title: "Invalid start number", description: "Enter a valid start number.", variant: "destructive" });
+      return;
+    }
     generateMutation.mutate({
       quantity: qty,
       productTier: genTier,
       prefix: genPrefix || "KONEX",
+      startNumber: start,
       ...(genNickname ? { nicknamePattern: genNickname } : {}),
     });
+  };
+
+  const handleDownloadCsv = () => {
+    if (!lastGeneratedCsv) return;
+    const blob = new Blob([lastGeneratedCsv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `konex-cards-batch-${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleAssign = () => {
@@ -245,12 +266,24 @@ export default function AdminCards() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Prefix (optional)</Label>
+                  <Label>Prefix</Label>
                   <Input
                     value={genPrefix}
                     onChange={(e) => setGenPrefix(e.target.value)}
                     placeholder="KONEX"
                     data-testid="input-gen-prefix"
+                  />
+                  <p className="text-xs text-muted-foreground">Cards will be generated as PREFIX-00001, PREFIX-00002, etc.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Start Number</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={genStartNumber}
+                    onChange={(e) => setGenStartNumber(e.target.value)}
+                    placeholder="1"
+                    data-testid="input-gen-start-number"
                   />
                 </div>
                 <div className="space-y-2">
@@ -272,6 +305,12 @@ export default function AdminCards() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          {lastGeneratedCsv && (
+            <Button variant="default" onClick={handleDownloadCsv} data-testid="button-download-encoding-csv">
+              <Download className="h-4 w-4 mr-2" />
+              Download Encoding CSV ({lastGeneratedCount})
+            </Button>
+          )}
           <Button variant="outline" onClick={handleExportCSV} data-testid="button-export-csv">
             <Download className="h-4 w-4 mr-2" />
             Export CSV

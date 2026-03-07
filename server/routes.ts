@@ -781,29 +781,42 @@ export async function registerRoutes(
       quantity: z.number().int().min(1).max(500),
       productTier: z.enum(["basic", "premium", "elite", "custom"]),
       prefix: z.string().optional(),
+      startNumber: z.number().int().min(1).optional(),
       nicknamePattern: z.string().optional(),
     });
     const parsed = batchSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
 
-    const { quantity, productTier, prefix, nicknamePattern } = parsed.data;
-    const tierCode = productTier === "basic" ? "B" : productTier === "premium" ? "P" : productTier === "elite" ? "E" : "C";
+    const { quantity, productTier, prefix, startNumber, nicknamePattern } = parsed.data;
     const pfx = prefix || "KONEX";
+    const start = startNumber || 1;
 
     const cardsToCreate = [];
     for (let i = 0; i < quantity; i++) {
-      const shortId = crypto.randomBytes(3).toString("hex").toUpperCase();
-      const cardCode = `${pfx}-${tierCode}-${shortId}`;
+      const seqNum = String(start + i).padStart(5, "0");
+      const cardCode = `${pfx}-${seqNum}`;
       cardsToCreate.push({
         cardCode,
         productTier,
         status: "unassigned" as const,
-        nickname: nicknamePattern ? `${nicknamePattern} ${i + 1}` : null,
+        nickname: nicknamePattern ? `${nicknamePattern} ${start + i}` : null,
       });
     }
 
     const created = await storage.batchCreateCards(cardsToCreate);
-    res.status(201).json({ message: `${created.length} cards created`, cards: created });
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const csvRows = ["card_code,encoded_url"];
+    for (const card of created) {
+      csvRows.push(`${card.cardCode},${baseUrl}/t/${card.cardCode}`);
+    }
+
+    res.status(201).json({
+      message: `${created.length} cards created`,
+      count: created.length,
+      cards: created,
+      csv: csvRows.join("\n"),
+    });
   });
 
   app.patch("/api/admin/cards/:id/assign", requireAdmin, async (req, res) => {
