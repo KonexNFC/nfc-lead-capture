@@ -1168,14 +1168,20 @@ export async function registerRoutes(
   app.post("/api/organizations/:id/cards", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
     const orgId = parseInt(req.params.id);
     const schema = z.object({
-      cardId: z.number(),
+      cardId: z.number().optional(),
+      cardCode: z.string().optional(),
       assignedUserId: z.number().nullable().optional(),
-    });
+    }).refine(d => d.cardId || d.cardCode, { message: "Provide cardId or cardCode" });
     const parsed = schema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
 
-    const card = await storage.getCardById(parsed.data.cardId);
-    if (!card) return res.status(404).json({ message: "Card not found" });
+    let card;
+    if (parsed.data.cardCode) {
+      card = await storage.getCardByCode(parsed.data.cardCode.trim().toUpperCase());
+    } else if (parsed.data.cardId) {
+      card = await storage.getCardById(parsed.data.cardId);
+    }
+    if (!card) return res.status(404).json({ message: "Card not found. Check the card code and try again." });
 
     if (parsed.data.assignedUserId) {
       const member = await storage.getOrganizationMember(orgId, parsed.data.assignedUserId);
@@ -1184,7 +1190,7 @@ export async function registerRoutes(
 
     const orgCard = await storage.assignCardToOrganization({
       organizationId: orgId,
-      cardId: parsed.data.cardId,
+      cardId: card.id,
       assignedUserId: parsed.data.assignedUserId || null,
     });
     res.status(201).json(orgCard);

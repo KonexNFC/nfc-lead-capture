@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Plus, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Loader2, Trash2, CreditCard } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -30,6 +30,14 @@ interface OrgCard {
   createdAt: string;
 }
 
+interface OrgMember {
+  id: number;
+  userId: number;
+  role: string;
+  email: string;
+  name?: string;
+}
+
 const tierColors: Record<string, string> = {
   basic: "bg-zinc-500/20 text-zinc-400",
   premium: "bg-amber-500/20 text-amber-400",
@@ -49,8 +57,8 @@ export default function OrganizationCards() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
-  const [cardId, setCardId] = useState("");
-  const [assignedUserId, setAssignedUserId] = useState("");
+  const [cardCode, setCardCode] = useState("");
+  const [selectedMember, setSelectedMember] = useState("");
 
   const { data: orgs } = useQuery<OrgWithRole[]>({ queryKey: ["/api/organizations"] });
   const org = orgs?.[0];
@@ -65,17 +73,32 @@ export default function OrganizationCards() {
     enabled: !!org,
   });
 
+  const { data: members } = useQuery<OrgMember[]>({
+    queryKey: ["/api/organizations", org?.id, "members"],
+    queryFn: async () => {
+      const res = await fetch(`/api/organizations/${org!.id}/members`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch members");
+      return res.json();
+    },
+    enabled: !!org,
+  });
+
   const addMutation = useMutation({
-    mutationFn: async (data: { cardId: number; assignedUserId?: number | null }) => {
+    mutationFn: async (data: { cardCode: string; assignedUserId?: number | null }) => {
       const res = await apiRequest("POST", `/api/organizations/${org!.id}/cards`, data);
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.message || "Failed to assign card");
+      }
       return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/organizations", org?.id, "cards"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/organizations", org?.id, "analytics"] });
       setAddOpen(false);
-      setCardId("");
-      setAssignedUserId("");
-      toast({ title: "Card added", description: "Card has been assigned to the organization." });
+      setCardCode("");
+      setSelectedMember("");
+      toast({ title: "Card assigned", description: "Card has been added to the organization." });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -88,12 +111,16 @@ export default function OrganizationCards() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/organizations", org?.id, "cards"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/organizations", org?.id, "analytics"] });
       toast({ title: "Card removed from organization" });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
+
+  const memberMap = new Map<number, OrgMember>();
+  members?.forEach(m => memberMap.set(m.userId, m));
 
   const canManage = org?.role === "owner" || org?.role === "admin";
 
@@ -136,7 +163,7 @@ export default function OrganizationCards() {
                 <TableHead>Card Code</TableHead>
                 <TableHead>Tier</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Assigned User</TableHead>
+                <TableHead>Assigned To</TableHead>
                 <TableHead>Added</TableHead>
                 {canManage && <TableHead className="text-right">Actions</TableHead>}
               </TableRow>
@@ -155,39 +182,51 @@ export default function OrganizationCards() {
                   </TableCell>
                 </TableRow>
               ) : (
-                orgCards.map((oc) => (
-                  <TableRow key={oc.id} data-testid={`row-org-card-${oc.id}`}>
-                    <TableCell className="font-mono text-sm font-medium">{oc.cardCode}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={`text-xs ${tierColors[oc.productTier] || ""}`}>
-                        {oc.productTier}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={`text-xs ${statusColors[oc.status] || ""}`}>
-                        {oc.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {oc.assignedUserId ?? "-"}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {oc.createdAt ? new Date(oc.createdAt).toLocaleDateString() : "-"}
-                    </TableCell>
-                    {canManage && (
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeMutation.mutate(oc.id)}
-                          data-testid={`button-remove-card-${oc.id}`}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
+                orgCards.map((oc) => {
+                  const assignedMember = oc.assignedUserId ? memberMap.get(oc.assignedUserId) : null;
+                  return (
+                    <TableRow key={oc.id} data-testid={`row-org-card-${oc.id}`}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-mono text-sm font-medium">{oc.cardCode}</span>
+                        </div>
                       </TableCell>
-                    )}
-                  </TableRow>
-                ))
+                      <TableCell>
+                        <Badge variant="secondary" className={`text-xs ${tierColors[oc.productTier] || ""}`}>
+                          {oc.productTier}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className={`text-xs ${statusColors[oc.status] || ""}`}>
+                          {oc.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {assignedMember ? (
+                          <span>{assignedMember.name || assignedMember.email}</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {oc.createdAt ? new Date(oc.createdAt).toLocaleDateString() : "-"}
+                      </TableCell>
+                      {canManage && (
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeMutation.mutate(oc.id)}
+                            data-testid={`button-remove-card-${oc.id}`}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -201,37 +240,45 @@ export default function OrganizationCards() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Card ID</Label>
+              <Label>Card Code</Label>
               <Input
-                type="number"
-                value={cardId}
-                onChange={(e) => setCardId(e.target.value)}
-                placeholder="Enter card ID from inventory"
-                data-testid="input-card-id"
+                value={cardCode}
+                onChange={(e) => setCardCode(e.target.value.toUpperCase())}
+                placeholder="e.g. KONEX-B-00001"
+                data-testid="input-card-code"
               />
+              <p className="text-xs text-muted-foreground">
+                Enter the full card code from the card inventory
+              </p>
             </div>
             <div className="space-y-2">
-              <Label>Assign to User ID (optional)</Label>
-              <Input
-                type="number"
-                value={assignedUserId}
-                onChange={(e) => setAssignedUserId(e.target.value)}
-                placeholder="Leave blank for unassigned"
-                data-testid="input-assigned-user-id"
-              />
+              <Label>Assign to Member (optional)</Label>
+              <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                value={selectedMember}
+                onChange={(e) => setSelectedMember(e.target.value)}
+                data-testid="select-assigned-member"
+              >
+                <option value="">Unassigned</option>
+                {members?.map(m => (
+                  <option key={m.userId} value={m.userId.toString()}>
+                    {m.name || m.email} ({m.role})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
             <Button
               onClick={() => {
-                const cid = parseInt(cardId);
-                if (isNaN(cid)) {
-                  toast({ title: "Invalid card ID", variant: "destructive" });
+                const code = cardCode.trim();
+                if (!code) {
+                  toast({ title: "Enter a card code", variant: "destructive" });
                   return;
                 }
-                const uid = assignedUserId ? parseInt(assignedUserId) : null;
-                addMutation.mutate({ cardId: cid, assignedUserId: uid });
+                const uid = selectedMember ? parseInt(selectedMember) : null;
+                addMutation.mutate({ cardCode: code, assignedUserId: uid });
               }}
               disabled={addMutation.isPending}
               data-testid="button-submit-add-card"
