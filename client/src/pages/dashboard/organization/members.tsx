@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MoreVertical, UserPlus, Loader2, Mail, Copy } from "lucide-react";
+import { ArrowLeft, MoreVertical, UserPlus, Loader2, Mail, Copy, Send, XCircle } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -118,6 +118,36 @@ export default function OrganizationMembers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/organizations", org?.id, "members"] });
       toast({ title: "Member removed" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const cancelInviteMutation = useMutation({
+    mutationFn: async (invitationId: number) => {
+      await apiRequest("DELETE", `/api/organizations/${org!.id}/invitations/${invitationId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/organizations", org?.id, "invitations"] });
+      toast({ title: "Invitation cancelled" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const resendInviteMutation = useMutation({
+    mutationFn: async (invitationId: number) => {
+      const res = await apiRequest("POST", `/api/organizations/${org!.id}/invitations/${invitationId}/resend`);
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.message || "Failed to resend");
+      }
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Email resent", description: "Invitation email has been resent." });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -273,17 +303,44 @@ export default function OrganizationMembers() {
                       </TableCell>
                       <TableCell className="text-right">
                         {inv.status === "pending" && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              navigator.clipboard.writeText(`${window.location.origin}/dashboard/organization?invite=${inv.token}`);
-                              toast({ title: "Copied", description: "Invite link copied to clipboard." });
-                            }}
-                            data-testid={`button-copy-invite-${inv.id}`}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Copy invite link"
+                              onClick={() => {
+                                navigator.clipboard.writeText(`${window.location.origin}/dashboard/organization?invite=${inv.token}`);
+                                toast({ title: "Copied", description: "Invite link copied to clipboard." });
+                              }}
+                              data-testid={`button-copy-invite-${inv.id}`}
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Resend email"
+                              onClick={() => resendInviteMutation.mutate(inv.id)}
+                              disabled={resendInviteMutation.isPending}
+                              data-testid={`button-resend-invite-${inv.id}`}
+                            >
+                              {resendInviteMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Send className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Cancel invitation"
+                              onClick={() => cancelInviteMutation.mutate(inv.id)}
+                              disabled={cancelInviteMutation.isPending}
+                              data-testid={`button-cancel-invite-${inv.id}`}
+                            >
+                              <XCircle className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
                         )}
                       </TableCell>
                     </TableRow>

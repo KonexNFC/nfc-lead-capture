@@ -1140,6 +1140,43 @@ export async function registerRoutes(
     res.json(invitations);
   });
 
+  app.delete("/api/organizations/:id/invitations/:invitationId", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const invitationId = parseInt(req.params.invitationId);
+    if (isNaN(invitationId)) return res.status(400).json({ message: "Invalid invitation ID" });
+    const invitations = await storage.getOrganizationInvitations(orgId);
+    const target = invitations.find(i => i.id === invitationId);
+    if (!target) return res.status(404).json({ message: "Invitation not found in this organization" });
+    await storage.updateOrganizationInvitationStatus(invitationId, "cancelled");
+    res.json({ message: "Invitation cancelled" });
+  });
+
+  app.post("/api/organizations/:id/invitations/:invitationId/resend", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const invitationId = parseInt(req.params.invitationId);
+    if (isNaN(invitationId)) return res.status(400).json({ message: "Invalid invitation ID" });
+    const invitations = await storage.getOrganizationInvitations(orgId);
+    const target = invitations.find(i => i.id === invitationId);
+    if (!target) return res.status(404).json({ message: "Invitation not found in this organization" });
+    if (target.status !== "pending") return res.status(400).json({ message: "Only pending invitations can be resent" });
+
+    const org = await storage.getOrganization(orgId);
+    const inviterProfile = await storage.getProfile(req.user!.id);
+    const inviterName = inviterProfile?.name || req.user!.email;
+    const baseUrl = process.env.NODE_ENV === "production" ? "https://konexnfc.com" : `${req.protocol}://${req.get("host")}`;
+    const acceptUrl = `${baseUrl}/dashboard/organization?invite=${target.token}`;
+
+    await sendOrganizationInviteEmail(
+      target.email,
+      org?.name || "an organization",
+      inviterName,
+      target.role,
+      acceptUrl
+    );
+
+    res.json({ message: "Invitation email resent" });
+  });
+
   app.get("/api/organizations/:id/members", requireAuth, requireOrgRole(["owner", "admin", "manager", "member"]), async (req, res) => {
     const orgId = parseInt(req.params.id);
     const members = await storage.getOrganizationMembers(orgId);
