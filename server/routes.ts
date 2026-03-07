@@ -57,13 +57,14 @@ async function seedDatabase() {
   }
 
   // Seed demo cards
-  const existingCard = await storage.getCardByCode("KONEX-B-0001");
-  if (!existingCard) {
+  const existingCard = await storage.getCardByCode("KONEX-B-00001");
+  const legacyCard = await storage.getCardByCode("KONEX-B-0001");
+  if (!existingCard && !legacyCard) {
     const demoUser = await storage.getUserByEmail("demo@konex.app");
     const demoProfile = demoUser ? await storage.getProfile(demoUser.id) : null;
 
     await storage.createCard({
-      cardCode: "KONEX-B-0001",
+      cardCode: "KONEX-B-00001",
       productTier: "basic",
       status: "unassigned",
       nickname: null,
@@ -71,7 +72,7 @@ async function seedDatabase() {
 
     if (demoUser && demoProfile) {
       const premiumCard = await storage.createCard({
-        cardCode: "KONEX-P-0001",
+        cardCode: "KONEX-P-00001",
         productTier: "premium",
         status: "active",
         nickname: "Main Card",
@@ -88,7 +89,7 @@ async function seedDatabase() {
     }
 
     await storage.createCard({
-      cardCode: "KONEX-E-0001",
+      cardCode: "KONEX-E-00001",
       productTier: "elite",
       status: "suspended",
       nickname: "Event Card",
@@ -780,21 +781,22 @@ export async function registerRoutes(
     const batchSchema = z.object({
       quantity: z.number().int().min(1).max(500),
       productTier: z.enum(["basic", "premium", "elite", "custom"]),
-      prefix: z.string().optional(),
       startNumber: z.number().int().min(1).optional(),
       nicknamePattern: z.string().optional(),
     });
     const parsed = batchSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
 
-    const { quantity, productTier, prefix, startNumber, nicknamePattern } = parsed.data;
-    const pfx = prefix || "KONEX";
+    const { quantity, productTier, startNumber, nicknamePattern } = parsed.data;
+    const tierCode = productTier === "basic" ? "B" : productTier === "premium" ? "P" : productTier === "elite" ? "E" : "C";
     const start = startNumber || 1;
 
     const cardsToCreate = [];
+    const duplicateCheck: string[] = [];
     for (let i = 0; i < quantity; i++) {
       const seqNum = String(start + i).padStart(5, "0");
-      const cardCode = `${pfx}-${seqNum}`;
+      const cardCode = `KONEX-${tierCode}-${seqNum}`;
+      duplicateCheck.push(cardCode);
       cardsToCreate.push({
         cardCode,
         productTier,
@@ -803,12 +805,17 @@ export async function registerRoutes(
       });
     }
 
+    const existingCards = await storage.getCardsByCodes(duplicateCheck);
+    if (existingCards.length > 0) {
+      const dupes = existingCards.map(c => c.cardCode).join(", ");
+      return res.status(409).json({ message: `Duplicate card codes found: ${dupes}. Adjust the start number.` });
+    }
+
     const created = await storage.batchCreateCards(cardsToCreate);
 
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
-    const csvRows = ["card_code,encoded_url"];
+    const csvRows = ["card_code,url"];
     for (const card of created) {
-      csvRows.push(`${card.cardCode},${baseUrl}/t/${card.cardCode}`);
+      csvRows.push(`${card.cardCode},https://konexnfc.com/t/${card.cardCode}`);
     }
 
     res.status(201).json({
@@ -870,6 +877,17 @@ export async function registerRoutes(
     }
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", "attachment; filename=konex-cards-export.csv");
+    res.send(csv.join("\n"));
+  });
+
+  app.get("/api/admin/cards/encoding-csv", requireAdmin, async (_req, res) => {
+    const allCards = await storage.listAllCards();
+    const csv = ["card_code,url"];
+    for (const c of allCards) {
+      csv.push(`${c.cardCode},https://konexnfc.com/t/${c.cardCode}`);
+    }
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=konex-encoding-csv.csv");
     res.send(csv.join("\n"));
   });
 

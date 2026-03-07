@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CreditCard, Plus, Download, Search, MoreVertical, ArrowLeft, Loader2 } from "lucide-react";
+import { CreditCard, Plus, Download, Search, MoreVertical, ArrowLeft, Loader2, Copy, QrCode, Eye } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient as qc } from "@/lib/queryClient";
+import QRCode from "qrcode";
 
 interface CardItem {
   id: number;
@@ -55,6 +56,12 @@ const statusColors: Record<string, string> = {
   lost: "bg-red-500/20 text-red-400",
 };
 
+const PRODUCTION_BASE = "https://konexnfc.com";
+
+function getTapUrl(cardCode: string) {
+  return `${PRODUCTION_BASE}/t/${cardCode}`;
+}
+
 export default function AdminCards() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -67,11 +74,9 @@ export default function AdminCards() {
   const [assignUserId, setAssignUserId] = useState("");
   const [genQuantity, setGenQuantity] = useState("10");
   const [genTier, setGenTier] = useState("basic");
-  const [genPrefix, setGenPrefix] = useState("KONEX");
   const [genStartNumber, setGenStartNumber] = useState("1");
   const [genNickname, setGenNickname] = useState("");
-  const [lastGeneratedCsv, setLastGeneratedCsv] = useState<string | null>(null);
-  const [lastGeneratedCount, setLastGeneratedCount] = useState(0);
+  const [detailCard, setDetailCard] = useState<CardItem | null>(null);
 
   const buildQueryString = () => {
     const params = new URLSearchParams();
@@ -127,15 +132,13 @@ export default function AdminCards() {
   });
 
   const generateMutation = useMutation({
-    mutationFn: async (data: { quantity: number; productTier: string; prefix: string; startNumber: number; nicknamePattern?: string }) => {
+    mutationFn: async (data: { quantity: number; productTier: string; startNumber: number; nicknamePattern?: string }) => {
       const res = await apiRequest("POST", "/api/admin/cards/batch-create", data);
       return await res.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/cards"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/cards/stats"] });
-      setLastGeneratedCsv(data.csv);
-      setLastGeneratedCount(data.count);
       setGenerateOpen(false);
       toast({ title: "Cards generated", description: `${data.count} cards have been created.` });
     },
@@ -163,6 +166,25 @@ export default function AdminCards() {
     }
   };
 
+  const handleEncodingCSV = async () => {
+    try {
+      const res = await fetch("/api/admin/cards/encoding-csv", { credentials: "include" });
+      if (!res.ok) throw new Error("Export failed");
+      const csvText = await res.text();
+      const blob = new Blob([csvText], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `konex-encoding-csv-${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({ title: "Export failed", description: "Could not download encoding CSV.", variant: "destructive" });
+    }
+  };
+
   const handleGenerate = () => {
     const qty = parseInt(genQuantity, 10);
     if (isNaN(qty) || qty < 1 || qty > 500) {
@@ -177,23 +199,29 @@ export default function AdminCards() {
     generateMutation.mutate({
       quantity: qty,
       productTier: genTier,
-      prefix: genPrefix || "KONEX",
       startNumber: start,
       ...(genNickname ? { nicknamePattern: genNickname } : {}),
     });
   };
 
-  const handleDownloadCsv = () => {
-    if (!lastGeneratedCsv) return;
-    const blob = new Blob([lastGeneratedCsv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `konex-cards-batch-${Date.now()}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleCopyTapUrl = (cardCode: string) => {
+    navigator.clipboard.writeText(getTapUrl(cardCode));
+    toast({ title: "Copied", description: `Tap URL for ${cardCode} copied to clipboard.` });
+  };
+
+  const handleDownloadQR = async (cardCode: string) => {
+    try {
+      const url = getTapUrl(cardCode);
+      const dataUrl = await QRCode.toDataURL(url, { width: 512, margin: 2 });
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `${cardCode}-qr.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch {
+      toast({ title: "Error", description: "Could not generate QR code.", variant: "destructive" });
+    }
   };
 
   const handleAssign = () => {
@@ -204,6 +232,10 @@ export default function AdminCards() {
     }
     assignMutation.mutate({ id: assignCardId, userId: uid });
   };
+
+  const tierCodePreview = genTier === "basic" ? "B" : genTier === "premium" ? "P" : genTier === "elite" ? "E" : "C";
+  const startNum = parseInt(genStartNumber, 10) || 1;
+  const previewCode = `KONEX-${tierCodePreview}-${String(startNum).padStart(5, "0")}`;
 
   const statItems = [
     { label: "Total Cards", value: stats?.total ?? 0, color: "text-blue-500" },
@@ -274,37 +306,30 @@ export default function AdminCards() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="basic">Basic</SelectItem>
-                        <SelectItem value="premium">Premium</SelectItem>
-                        <SelectItem value="elite">Elite</SelectItem>
-                        <SelectItem value="custom">Custom</SelectItem>
+                        <SelectItem value="basic">Basic (B)</SelectItem>
+                        <SelectItem value="premium">Premium (P)</SelectItem>
+                        <SelectItem value="elite">Elite (E)</SelectItem>
+                        <SelectItem value="custom">Custom (C)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Prefix</Label>
-                    <Input
-                      value={genPrefix}
-                      onChange={(e) => setGenPrefix(e.target.value)}
-                      placeholder="KONEX"
-                      data-testid="input-gen-prefix"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Start Number</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={genStartNumber}
-                      onChange={(e) => setGenStartNumber(e.target.value)}
-                      placeholder="1"
-                      data-testid="input-gen-start-number"
-                    />
-                  </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Start Number</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={genStartNumber}
+                    onChange={(e) => setGenStartNumber(e.target.value)}
+                    placeholder="1"
+                    data-testid="input-gen-start-number"
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground">Cards: PREFIX-00001, PREFIX-00002, etc.</p>
+                <div className="rounded-md bg-muted/50 px-3 py-2">
+                  <p className="text-xs text-muted-foreground">
+                    Preview: <span className="font-mono font-medium text-foreground">{previewCode}</span>
+                  </p>
+                </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Nickname Pattern (optional)</Label>
                   <Input
@@ -324,12 +349,10 @@ export default function AdminCards() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          {lastGeneratedCsv && (
-            <Button variant="default" onClick={handleDownloadCsv} data-testid="button-download-encoding-csv">
-              <Download className="h-4 w-4 mr-2" />
-              Download Encoding CSV ({lastGeneratedCount})
-            </Button>
-          )}
+          <Button variant="outline" onClick={handleEncodingCSV} data-testid="button-download-encoding-csv">
+            <Download className="h-4 w-4 mr-2" />
+            Download Encoding CSV
+          </Button>
           <Button variant="outline" onClick={handleExportCSV} data-testid="button-export-csv">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
@@ -443,6 +466,28 @@ export default function AdminCards() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => setDetailCard(card)}
+                            data-testid={`button-view-detail-${card.id}`}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleCopyTapUrl(card.cardCode)}
+                            data-testid={`button-copy-url-${card.id}`}
+                          >
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copy Tap URL
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDownloadQR(card.cardCode)}
+                            data-testid={`button-download-qr-${card.id}`}
+                          >
+                            <QrCode className="h-4 w-4 mr-2" />
+                            Download QR
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuSub>
                             <DropdownMenuSubTrigger data-testid={`button-change-status-${card.id}`}>
                               Change Status
@@ -511,6 +556,79 @@ export default function AdminCards() {
               {assignMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Assign
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!detailCard} onOpenChange={(open) => { if (!open) setDetailCard(null); }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Card Details</DialogTitle>
+          </DialogHeader>
+          {detailCard && (
+            <div className="space-y-3 py-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Card Code</p>
+                  <p className="font-mono font-medium" data-testid="detail-card-code">{detailCard.cardCode}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Tier</p>
+                  <Badge variant="secondary" className={`text-xs ${tierColors[detailCard.productTier] || ""}`} data-testid="detail-tier">
+                    {detailCard.productTier}
+                  </Badge>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <Badge variant="secondary" className={`text-xs ${statusColors[detailCard.status] || ""}`} data-testid="detail-status">
+                    {detailCard.status}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Owner ID</p>
+                  <p className="text-sm" data-testid="detail-owner-id">{detailCard.ownerId ?? "None"}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Tap Count</p>
+                  <p className="text-sm font-medium" data-testid="detail-tap-count">{detailCard.tapCount}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Created At</p>
+                  <p className="text-sm" data-testid="detail-created-at">
+                    {detailCard.createdAt ? new Date(detailCard.createdAt).toLocaleString() : "-"}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Tap URL</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-xs bg-muted rounded px-2 py-1.5 break-all" data-testid="detail-tap-url">
+                    {getTapUrl(detailCard.cardCode)}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleCopyTapUrl(detailCard.cardCode)}
+                    data-testid="detail-copy-url"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            {detailCard && (
+              <Button variant="outline" onClick={() => handleDownloadQR(detailCard.cardCode)} data-testid="detail-download-qr">
+                <QrCode className="h-4 w-4 mr-2" />
+                Download QR
+              </Button>
+            )}
+            <Button variant="default" onClick={() => setDetailCard(null)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

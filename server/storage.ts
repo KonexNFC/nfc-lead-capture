@@ -68,6 +68,7 @@ export interface IStorage {
   getCardsByOwnerId(userId: number): Promise<Card[]>;
   createCard(card: InsertCard): Promise<Card>;
   updateCard(id: number, updates: Partial<Card>): Promise<Card>;
+  getCardsByCodes(codes: string[]): Promise<Card[]>;
   batchCreateCards(cardsData: InsertCard[]): Promise<Card[]>;
   listAllCards(filters?: { status?: string; productTier?: string; search?: string }): Promise<Card[]>;
   getCardStats(): Promise<{ total: number; activated: number; unassigned: number; suspended: number; lost: number }>;
@@ -432,6 +433,11 @@ export class DatabaseStorage implements IStorage {
   async updateCard(id: number, updates: Partial<Card>): Promise<Card> {
     const [updated] = await db.update(cards).set({ ...updates, updatedAt: new Date() }).where(eq(cards.id, id)).returning();
     return updated;
+  }
+
+  async getCardsByCodes(codes: string[]): Promise<Card[]> {
+    if (codes.length === 0) return [];
+    return await db.select().from(cards).where(inArray(cards.cardCode, codes));
   }
 
   async batchCreateCards(cardsData: InsertCard[]): Promise<Card[]> {

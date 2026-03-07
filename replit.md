@@ -90,16 +90,17 @@ Physical NFC card tracking, activation, and analytics infrastructure.
 #### Admin Card Routes
 - `GET /api/admin/cards` - list all cards (with status/tier/search filters)
 - `GET /api/admin/cards/stats` - card inventory stats
-- `POST /api/admin/cards/batch-create` - batch generate cards (quantity, tier, prefix, nickname pattern)
+- `POST /api/admin/cards/batch-create` - batch generate cards (quantity, tier, startNumber; prefix auto-derived: KONEX-B/P/E/C); validates no duplicate codes
 - `PATCH /api/admin/cards/:id/assign` - assign/reassign card to user
 - `PATCH /api/admin/cards/:id/status` - change card status
-- `GET /api/admin/cards/export` - export cards as CSV
+- `GET /api/admin/cards/export` - export full cards CSV (all fields)
+- `GET /api/admin/cards/encoding-csv` - export encoding CSV (card_code, url=https://konexnfc.com/t/{code})
 
 #### Frontend Pages
 - `client/src/pages/tap-router.tsx` - NFC tap resolution page
 - `client/src/pages/activate-card.tsx` - Card activation flow
 - `client/src/pages/dashboard/cards.tsx` - My Cards management (KPIs, card grid, actions)
-- `client/src/pages/dashboard/admin/cards.tsx` - Admin card inventory (batch create, search, assign, export)
+- `client/src/pages/dashboard/admin/cards.tsx` - Admin card inventory (batch create, search, assign, export, encoding CSV, per-card Copy Tap URL / Download QR / View Details)
 
 ### Database
 - **ORM**: Drizzle ORM with PostgreSQL dialect
