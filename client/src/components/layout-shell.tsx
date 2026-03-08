@@ -46,7 +46,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
     { name: 'Modules', href: '/dashboard/modules', icon: Blocks },
     { name: 'Leads', href: '/dashboard/leads', icon: Users },
     { name: 'My Cards', href: '/dashboard/cards', icon: CreditCard },
-    ...(hasOrgs ? [{ name: 'Organization', href: '/dashboard/organization', icon: Building2 }] : []),
+    ...(hasOrgs || user?.isAdmin ? [{ name: 'Organization', href: '/dashboard/organization', icon: Building2 }] : []),
     { name: 'Leave a Review', href: '/dashboard/testimonial', icon: MessageSquareQuote },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
     ...(user?.isAdmin ? [
