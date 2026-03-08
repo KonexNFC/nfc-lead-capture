@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, CreditCard, MousePointerClick, UserPlus, Plus, Loader2, Check, Settings } from "lucide-react";
+import { Building2, Users, CreditCard, MousePointerClick, UserPlus, Plus, Loader2, Check, Settings, Trophy, Star } from "lucide-react";
 import { Link, useSearch } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -18,6 +18,8 @@ interface OrgAnalytics {
   activeCards: number;
   totalTaps: number;
   totalLeads: number;
+  topCard: { cardCode: string; taps: number } | null;
+  topMember: { name: string; email: string; taps: number } | null;
 }
 
 export default function OrganizationDashboard() {
@@ -255,8 +257,14 @@ function OrgAnalyticsCards({ orgId }: { orgId: number }) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
+        </div>
       </div>
     );
   }
@@ -269,20 +277,58 @@ function OrgAnalyticsCards({ orgId }: { orgId: number }) {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {stats.map((stat) => (
-        <Card key={stat.label} className="border-border/50 shadow-sm">
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <Card key={stat.label} className="border-border/50 shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
+              <stat.icon className={`h-4 w-4 ${stat.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid={`text-org-stat-${stat.label.toLowerCase().replace(/\s/g, '-')}`}>
+                {stat.value.toLocaleString()}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="border-border/50 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-            <stat.icon className={`h-4 w-4 ${stat.color}`} />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Top Performing Card</CardTitle>
+            <Trophy className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" data-testid={`text-org-stat-${stat.label.toLowerCase().replace(/\s/g, '-')}`}>
-              {stat.value.toLocaleString()}
-            </div>
+            {analytics?.topCard ? (
+              <div>
+                <div className="text-xl font-bold" data-testid="text-top-card-code">{analytics.topCard.cardCode}</div>
+                <p className="text-sm text-muted-foreground">{analytics.topCard.taps.toLocaleString()} taps</p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground" data-testid="text-top-card-empty">No tap data yet</p>
+            )}
           </CardContent>
         </Card>
-      ))}
+
+        <Card className="border-border/50 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Top Performing Team Member</CardTitle>
+            <Star className="h-4 w-4 text-yellow-500" />
+          </CardHeader>
+          <CardContent>
+            {analytics?.topMember ? (
+              <div>
+                <div className="text-xl font-bold" data-testid="text-top-member-name">{analytics.topMember.name}</div>
+                <p className="text-sm text-muted-foreground">{analytics.topMember.taps.toLocaleString()} taps</p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground" data-testid="text-top-member-empty">No tap data yet</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

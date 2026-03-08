@@ -117,7 +117,14 @@ export interface IStorage {
   removeOrganizationCard(id: number): Promise<void>;
 
   // Organization Analytics
-  getOrganizationAnalytics(orgId: number): Promise<{ totalCards: number; activeCards: number; totalTaps: number; totalLeads: number }>;
+  getOrganizationAnalytics(orgId: number): Promise<{
+    totalCards: number;
+    activeCards: number;
+    totalTaps: number;
+    totalLeads: number;
+    topCard: { cardCode: string; taps: number } | null;
+    topMember: { name: string; email: string; taps: number } | null;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -684,19 +691,34 @@ export class DatabaseStorage implements IStorage {
     await db.delete(organizationCards).where(eq(organizationCards.id, id));
   }
 
-  async getOrganizationAnalytics(orgId: number): Promise<{ totalCards: number; activeCards: number; totalTaps: number; totalLeads: number }> {
-    const orgCards = await db.select({ cardId: organizationCards.cardId }).from(organizationCards)
+  async getOrganizationAnalytics(orgId: number): Promise<{
+    totalCards: number;
+    activeCards: number;
+    totalTaps: number;
+    totalLeads: number;
+    topCard: { cardCode: string; taps: number } | null;
+    topMember: { name: string; email: string; taps: number } | null;
+  }> {
+    const orgCardRows = await db.select({
+      cardId: organizationCards.cardId,
+      assignedUserId: organizationCards.assignedUserId,
+    }).from(organizationCards)
       .where(eq(organizationCards.organizationId, orgId));
-    const cardIds = orgCards.map(c => c.cardId);
+    const cardIds = orgCardRows.map(c => c.cardId);
 
     if (cardIds.length === 0) {
-      return { totalCards: 0, activeCards: 0, totalTaps: 0, totalLeads: 0 };
+      return { totalCards: 0, activeCards: 0, totalTaps: 0, totalLeads: 0, topCard: null, topMember: null };
     }
 
     const cardRows = await db.select().from(cards).where(inArray(cards.id, cardIds));
     const totalCards = cardRows.length;
     const activeCards = cardRows.filter(c => c.status === "active").length;
     const totalTaps = cardRows.reduce((sum, c) => sum + c.tapCount, 0);
+
+    const topCardRow = cardRows.reduce((best, c) => (c.tapCount > (best?.tapCount ?? -1) ? c : best), cardRows[0]);
+    const topCard = topCardRow && topCardRow.tapCount > 0
+      ? { cardCode: topCardRow.cardCode, taps: topCardRow.tapCount }
+      : null;
 
     const memberRows = await db.select({ userId: organizationMembers.userId }).from(organizationMembers)
       .where(eq(organizationMembers.organizationId, orgId));
@@ -714,7 +736,30 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
-    return { totalCards, activeCards, totalTaps, totalLeads };
+    let topMember: { name: string; email: string; taps: number } | null = null;
+    const assignedUserTaps = new Map<number, number>();
+    for (const oc of orgCardRows) {
+      if (oc.assignedUserId) {
+        const card = cardRows.find(c => c.id === oc.cardId);
+        if (card) {
+          assignedUserTaps.set(oc.assignedUserId, (assignedUserTaps.get(oc.assignedUserId) || 0) + card.tapCount);
+        }
+      }
+    }
+    if (assignedUserTaps.size > 0) {
+      let topUserId = 0;
+      let topTaps = 0;
+      for (const [userId, taps] of assignedUserTaps) {
+        if (taps > topTaps) { topUserId = userId; topTaps = taps; }
+      }
+      if (topUserId && topTaps > 0) {
+        const [topUser] = await db.select({ email: users.email }).from(users).where(eq(users.id, topUserId));
+        const [topProfile] = await db.select({ name: profiles.name }).from(profiles).where(eq(profiles.userId, topUserId));
+        topMember = { name: topProfile?.name || "Unknown", email: topUser?.email || "", taps: topTaps };
+      }
+    }
+
+    return { totalCards, activeCards, totalTaps, totalLeads, topCard, topMember };
   }
 }
 
