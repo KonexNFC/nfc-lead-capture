@@ -12,12 +12,7 @@ import { ArrowLeft, Plus, Loader2, Trash2, CreditCard } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-
-interface OrgWithRole {
-  id: number;
-  name: string;
-  role: string;
-}
+import { useActiveOrg } from "@/hooks/use-active-org";
 
 interface OrgCard {
   id: number;
@@ -60,8 +55,7 @@ export default function OrganizationCards() {
   const [cardCode, setCardCode] = useState("");
   const [selectedMember, setSelectedMember] = useState("");
 
-  const { data: orgs } = useQuery<OrgWithRole[]>({ queryKey: ["/api/organizations"] });
-  const org = orgs?.[0];
+  const { activeOrg: org } = useActiveOrg();
 
   const { data: orgCards, isLoading } = useQuery<OrgCard[]>({
     queryKey: ["/api/organizations", org?.id, "cards"],

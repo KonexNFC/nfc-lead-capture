@@ -4,24 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, CreditCard, MousePointerClick, UserPlus, Plus, Loader2 } from "lucide-react";
+import { Building2, Users, CreditCard, MousePointerClick, UserPlus, Plus, Loader2, Check, Settings } from "lucide-react";
 import { Link, useSearch } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-
-interface OrgWithRole {
-  id: number;
-  name: string;
-  slug: string;
-  logoUrl: string | null;
-  ownerUserId: number;
-  planType: string;
-  role: string;
-  createdAt: string;
-}
+import { useActiveOrg } from "@/hooks/use-active-org";
 
 interface OrgAnalytics {
   totalCards: number;
@@ -33,6 +23,7 @@ interface OrgAnalytics {
 export default function OrganizationDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { orgs, activeOrg, isLoading, setActiveOrgId } = useActiveOrg();
   const [createOpen, setCreateOpen] = useState(false);
   const [orgName, setOrgName] = useState("");
   const [orgSlug, setOrgSlug] = useState("");
@@ -41,10 +32,6 @@ export default function OrganizationDashboard() {
   const searchString = useSearch();
   const searchParams = new URLSearchParams(searchString);
   const inviteToken = searchParams.get("invite");
-
-  const { data: orgs, isLoading } = useQuery<OrgWithRole[]>({
-    queryKey: ["/api/organizations"],
-  });
 
   const acceptInviteMutation = useMutation({
     mutationFn: async (token: string) => {
@@ -78,11 +65,12 @@ export default function OrganizationDashboard() {
       const res = await apiRequest("POST", "/api/organizations", data);
       return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: (newOrg) => {
       queryClient.invalidateQueries({ queryKey: ["/api/organizations"] });
       setCreateOpen(false);
       setOrgName("");
       setOrgSlug("");
+      setActiveOrgId(newOrg.id);
       toast({ title: "Organization created", description: "Your organization workspace is ready." });
     },
     onError: (error: Error) => {
@@ -118,10 +106,48 @@ export default function OrganizationDashboard() {
     );
   }
 
+  const createDialog = (
+    <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create Organization</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>Organization Name</Label>
+            <Input
+              value={orgName}
+              onChange={(e) => handleNameChange(e.target.value)}
+              placeholder="Acme Inc."
+              data-testid="input-org-name"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Slug (URL-friendly)</Label>
+            <Input
+              value={orgSlug}
+              onChange={(e) => setOrgSlug(e.target.value)}
+              placeholder="acme-inc"
+              data-testid="input-org-slug"
+            />
+            <p className="text-xs text-muted-foreground">Only lowercase letters, numbers, and hyphens</p>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+          <Button onClick={handleCreate} disabled={createMutation.isPending} data-testid="button-submit-create-org">
+            {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Create
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
   if (!orgs || orgs.length === 0) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-display font-bold" data-testid="text-org-title">Organization</h1>
+        <h1 className="text-3xl font-display font-bold" data-testid="text-org-title">Organizations</h1>
         <Card className="border-border/50">
           <CardContent className="flex flex-col items-center justify-center py-16 space-y-4">
             <Building2 className="h-16 w-16 text-muted-foreground/50" />
@@ -129,68 +155,52 @@ export default function OrganizationDashboard() {
             <p className="text-muted-foreground text-center max-w-md">
               Create an organization workspace to manage team members, cards, and analytics in one place.
             </p>
-            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-              <DialogTrigger asChild>
-                <Button data-testid="button-create-org">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Organization
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create Organization</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label>Organization Name</Label>
-                    <Input
-                      value={orgName}
-                      onChange={(e) => handleNameChange(e.target.value)}
-                      placeholder="Acme Inc."
-                      data-testid="input-org-name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Slug (URL-friendly)</Label>
-                    <Input
-                      value={orgSlug}
-                      onChange={(e) => setOrgSlug(e.target.value)}
-                      placeholder="acme-inc"
-                      data-testid="input-org-slug"
-                    />
-                    <p className="text-xs text-muted-foreground">Only lowercase letters, numbers, and hyphens</p>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-                  <Button onClick={handleCreate} disabled={createMutation.isPending} data-testid="button-submit-create-org">
-                    {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Create
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button onClick={() => setCreateOpen(true)} data-testid="button-create-org">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Organization
+            </Button>
           </CardContent>
         </Card>
+        {createDialog}
       </div>
     );
   }
 
-  const activeOrg = orgs[0];
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-display font-bold" data-testid="text-org-title">{activeOrg.name}</h1>
+          <h1 className="text-3xl font-display font-bold" data-testid="text-org-title">{activeOrg?.name}</h1>
           <div className="flex items-center gap-2 mt-1">
-            <Badge variant="secondary" className="text-xs" data-testid="text-org-plan">{activeOrg.planType}</Badge>
-            <Badge variant="outline" className="text-xs" data-testid="text-org-role">{activeOrg.role}</Badge>
+            <Badge variant="secondary" className="text-xs" data-testid="text-org-plan">{activeOrg?.planType}</Badge>
+            <Badge variant="outline" className="text-xs" data-testid="text-org-role">{activeOrg?.role}</Badge>
           </div>
         </div>
+        <Button variant="outline" onClick={() => setCreateOpen(true)} data-testid="button-create-org">
+          <Plus className="h-4 w-4 mr-2" />
+          New Organization
+        </Button>
       </div>
 
-      <OrgAnalyticsCards orgId={activeOrg.id} />
+      {orgs.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          {orgs.map((o) => (
+            <Button
+              key={o.id}
+              variant={o.id === activeOrg?.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setActiveOrgId(o.id)}
+              data-testid={`button-switch-org-${o.id}`}
+            >
+              {o.id === activeOrg?.id && <Check className="h-3 w-3 mr-1.5" />}
+              {o.name}
+              <Badge variant="secondary" className="ml-2 text-[10px] px-1.5 py-0">{o.role}</Badge>
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {activeOrg && <OrgAnalyticsCards orgId={activeOrg.id} />}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link href="/dashboard/organization/members">
@@ -218,7 +228,7 @@ export default function OrganizationDashboard() {
         <Link href="/dashboard/organization/settings">
           <Card className="border-border/50 hover:border-primary/30 transition-colors cursor-pointer">
             <CardContent className="flex items-center gap-4 py-6">
-              <Building2 className="h-8 w-8 text-purple-500" />
+              <Settings className="h-8 w-8 text-purple-500" />
               <div>
                 <h3 className="font-semibold">Settings</h3>
                 <p className="text-sm text-muted-foreground">Organization settings</p>
@@ -227,6 +237,8 @@ export default function OrganizationDashboard() {
           </Card>
         </Link>
       </div>
+
+      {createDialog}
     </div>
   );
 }
@@ -274,3 +286,4 @@ function OrgAnalyticsCards({ orgId }: { orgId: number }) {
     </div>
   );
 }
+

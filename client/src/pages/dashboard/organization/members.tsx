@@ -14,12 +14,7 @@ import { ArrowLeft, MoreVertical, UserPlus, Loader2, Mail, Copy, Send, XCircle }
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-
-interface OrgWithRole {
-  id: number;
-  name: string;
-  role: string;
-}
+import { useActiveOrg } from "@/hooks/use-active-org";
 
 interface OrgMember {
   id: number;
@@ -56,8 +51,7 @@ export default function OrganizationMembers() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("member");
 
-  const { data: orgs } = useQuery<OrgWithRole[]>({ queryKey: ["/api/organizations"] });
-  const org = orgs?.[0];
+  const { activeOrg: org } = useActiveOrg();
 
   const { data: members, isLoading: membersLoading } = useQuery<OrgMember[]>({
     queryKey: ["/api/organizations", org?.id, "members"],

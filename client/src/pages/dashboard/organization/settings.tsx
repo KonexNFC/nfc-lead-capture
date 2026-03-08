@@ -10,6 +10,7 @@ import { ArrowLeft, Loader2, Save, Upload, X, Building2 } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useActiveOrg } from "@/hooks/use-active-org";
 
 interface OrgDetail {
   id: number;
@@ -48,8 +49,8 @@ export default function OrganizationSettings() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: orgs } = useQuery<{ id: number; role: string }[]>({ queryKey: ["/api/organizations"] });
-  const org = orgs?.[0];
+  const { activeOrg } = useActiveOrg();
+  const org = activeOrg;
 
   const { data: orgDetail, isLoading } = useQuery<OrgDetail>({
     queryKey: ["/api/organizations", org?.id],
