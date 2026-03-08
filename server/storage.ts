@@ -112,6 +112,8 @@ export interface IStorage {
   // Organization Cards
   assignCardToOrganization(entry: InsertOrganizationCard): Promise<OrganizationCard>;
   getOrganizationCards(orgId: number): Promise<(OrganizationCard & { cardCode: string; status: string; productTier: string })[]>;
+  getOrganizationCardById(id: number): Promise<OrganizationCard | undefined>;
+  updateOrganizationCard(id: number, updates: Partial<OrganizationCard>): Promise<OrganizationCard>;
   removeOrganizationCard(id: number): Promise<void>;
 
   // Organization Analytics
@@ -666,6 +668,16 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(cards, eq(organizationCards.cardId, cards.id))
       .where(eq(organizationCards.organizationId, orgId));
     return rows;
+  }
+
+  async getOrganizationCardById(id: number): Promise<OrganizationCard | undefined> {
+    const [row] = await db.select().from(organizationCards).where(eq(organizationCards.id, id));
+    return row;
+  }
+
+  async updateOrganizationCard(id: number, updates: Partial<OrganizationCard>): Promise<OrganizationCard> {
+    const [updated] = await db.update(organizationCards).set(updates).where(eq(organizationCards.id, id)).returning();
+    return updated;
   }
 
   async removeOrganizationCard(id: number): Promise<void> {

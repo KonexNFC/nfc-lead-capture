@@ -1257,6 +1257,119 @@ export async function registerRoutes(
     res.json({ message: "Card removed from organization" });
   });
 
+  app.post("/api/org/cards/assign", requireAuth, async (req, res) => {
+    const schema = z.object({
+      orgId: z.number(),
+      cardCode: z.string().optional(),
+      cardId: z.number().optional(),
+      assignedUserId: z.number(),
+    }).refine(d => d.cardId || d.cardCode, { message: "Provide cardId or cardCode" });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+
+    const member = await storage.getOrganizationMember(parsed.data.orgId, req.user!.id);
+    if (!member || !["owner", "admin"].includes(member.role)) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    let card;
+    if (parsed.data.cardCode) {
+      card = await storage.getCardByCode(parsed.data.cardCode.trim().toUpperCase());
+    } else if (parsed.data.cardId) {
+      card = await storage.getCardById(parsed.data.cardId);
+    }
+    if (!card) return res.status(404).json({ message: "Card not found" });
+
+    const assignee = await storage.getOrganizationMember(parsed.data.orgId, parsed.data.assignedUserId);
+    if (!assignee) return res.status(400).json({ message: "User is not a member of this organization" });
+
+    const orgCards = await storage.getOrganizationCards(parsed.data.orgId);
+    const existingOrgCard = orgCards.find(oc => oc.cardId === card!.id);
+
+    if (existingOrgCard) {
+      const updated = await storage.updateOrganizationCard(existingOrgCard.id, { assignedUserId: parsed.data.assignedUserId });
+      return res.json({ message: "Card assigned to member", orgCard: updated });
+    }
+
+    const orgCard = await storage.assignCardToOrganization({
+      organizationId: parsed.data.orgId,
+      cardId: card.id,
+      assignedUserId: parsed.data.assignedUserId,
+    });
+    res.status(201).json({ message: "Card assigned to member", orgCard });
+  });
+
+  app.patch("/api/org/cards/reassign", requireAuth, async (req, res) => {
+    const schema = z.object({
+      orgId: z.number(),
+      orgCardId: z.number(),
+      assignedUserId: z.number(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+
+    const member = await storage.getOrganizationMember(parsed.data.orgId, req.user!.id);
+    if (!member || !["owner", "admin"].includes(member.role)) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const orgCard = await storage.getOrganizationCardById(parsed.data.orgCardId);
+    if (!orgCard || orgCard.organizationId !== parsed.data.orgId) {
+      return res.status(404).json({ message: "Organization card not found" });
+    }
+
+    const assignee = await storage.getOrganizationMember(parsed.data.orgId, parsed.data.assignedUserId);
+    if (!assignee) return res.status(400).json({ message: "User is not a member of this organization" });
+
+    const updated = await storage.updateOrganizationCard(parsed.data.orgCardId, { assignedUserId: parsed.data.assignedUserId });
+    res.json({ message: "Card reassigned", orgCard: updated });
+  });
+
+  app.patch("/api/org/cards/suspend", requireAuth, async (req, res) => {
+    const schema = z.object({
+      orgId: z.number(),
+      orgCardId: z.number(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+
+    const member = await storage.getOrganizationMember(parsed.data.orgId, req.user!.id);
+    if (!member || !["owner", "admin"].includes(member.role)) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const orgCard = await storage.getOrganizationCardById(parsed.data.orgCardId);
+    if (!orgCard || orgCard.organizationId !== parsed.data.orgId) {
+      return res.status(404).json({ message: "Organization card not found" });
+    }
+
+    await storage.updateCard(orgCard.cardId, { status: "suspended" });
+    res.json({ message: "Card suspended" });
+  });
+
+  app.patch("/api/org/cards/lost", requireAuth, async (req, res) => {
+    const schema = z.object({
+      orgId: z.number(),
+      orgCardId: z.number(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+
+    const member = await storage.getOrganizationMember(parsed.data.orgId, req.user!.id);
+    if (!member || !["owner", "admin"].includes(member.role)) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const orgCard = await storage.getOrganizationCardById(parsed.data.orgCardId);
+    if (!orgCard || orgCard.organizationId !== parsed.data.orgId) {
+      return res.status(404).json({ message: "Organization card not found" });
+    }
+
+    await storage.updateCard(orgCard.cardId, { status: "lost" });
+    await storage.updateOrganizationCard(parsed.data.orgCardId, { assignedUserId: null });
+    res.json({ message: "Card marked as lost and unassigned" });
+  });
+
   app.get("/api/organizations/:id/analytics", requireAuth, requireOrgRole(["owner", "admin", "manager"]), async (req, res) => {
     const orgId = parseInt(req.params.id);
     const analytics = await storage.getOrganizationAnalytics(orgId);
