@@ -200,15 +200,18 @@ async function seedDatabase() {
 }
 
 async function ensureAdminAccount() {
-  const adminEmail = "info@konexnfc.com";
-  const adminUser = await storage.getUserByEmail(adminEmail);
-  if (adminUser) {
-    const hashedPassword = await hashPassword("Milan2020");
-    const { db } = await import("./db");
-    const { users } = await import("@shared/schema");
-    const { eq } = await import("drizzle-orm");
-    await db.update(users).set({ password: hashedPassword, isAdmin: true }).where(eq(users.id, adminUser.id));
-    console.log("Admin account ensured for", adminEmail);
+  const adminEmails = ["info@konexnfc.com", "admin@konexnfc.com"];
+  const { db } = await import("./db");
+  const { users } = await import("@shared/schema");
+  const { eq } = await import("drizzle-orm");
+  const hashedPassword = await hashPassword("Milan2020");
+
+  for (const adminEmail of adminEmails) {
+    const adminUser = await storage.getUserByEmail(adminEmail);
+    if (adminUser) {
+      await db.update(users).set({ password: hashedPassword, isAdmin: true }).where(eq(users.id, adminUser.id));
+      console.log("Admin account ensured for", adminEmail);
+    }
   }
 }
 
@@ -1011,7 +1014,7 @@ export async function registerRoutes(
     };
   };
 
-  app.post("/api/organizations", requireAuth, async (req, res) => {
+  app.post("/api/organizations", requireAuth, requireAdmin, async (req, res) => {
     const schema = z.object({
       name: z.string().min(2).max(100),
       slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/),
