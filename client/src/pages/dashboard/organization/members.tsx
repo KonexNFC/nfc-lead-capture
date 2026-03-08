@@ -201,14 +201,14 @@ export default function OrganizationMembers() {
                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                   </TableCell>
                 </TableRow>
-              ) : !members || members.length === 0 ? (
+              ) : !members || members.filter(m => m.role !== "owner").length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                     No members yet. Invite your team to get started.
                   </TableCell>
                 </TableRow>
               ) : (
-                members.map((member) => (
+                members.filter(m => m.role !== "owner").map((member) => (
                   <TableRow key={member.id} data-testid={`row-member-${member.id}`}>
                     <TableCell className="font-medium">{member.name || "-"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{member.email}</TableCell>
