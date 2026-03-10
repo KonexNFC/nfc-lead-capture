@@ -135,7 +135,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
         </div>
       )}
       
-      <div className="flex-1 py-6 px-4 space-y-2">
+      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
         {navigation.map((item) => {
           const isActive = item.href === '/dashboard' 
             ? location === '/dashboard' 
