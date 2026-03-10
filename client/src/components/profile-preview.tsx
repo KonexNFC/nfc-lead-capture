@@ -261,7 +261,7 @@ export function ProfilePreview({ profile, mock, onSaveContact, extraActions }: P
                 Order Your Konex Card
               </Button>
             </a>
-            <p className="text-[11px] text-muted-foreground/70 italic">Every tap becomes a sales opportunity.</p>
+
           </div>
         </div>
       </Card>
