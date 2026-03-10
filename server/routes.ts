@@ -225,6 +225,34 @@ export async function registerRoutes(
   // Register object storage routes
   registerObjectStorageRoutes(app);
 
+  const TIER_PREFIX_MAP: Record<string, string> = {
+    basic: "B",
+    premium: "P",
+    elite: "E",
+    custom: "C",
+  };
+
+  function getTierFromCode(cardCode: string): string | null {
+    const match = cardCode.match(/^KONEX-([BPEC])-/i);
+    if (!match) return null;
+    const prefix = match[1].toUpperCase();
+    for (const [tier, code] of Object.entries(TIER_PREFIX_MAP)) {
+      if (code === prefix) return tier;
+    }
+    return null;
+  }
+
+  function validateCardCodeTier(cardCode: string, productTier: string): string | null {
+    const expectedPrefix = TIER_PREFIX_MAP[productTier];
+    if (!expectedPrefix) return `Unknown product tier: ${productTier}`;
+    const tierFromCode = getTierFromCode(cardCode);
+    if (!tierFromCode) return `Invalid card code format: ${cardCode}. Expected KONEX-{B|P|E|C}-XXXXX`;
+    if (tierFromCode !== productTier) {
+      return `Card code prefix "${cardCode}" does not match tier "${productTier}". Expected prefix KONEX-${expectedPrefix}-`;
+    }
+    return null;
+  }
+
   // Seed DB
   seedDatabase().catch(console.error);
 
@@ -759,8 +787,19 @@ export async function registerRoutes(
     const { cardCode } = req.body;
     if (!cardCode) return res.status(400).json({ message: "Card code is required" });
 
-    const card = await storage.getCardByCode(cardCode);
+    const normalizedCode = cardCode.trim().toUpperCase();
+    const tierError = getTierFromCode(normalizedCode);
+    if (!tierError && normalizedCode.startsWith("KONEX-")) {
+      return res.status(400).json({ message: "Invalid card code format. Expected KONEX-{B|P|E|C}-XXXXX" });
+    }
+
+    const card = await storage.getCardByCode(normalizedCode);
     if (!card) return res.status(404).json({ message: "Card not found" });
+
+    const mismatch = validateCardCodeTier(card.cardCode, card.productTier);
+    if (mismatch) {
+      return res.status(400).json({ message: `Card data integrity error: ${mismatch}. Contact support.` });
+    }
 
     if (card.ownerId === req.user.id) {
       return res.json({ message: "Card already belongs to you", card });
@@ -898,11 +937,14 @@ export async function registerRoutes(
     const tierCode = productTier === "basic" ? "B" : productTier === "premium" ? "P" : productTier === "elite" ? "E" : "C";
     const start = startNumber || 1;
 
+    const expectedPrefix = TIER_PREFIX_MAP[productTier];
+    if (!expectedPrefix) return res.status(400).json({ message: `Unknown product tier: ${productTier}` });
+
     const cardsToCreate = [];
     const duplicateCheck: string[] = [];
     for (let i = 0; i < quantity; i++) {
       const seqNum = String(start + i).padStart(5, "0");
-      const cardCode = `KONEX-${tierCode}-${seqNum}`;
+      const cardCode = `KONEX-${expectedPrefix}-${seqNum}`;
       duplicateCheck.push(cardCode);
       cardsToCreate.push({
         cardCode,
