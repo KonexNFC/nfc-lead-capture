@@ -1018,6 +1018,23 @@ export async function registerRoutes(
     res.json(updated);
   });
 
+  app.post("/api/admin/cards/fix-codes", requireAdmin, async (_req, res) => {
+    const allCards = await storage.listAllCards();
+    let fixed = 0;
+    for (const card of allCards) {
+      const match = card.cardCode.match(/^KONEX-(\d{4,5})$/);
+      if (match && card.productTier) {
+        const prefix = TIER_PREFIX_MAP[card.productTier];
+        if (prefix) {
+          const newCode = `KONEX-${prefix}-${match[1].padStart(5, "0")}`;
+          await storage.updateCard(card.id, { cardCode: newCode });
+          fixed++;
+        }
+      }
+    }
+    res.json({ message: `Fixed ${fixed} card codes` });
+  });
+
   app.get("/api/admin/cards/export", requireAdmin, async (_req, res) => {
     const allCards = await storage.listAllCards();
     const csv = ["card_code,product_tier,status,owner_id,profile_id,tap_count,qr_scan_count,nickname,activated_at,created_at"];
