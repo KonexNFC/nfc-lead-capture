@@ -7,6 +7,7 @@ const platformBaseUrls: Record<string, string> = {
   tiktok: "https://tiktok.com/@",
   youtube: "https://youtube.com/@",
   snapchat: "https://snapchat.com/add/",
+  github: "https://github.com/",
 };
 
 const platformPlaceholders: Record<string, string> = {
@@ -18,6 +19,7 @@ const platformPlaceholders: Record<string, string> = {
   tiktok: "@yourhandle",
   youtube: "@yourhandle",
   snapchat: "@yourhandle",
+  github: "@yourhandle",
   website: "https://yourwebsite.com",
 };
 

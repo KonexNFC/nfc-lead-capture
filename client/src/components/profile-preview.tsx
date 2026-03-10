@@ -14,7 +14,8 @@ import {
   SiFacebook, 
   SiTiktok, 
   SiYoutube, 
-  SiSnapchat 
+  SiSnapchat,
+  SiGithub
 } from "react-icons/si";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ export function ProfilePreview({ profile, mock, onSaveContact, extraActions }: P
     tiktok: { icon: SiTiktok, color: "#000000", label: "TikTok" },
     youtube: { icon: SiYoutube, color: "#FF0000", label: "YouTube" },
     snapchat: { icon: SiSnapchat, color: "#FFFC00", label: "Snapchat" },
+    github: { icon: SiGithub, color: "#181717", label: "GitHub" },
     website: { icon: Globe, color: "#6366F1", label: "Website" },
   };
 

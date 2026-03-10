@@ -81,6 +81,7 @@ export const profiles = pgTable("profiles", {
     snapchat?: string;
     tiktok?: string;
     youtube?: string;
+    github?: string;
   }>(),
   theme: text("theme").default("light"),
   views: integer("views").default(0),
