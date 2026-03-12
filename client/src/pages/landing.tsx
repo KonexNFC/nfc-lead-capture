@@ -125,86 +125,78 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative min-h-[92vh] flex flex-col items-center justify-center overflow-hidden px-4 py-24">
-          {/* Forest background */}
-          <div className="absolute inset-0 -z-10">
-            <img
-              src={forestBg}
-              alt=""
-              className="w-full h-full object-cover object-center"
-              data-testid="img-hero-forest-bg"
-            />
-            <div className="absolute inset-0 bg-black/60" />
-          </div>
-
-          {/* Floating card illustration */}
-          <div className="absolute right-0 bottom-0 w-52 md:w-72 opacity-30 md:opacity-40 pointer-events-none select-none translate-x-8 translate-y-4 md:translate-x-0 md:translate-y-0">
-            <img
-              src={cardPremium}
-              alt="Konex NFC Card"
-              className="w-full drop-shadow-2xl rotate-12 animate-[float_6s_ease-in-out_infinite]"
-              data-testid="img-hero-floating-card"
-            />
-          </div>
-
-          {/* Content */}
-          <div className="relative z-10 max-w-2xl mx-auto text-center space-y-7">
-            <p className="text-xs md:text-sm uppercase tracking-[0.2em] font-semibold text-[#b6f542]" data-testid="text-hero-tagline">
-              Take a stand against waste
-            </p>
-
-            <h1 className="text-4xl md:text-6xl font-display font-extrabold text-white leading-[1.1] tracking-tight" data-testid="text-hero-headline">
-              A smarter, sustainable way to network
-            </h1>
-
-            <p className="text-base md:text-lg text-white/70 leading-relaxed max-w-lg mx-auto" data-testid="text-hero-stat">
-              Over 27 million paper business cards are printed every day.<br className="hidden md:block" />
-              Most are discarded within a week.
-            </p>
-
-            {/* Social proof pills */}
-            <div className="flex flex-wrap justify-center gap-3 pt-1">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-4 py-1.5 text-xs font-medium text-white/80 backdrop-blur-sm">
-                <Star className="h-3 w-3 fill-[#b6f542] text-[#b6f542]" />
-                Trusted by founders, sales teams and creators
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-4 py-1.5 text-xs font-medium text-white/80 backdrop-blur-sm">
-                <Nfc className="h-3 w-3 text-[#b6f542]" />
-                Replace thousands of paper cards with one tap
-              </span>
-            </div>
-
-            {/* Choose your solution */}
-            <div className="pt-2 space-y-4">
-              <p className="text-lg md:text-xl font-bold text-[#b6f542]" data-testid="text-hero-choose">
-                Choose your solution
+        <section className="relative pt-20 pb-32 px-4 overflow-hidden">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
+          
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12 lg:gap-20">
+            <div className="flex-1 text-center md:text-left space-y-8">
+              <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary">
+                <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
+                The Future of Networking
+              </div>
+              
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight text-foreground leading-[1.1]">
+                One Card. Tap. <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Connect.</span>
+              </h1>
+              
+              <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto md:mx-0">
+                Share your contact details, socials, portfolio and business links instantly with Konex NFC. No app required.
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link href="/konex-cards">
-                  <Button
-                    size="lg"
-                    className="h-14 px-8 rounded-full text-base font-semibold bg-[#b6f542] text-black hover:bg-[#c8f96a] shadow-xl hover:-translate-y-1 transition-all w-full sm:w-auto"
-                    data-testid="button-hero-nfc"
-                  >
-                    <Nfc className="h-4 w-4 mr-2" />
-                    NFC Business Card
+              
+              <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
+                <Link href="/auth?tab=register">
+                  <Button size="lg" className="h-14 px-8 rounded-full text-lg font-semibold shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all hover:-translate-y-1" data-testid="button-get-started-hero">
+                    Get Started
                   </Button>
                 </Link>
-                <Link href="/auth?tab=register">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="h-14 px-8 rounded-full text-base font-semibold border-[#b6f542]/50 bg-transparent text-[#b6f542] hover:bg-[#b6f542]/10 hover:-translate-y-1 transition-all w-full sm:w-auto"
-                    data-testid="button-hero-digital"
+                <Link href="/u/arivera">
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="h-14 px-8 rounded-full text-lg" 
+                    data-testid="button-view-demo"
                   >
-                    <Smartphone className="h-4 w-4 mr-2" />
-                    Digital Profile
+                    View Demo
                   </Button>
                 </Link>
               </div>
-              <p className="text-xs text-white/50 pt-1" data-testid="text-hero-compatibility">
-                Works with iPhone &amp; Android — no app required.
-              </p>
+            </div>
+            
+            <div className="flex-1 relative w-full max-w-lg md:max-w-full">
+              <div className="relative z-10">
+                <img 
+                  src={cardInHand} 
+                  alt="Hand holding a KONEX NFC Business Card" 
+                  className="w-full max-w-lg mx-auto rounded-2xl shadow-2xl shadow-primary/20" 
+                  data-testid="img-hero-card"
+                />
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4 mt-8">
+                {[
+                  { img: cardBasic, label: "Basic", price: "£19.99" },
+                  { img: cardPremium, label: "Premium", price: "£49.99" },
+                  { img: cardElite, label: "Elite", price: "£79.99" },
+                ].map((card, i) => (
+                  <Link key={i} href={`/konex-cards/${card.label.toLowerCase()}`}>
+                    <div className="group cursor-pointer" data-testid={`hero-card-${card.label.toLowerCase()}`}>
+                      <img 
+                        src={card.img} 
+                        alt={`KONEX ${card.label}`} 
+                        className="w-full rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300" 
+                        data-testid={`img-hero-tier-${card.label.toLowerCase()}`}
+                      />
+                      <div className="text-center mt-2">
+                        <p className="text-sm font-semibold text-foreground">{card.label}</p>
+                        <p className="text-xs text-muted-foreground">{card.price}</p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              
+              <div className="absolute -top-10 -right-10 h-64 w-64 bg-primary/20 rounded-full blur-3xl -z-10 animate-pulse" />
+              <div className="absolute -bottom-10 -left-10 h-64 w-64 bg-accent/20 rounded-full blur-3xl -z-10 animate-pulse delay-700" />
             </div>
           </div>
         </section>
@@ -419,7 +411,87 @@ export default function LandingPage() {
 
       </main>
 
-      <footer className="py-8 border-t border-border/50 text-center text-muted-foreground text-sm">
+      {/* Sustainability Footer CTA */}
+      <section className="relative overflow-hidden">
+        {/* Forest background */}
+        <div className="absolute inset-0 -z-10">
+          <img
+            src={forestBg}
+            alt=""
+            className="w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-black/62" />
+        </div>
+
+        {/* Floating card illustration */}
+        <div className="absolute right-4 bottom-0 w-44 md:w-64 opacity-25 md:opacity-35 pointer-events-none select-none">
+          <img
+            src={cardPremium}
+            alt="Konex NFC Card"
+            className="w-full drop-shadow-2xl rotate-12 animate-[float_6s_ease-in-out_infinite]"
+          />
+        </div>
+
+        <div className="relative z-10 max-w-2xl mx-auto text-center px-6 py-20 space-y-6">
+          <p className="text-xs md:text-sm uppercase tracking-[0.2em] font-semibold text-[#b6f542]">
+            Take a stand against waste
+          </p>
+          <h2 className="text-3xl md:text-5xl font-display font-extrabold text-white leading-[1.1] tracking-tight">
+            A smarter, sustainable way to network
+          </h2>
+          <p className="text-base text-white/70 leading-relaxed max-w-lg mx-auto">
+            Over 27 million paper business cards are printed every day.<br className="hidden md:block" />
+            Most are discarded within a week.
+          </p>
+
+          {/* Social proof pills */}
+          <div className="flex flex-wrap justify-center gap-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-4 py-1.5 text-xs font-medium text-white/80 backdrop-blur-sm">
+              <Star className="h-3 w-3 fill-[#b6f542] text-[#b6f542]" />
+              Trusted by founders, sales teams and creators
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-4 py-1.5 text-xs font-medium text-white/80 backdrop-blur-sm">
+              <Nfc className="h-3 w-3 text-[#b6f542]" />
+              Replace thousands of paper cards with one tap
+            </span>
+          </div>
+
+          {/* Choose your solution */}
+          <div className="pt-2 space-y-4">
+            <p className="text-lg md:text-xl font-bold text-[#b6f542]">
+              Choose your solution
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link href="/konex-cards">
+                <Button
+                  size="lg"
+                  className="h-14 px-8 rounded-full text-base font-semibold bg-[#b6f542] text-black hover:bg-[#c8f96a] shadow-xl hover:-translate-y-1 transition-all w-full sm:w-auto"
+                  data-testid="button-footer-nfc"
+                >
+                  <Nfc className="h-4 w-4 mr-2" />
+                  NFC Business Card
+                </Button>
+              </Link>
+              <Link href="/auth?tab=register">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-14 px-8 rounded-full text-base font-semibold border-[#b6f542]/50 bg-transparent text-[#b6f542] hover:bg-[#b6f542]/10 hover:-translate-y-1 transition-all w-full sm:w-auto"
+                  data-testid="button-footer-digital"
+                >
+                  <Smartphone className="h-4 w-4 mr-2" />
+                  Digital Profile
+                </Button>
+              </Link>
+            </div>
+            <p className="text-xs text-white/50 pt-1">
+              Works with iPhone &amp; Android — no app required.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer className="py-6 border-t border-border/50 text-center text-muted-foreground text-sm">
         <p>&copy; {new Date().getFullYear()} KONEX. All rights reserved.</p>
       </footer>
     </div>
