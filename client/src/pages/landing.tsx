@@ -423,15 +423,6 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-black/62" />
         </div>
 
-        {/* Floating card illustration */}
-        <div className="absolute right-4 bottom-0 w-44 md:w-64 opacity-25 md:opacity-35 pointer-events-none select-none">
-          <img
-            src={cardPremium}
-            alt="Konex NFC Card"
-            className="w-full drop-shadow-2xl rotate-12 animate-[float_6s_ease-in-out_infinite]"
-          />
-        </div>
-
         <div className="relative z-10 max-w-2xl mx-auto text-center px-6 py-20 space-y-6">
           <p className="text-xs md:text-sm uppercase tracking-[0.2em] font-semibold text-[#b6f542]">
             Take a stand against waste
