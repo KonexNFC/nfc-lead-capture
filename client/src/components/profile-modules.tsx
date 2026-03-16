@@ -149,8 +149,31 @@ function TilesModule({ modules }: { modules: ProfileModules }) {
 }
 
 function VideoModule({ modules }: { modules: ProfileModules }) {
-  if (!modules.videoUrl) return null;
-  const embedUrl = getYouTubeEmbedUrl(modules.videoUrl);
+  const hasUpload = !!modules.videoObjectPath;
+  const hasYoutube = !!modules.videoUrl;
+  if (!hasUpload && !hasYoutube) return null;
+
+  if (hasUpload) {
+    const src = modules.videoObjectPath!.startsWith("http")
+      ? modules.videoObjectPath!
+      : `/objects/${modules.videoObjectPath}`;
+    return (
+      <div className="space-y-2" data-testid="module-video">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
+          Video
+        </h3>
+        <video
+          src={src}
+          controls
+          playsInline
+          className="w-full rounded-md border border-border/50"
+          data-testid="video-uploaded"
+        />
+      </div>
+    );
+  }
+
+  const embedUrl = getYouTubeEmbedUrl(modules.videoUrl!);
   if (!embedUrl) return null;
 
   return (

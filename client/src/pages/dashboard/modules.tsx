@@ -56,6 +56,7 @@ export default function ModulesPage() {
   const { toast } = useToast();
 
   const [modules, setModules] = useState<ProfileModules>({});
+  const [videoMode, setVideoMode] = useState<"youtube" | "upload">("youtube");
   const [branding, setBranding] = useState<ProfileBranding>({});
   const [textOverrides, setTextOverrides] = useState<ProfileTextOverrides>({});
   const [moduleOrder, setModuleOrder] = useState<string[]>(DEFAULT_ORDER);
@@ -65,6 +66,7 @@ export default function ModulesPage() {
     if (profile) {
       const m = (profile.modules as ProfileModules) || {};
       setModules(m);
+      if (m.videoObjectPath) setVideoMode("upload");
       setBranding((profile.branding as ProfileBranding) || {});
       setTextOverrides((profile.textOverrides as ProfileTextOverrides) || {});
       setModuleOrder(m.order && m.order.length > 0 ? m.order : DEFAULT_ORDER);
@@ -101,7 +103,7 @@ export default function ModulesPage() {
     reviews.forEach((review, i) => {
       if (!review.url) errors.push(`Review #${i + 1} is missing a URL`);
     });
-    if (modules.videoUrl) {
+    if (modules.videoUrl && !modules.videoObjectPath) {
       const yt = /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
       if (!yt.test(modules.videoUrl)) errors.push("Video URL must be a valid YouTube link");
     }
@@ -407,17 +409,107 @@ export default function ModulesPage() {
           </AccordionTrigger>
           <AccordionContent className="space-y-4 pb-4">
             <p className="text-sm text-muted-foreground">
-              Embed a YouTube video on your profile page.
+              Add a video to your profile — paste a YouTube link or upload a video from your device.
             </p>
-            <div>
-              <label className="text-sm font-medium">YouTube URL</label>
-              <Input
-                placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
-                value={modules.videoUrl || ""}
-                onChange={(e) => setModules((m) => ({ ...m, videoUrl: e.target.value }))}
-                data-testid="input-video-url"
-              />
+
+            {/* Mode toggle */}
+            <div className="flex rounded-lg border border-border overflow-hidden">
+              <button
+                type="button"
+                onClick={() => {
+                  setVideoMode("youtube");
+                  setModules((m) => ({ ...m, videoObjectPath: undefined }));
+                }}
+                className={`flex-1 py-2 text-sm font-medium transition-colors ${videoMode === "youtube" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}
+                data-testid="button-video-mode-youtube"
+              >
+                YouTube URL
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setVideoMode("upload");
+                  setModules((m) => ({ ...m, videoUrl: undefined }));
+                }}
+                className={`flex-1 py-2 text-sm font-medium transition-colors ${videoMode === "upload" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}
+                data-testid="button-video-mode-upload"
+              >
+                Upload from Gallery
+              </button>
             </div>
+
+            {videoMode === "youtube" ? (
+              <div>
+                <label className="text-sm font-medium">YouTube URL</label>
+                <Input
+                  placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
+                  value={modules.videoUrl || ""}
+                  onChange={(e) => setModules((m) => ({ ...m, videoUrl: e.target.value }))}
+                  data-testid="input-video-url"
+                />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <label className="text-sm font-medium">Video File</label>
+                {modules.videoObjectPath ? (
+                  <div className="space-y-2">
+                    <video
+                      src={modules.videoObjectPath.startsWith("http") ? modules.videoObjectPath : `/objects/${modules.videoObjectPath}`}
+                      controls
+                      className="w-full rounded-md border border-border"
+                      data-testid="video-preview-uploaded"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setModules((m) => ({ ...m, videoObjectPath: undefined }))}
+                      data-testid="button-remove-video"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Remove Video
+                    </Button>
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      id="video-upload-input"
+                      className="hidden"
+                      data-testid="input-video-file"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 200 * 1024 * 1024) {
+                          toast({ title: "File too large", description: "Please upload a video under 200MB.", variant: "destructive" });
+                          return;
+                        }
+                        const response = await uploadFile(file);
+                        if (response) {
+                          setModules((m) => ({ ...m, videoObjectPath: response.objectPath }));
+                          toast({ title: "Video uploaded", description: "Your video has been uploaded successfully." });
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full border-dashed h-20 flex-col gap-1"
+                      disabled={isUploading}
+                      onClick={() => document.getElementById("video-upload-input")?.click()}
+                      data-testid="button-upload-video"
+                    >
+                      {isUploading ? (
+                        <><Loader2 className="h-5 w-5 animate-spin" /><span className="text-sm">Uploading...</span></>
+                      ) : (
+                        <><Upload className="h-5 w-5" /><span className="text-sm">Choose video from gallery</span><span className="text-xs text-muted-foreground">MP4, MOV, WebM — max 200MB</span></>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </AccordionContent>
         </AccordionItem>
 

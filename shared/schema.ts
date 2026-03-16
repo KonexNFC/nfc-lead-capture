@@ -52,6 +52,7 @@ export interface ProfileModules {
   enabled?: Record<string, boolean>;
   tiles?: ProfileTile[];
   videoUrl?: string;
+  videoObjectPath?: string;
   bookingUrl?: string;
   bookingLabel?: string;
   reviews?: ProfileReview[];
