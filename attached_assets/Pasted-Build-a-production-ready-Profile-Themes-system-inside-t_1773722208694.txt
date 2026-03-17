@@ -1,0 +1,274 @@
+Build a production-ready “Profile Themes” system inside the Konex admin dashboard and public profile renderer.
+
+PRODUCT CONTEXT
+Konex is an NFC-powered digital profile platform. Users have public-facing profiles containing their identity, business info, social links, CTAs, media, booking/payment/review links, and other profile blocks. We want to introduce a multi-theme profile option so users can choose their own visual style without changing the underlying profile data structure.
+
+CORE OBJECTIVE
+Create a scalable theme engine where:
+1. Each user keeps one profile data model
+2. Users can select from multiple curated visual themes
+3. Themes only affect presentation, not the actual profile content schema
+4. Changes can be previewed live before publishing
+5. Theme availability can be controlled by plan/tier
+6. The implementation is clean, modular, and easy to extend later
+
+SUCCESS CRITERIA
+- Users can choose a theme from an “Appearance” or “Themes” section in dashboard
+- Users can preview themes instantly on desktop and mobile views
+- Users can save draft theme changes before publishing
+- Public profile renders correctly with selected theme
+- Existing profiles continue to work with a default theme fallback
+- Theme system supports future premium upsells
+- Admin can add new themes later without rewriting profile logic
+
+TECHNICAL ARCHITECTURE
+Implement this using:
+1. One shared profile data schema
+2. A theme configuration system using JSON or TypeScript objects
+3. Design tokens per theme:
+   - colors
+   - typography
+   - spacing
+   - border radius
+   - button style
+   - shadows
+   - section density
+   - card/surface style
+4. Shared reusable UI components that consume theme tokens
+5. Theme-aware public profile renderer
+6. Plan-based theme gating
+7. Safe fallback handling if theme is missing or invalid
+
+DO NOT build fully freeform drag-and-drop design customization.
+DO build curated theme templates with controlled customization.
+
+INITIAL THEMES TO SHIP
+Create these 5 initial themes:
+1. Minimal Corporate
+   - clean, white/light neutral surfaces
+   - understated typography
+   - structured spacing
+   - professional CTA buttons
+
+2. Creative Portfolio
+   - more editorial layout
+   - stronger image emphasis
+   - bolder headings
+   - more expressive spacing
+
+3. Luxury Black
+   - dark background
+   - premium spacing
+   - refined typography
+   - elegant contrast accents
+
+4. Bold Modern
+   - high contrast
+   - larger buttons
+   - sharper section distinction
+   - strong action-first layout
+
+5. Personal Brand
+   - warm, approachable
+   - profile-image-forward
+   - softer cards
+   - creator/influencer-friendly layout
+
+PROFILE BLOCKS THAT MUST REMAIN COMPATIBLE
+All themes must support these blocks if enabled on a profile:
+- profile photo or company logo
+- full name
+- headline / role
+- business name
+- short bio
+- primary CTA buttons
+- contact actions
+- social links
+- website links
+- booking link
+- payment link
+- review link
+- gallery/media section
+- custom link list
+- map/location if already supported
+- testimonial/review snippets if already supported
+
+DASHBOARD UI REQUIREMENTS
+Add a new dashboard section:
+Settings > Appearance
+or
+Profile > Themes
+
+Inside this section include:
+1. Theme gallery grid
+   - card preview for each theme
+   - theme name
+   - short description
+   - premium badge if gated
+
+2. Live preview panel
+   - desktop preview
+   - mobile preview toggle
+   - instant theme switching without page reload if possible
+
+3. Theme controls panel
+   - current selected theme
+   - accent color selector if supported by theme
+   - light/dark variant selector where applicable
+   - button style selector only if allowed by that theme
+   - reset to default
+   - save draft
+   - publish changes
+
+4. Tier gating
+   - if user clicks locked premium theme, show upgrade modal
+   - do not break browsing experience
+
+PUBLIC PROFILE RENDERING REQUIREMENTS
+- On public profile load, fetch user profile and assigned theme
+- Apply theme tokens consistently across all profile sections
+- Ensure responsive rendering across mobile and desktop
+- Ensure loading state is clean and fast
+- Default to a safe fallback theme if no theme is assigned
+- Preserve all CTA functionality regardless of theme
+
+DATA MODEL / STORAGE
+Add theme-related fields to the user profile settings:
+- selectedThemeId
+- themeVariant
+- themeCustomizations
+- themeDraft (optional)
+- themePublishedAt (optional)
+
+Suggested example:
+{
+  "selectedThemeId": "luxury_black",
+  "themeVariant": "default",
+  "themeCustomizations": {
+    "accentColor": "#D4AF37",
+    "buttonStyle": "filled"
+  }
+}
+
+THEME CONFIG STRUCTURE
+Create a central theme registry, for example:
+- /lib/themes/
+- /config/themes/
+- /src/themes/
+
+Each theme should define:
+- id
+- name
+- description
+- availability: free/pro/enterprise
+- preview thumbnail metadata
+- token values
+- layout preferences
+- supported customization options
+
+Example shape:
+{
+  id: "luxury_black",
+  name: "Luxury Black",
+  description: "Dark, premium and refined",
+  availability: "pro",
+  supports: {
+    accentColor: true,
+    buttonStyle: false,
+    darkLightToggle: false
+  },
+  tokens: {
+    background: "#0B0B0B",
+    surface: "#141414",
+    textPrimary: "#FFFFFF",
+    textSecondary: "#B5B5B5",
+    accent: "#D4AF37",
+    borderRadius: "16px",
+    shadow: "soft",
+    fontHeading: "serif-premium",
+    fontBody: "sans-clean",
+    spacing: "comfortable"
+  },
+  layout: {
+    headerStyle: "centered",
+    ctaStyle: "stacked",
+    cardStyle: "elevated",
+    sectionDivider: "subtle"
+  }
+}
+
+PLAN / BILLING LOGIC
+Implement theme access by subscription plan:
+- Free: 2 themes only
+- Pro: all standard and premium themes
+- Enterprise: all themes plus brand kit capability placeholder
+
+If billing logic already exists, integrate with current subscription plan state.
+If billing logic does not exist yet, structure code so theme gating can plug into future plan checks easily.
+
+UX DETAILS
+- User clicks a theme card
+- Preview updates instantly
+- Unsaved changes warning appears if leaving page
+- Save Draft stores appearance settings without affecting live public profile
+- Publish pushes theme settings live
+- Show success toast after save/publish
+- Show upgrade modal for locked themes
+- Preserve current profile content during all theme actions
+
+STATE HANDLING
+Support these states:
+- default theme
+- draft changes not yet published
+- published theme
+- locked theme clicked by free user
+- invalid theme fallback
+- loading preview
+- save failed
+- publish failed
+
+ACCESSIBILITY
+- Ensure adequate contrast
+- Buttons and links must remain clearly tappable
+- Keyboard accessibility in dashboard
+- Theme previews should not rely on color alone
+- Public profile must remain readable under all themes
+
+PERFORMANCE
+- Theme switching in preview should feel instant
+- Avoid duplicating profile rendering logic per theme
+- Use one renderer with theme tokens rather than separate hardcoded templates where possible
+- Lazy load heavy preview assets if needed
+
+ADMIN / FUTURE-PROOFING
+Structure system so future additions are easy:
+- add new theme by dropping a new config object
+- optional future support for company-wide brand kits
+- optional future support for seasonal themes
+- optional future support for campaign-specific themes
+- optional future support for A/B testing themes
+
+DELIVERABLES REQUIRED IN THIS BUILD
+1. Theme registry/config system
+2. Updated user settings schema for theme selection
+3. Dashboard Appearance/Themes page
+4. Theme gallery cards with locked/unlocked states
+5. Live preview module
+6. Save draft and publish flow
+7. Public profile theme renderer integration
+8. Default theme fallback
+9. Clean upgrade modal for locked premium themes
+10. Responsive UI polish
+
+IMPLEMENTATION PREFERENCE
+Use the current Konex stack and existing component architecture.
+Keep code modular, typed, and production-ready.
+Avoid hacky one-off styling.
+Prefer reusable theme tokens and shared components.
+
+OUTPUT EXPECTED
+1. Implement the feature end-to-end
+2. Create any required components, routes, schema updates, and utility files
+3. Clearly label new files and modified files
+4. Add brief inline comments where needed
+5. Ensure no existing public profile functionality is broken

@@ -16,7 +16,8 @@ import {
   Check,
   MessageSquareQuote,
   CreditCard,
-  Building2
+  Building2,
+  Palette
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -46,6 +47,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
     { name: 'Modules', href: '/dashboard/modules', icon: Blocks },
     { name: 'Leads', href: '/dashboard/leads', icon: Users },
     { name: 'My Cards', href: '/dashboard/cards', icon: CreditCard },
+    { name: 'Appearance', href: '/dashboard/appearance', icon: Palette },
     ...(hasOrgs || user?.isAdmin ? [{ name: 'Organization', href: '/dashboard/organization', icon: Building2 }] : []),
     { name: 'Leave a Review', href: '/dashboard/testimonial', icon: MessageSquareQuote },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },

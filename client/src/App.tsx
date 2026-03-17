@@ -28,6 +28,7 @@ import ForgotPasswordPage from "@/pages/forgot-password";
 import ResetPasswordPage from "@/pages/reset-password";
 import TestimonialPage from "@/pages/dashboard/testimonial";
 import MyCardsPage from "@/pages/dashboard/cards";
+import AppearancePage from "@/pages/dashboard/appearance";
 import AdminTestimonials from "@/pages/dashboard/admin/testimonials";
 import AdminCards from "@/pages/dashboard/admin/cards";
 import OrganizationDashboard from "@/pages/dashboard/organization/index";
@@ -112,6 +113,9 @@ function Router() {
       </Route>
       <Route path="/dashboard/cards">
         <ProtectedRoute component={MyCardsPage} />
+      </Route>
+      <Route path="/dashboard/appearance">
+        <ProtectedRoute component={AppearancePage} />
       </Route>
 
       {/* Organization Routes */}

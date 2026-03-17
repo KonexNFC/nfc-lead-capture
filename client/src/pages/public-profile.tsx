@@ -20,6 +20,7 @@ import { z } from "zod";
 import { ProfileModulesRenderer } from "@/components/profile-modules";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 import { socialHandleToUrl } from "@/lib/social-utils";
+import { getThemeStyle } from "@/lib/themes";
 import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/schema";
 
 const STORAGE_KEY_PREFIX = "konex_contact_";
@@ -61,7 +62,9 @@ export default function PublicProfile() {
   const ctaLabel = textOverrides.ctaLabel || "Exchange Contact";
   const subtitleText = textOverrides.subheadline || "Share your contact details instantly.";
 
-  const brandStyle: Record<string, string> = {};
+  // Apply theme tokens first, then branding overrides on top
+  const themeTokens = getThemeStyle(branding.selectedThemeId);
+  const brandStyle: Record<string, string> = { ...themeTokens };
   if (branding.primaryColor) {
     brandStyle["--brand-primary"] = branding.primaryColor;
     brandStyle["--brand-primary-fg"] = "#ffffff";

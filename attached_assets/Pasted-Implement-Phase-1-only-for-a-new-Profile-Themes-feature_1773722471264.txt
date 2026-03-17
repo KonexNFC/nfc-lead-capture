@@ -1,0 +1,102 @@
+Implement Phase 1 only for a new “Profile Themes” feature in Konex.
+
+IMPORTANT
+Do not attempt the full feature in one go.
+Do not redesign unrelated parts of the app.
+Do not change existing profile content schema.
+Do not break current public profiles.
+Keep all existing profile functionality working.
+
+GOAL OF THIS PHASE
+Set up the foundation for a scalable multi-theme system without overloading the app.
+
+SCOPE
+1. Create a theme registry/config system
+2. Add theme-related fields to profile settings/state
+3. Add a default fallback theme
+4. Update public profile renderer so it can read a selected theme
+5. Add only a very basic Appearance page in dashboard
+6. Add theme selection only, no advanced customizations yet
+7. No save draft yet
+8. No publish workflow yet
+9. No billing modal yet
+10. No premium gating logic yet
+
+REQUIRED THEMES FOR THIS PHASE
+Create only these 3 themes:
+- minimal_corporate
+- luxury_black
+- personal_brand
+
+ARCHITECTURE RULES
+- Use one shared profile renderer
+- Themes must be config-based, not separate hardcoded profile pages
+- Use reusable theme tokens for colors, typography, spacing, border radius, button style, and surfaces
+- Add safe fallback handling if theme is missing or invalid
+- Keep code modular and production-ready
+
+DATA MODEL
+Add these settings fields where appropriate:
+- selectedThemeId
+- themeVariant
+- themeCustomizations
+
+Default selectedThemeId should be:
+minimal_corporate
+
+THEME OBJECT SHAPE
+Each theme should include:
+- id
+- name
+- description
+- tokens
+- layout
+
+Example fields:
+- background
+- surface
+- textPrimary
+- textSecondary
+- accent
+- borderRadius
+- buttonStyle
+- fontHeading
+- fontBody
+- spacing
+
+DASHBOARD UI FOR THIS PHASE
+Create:
+Dashboard → Profile → Appearance
+
+On this page show:
+- page title: Appearance
+- short helper text
+- 3 theme cards
+- current selected theme state
+- click theme card to switch preview/selection
+- simple save button
+
+No advanced controls yet.
+No upgrade modal yet.
+No live desktop/mobile toggle yet unless already easy to support.
+
+PUBLIC PROFILE
+Update the public profile renderer so it:
+1. loads the user profile
+2. reads selectedThemeId
+3. applies the matching theme config
+4. falls back to minimal_corporate if missing
+
+DELIVERABLES
+1. theme registry/config files
+2. updated settings/schema/state
+3. Appearance page
+4. theme card component
+5. updated public profile theme application
+6. safe fallback behavior
+
+OUTPUT REQUIREMENTS
+- Implement the code directly
+- Clearly label all new and modified files
+- Keep inline comments brief
+- Do not add unrelated features

@@ -37,6 +37,9 @@ export interface ProfileBranding {
   primaryColor?: string;
   accentColor?: string;
   fontFamily?: string;
+  selectedThemeId?: string;
+  themeVariant?: string;
+  themeCustomizations?: Record<string, string>;
 }
 
 export interface ProfileTextOverrides {
