@@ -9,10 +9,13 @@ export interface ThemeTokens {
   "--theme-font-body": string;
 }
 
+export type ThemePlan = "free" | "pro";
+
 export interface ThemeConfig {
   id: string;
   name: string;
   description: string;
+  plan: ThemePlan;
   preview: { bg: string; accent: string; surface: string };
   tokens: ThemeTokens;
 }
@@ -22,6 +25,7 @@ export const THEMES: ThemeConfig[] = [
     id: "minimal_corporate",
     name: "Minimal Corporate",
     description: "Clean, professional, and timeless.",
+    plan: "free" as ThemePlan,
     preview: { bg: "#f8f9fa", accent: "#1a73e8", surface: "#ffffff" },
     tokens: {
       "--theme-bg": "#f8f9fa",
@@ -38,6 +42,7 @@ export const THEMES: ThemeConfig[] = [
     id: "luxury_black",
     name: "Luxury Black",
     description: "Sophisticated and bold. For high-end brands.",
+    plan: "pro" as ThemePlan,
     preview: { bg: "#0a0a0a", accent: "#c9a84c", surface: "#1a1a1a" },
     tokens: {
       "--theme-bg": "#0a0a0a",
@@ -54,6 +59,7 @@ export const THEMES: ThemeConfig[] = [
     id: "personal_brand",
     name: "Personal Brand",
     description: "Bold, vibrant, and expressive.",
+    plan: "free" as ThemePlan,
     preview: { bg: "#fafafa", accent: "#7c3aed", surface: "#ffffff" },
     tokens: {
       "--theme-bg": "#fafafa",

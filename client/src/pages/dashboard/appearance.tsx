@@ -5,9 +5,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Check, Palette, Smartphone, Monitor,
-  AlertCircle, BookOpen, Globe, RotateCcw
+  AlertCircle, BookOpen, Globe, RotateCcw, Lock, Sparkles
 } from "lucide-react";
 import { THEMES, DEFAULT_THEME_ID, getTheme } from "@/lib/themes";
+import { useUserPlan, isPlanAtLeast } from "@/lib/plan";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
+} from "@/components/ui/dialog";
 import type { ProfileBranding, Profile } from "@shared/schema";
 
 // ---------------------------------------------------------------------------
@@ -171,6 +175,21 @@ export default function AppearancePage() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [viewport, setViewport] = useState<"mobile" | "desktop">("mobile");
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [lockedThemeName, setLockedThemeName] = useState("");
+
+  const userPlan = useUserPlan();
+
+  const handleThemeSelect = (themeId: string) => {
+    const theme = THEMES.find((t) => t.id === themeId);
+    if (!theme) return;
+    if (!isPlanAtLeast(userPlan, theme.plan)) {
+      setLockedThemeName(theme.name);
+      setUpgradeModalOpen(true);
+      return;
+    }
+    setWorkingId(themeId);
+  };
 
   useEffect(() => {
     if (profile) {
@@ -347,13 +366,18 @@ export default function AppearancePage() {
             const isWorking = workingId === theme.id;
             const isDraft = draftId === theme.id;
             const isLive = liveId === theme.id;
+            const isLocked = !isPlanAtLeast(userPlan, theme.plan);
             return (
               <button
                 key={theme.id}
                 type="button"
-                onClick={() => setWorkingId(theme.id)}
+                onClick={() => handleThemeSelect(theme.id)}
                 className={`w-full relative rounded-xl border-2 overflow-hidden text-left transition-all focus:outline-none ${
-                  isWorking ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/40"
+                  isLocked
+                    ? "border-border opacity-80 cursor-pointer"
+                    : isWorking
+                    ? "border-primary ring-2 ring-primary/20"
+                    : "border-border hover:border-primary/40"
                 }`}
                 data-testid={`theme-card-${theme.id}`}
               >
@@ -367,6 +391,15 @@ export default function AppearancePage() {
                     className="h-6 w-full"
                     style={{ backgroundColor: theme.preview.accent, borderRadius: theme.tokens["--theme-border-radius"] }}
                   />
+                  {/* Lock overlay */}
+                  {isLocked && (
+                    <div className="absolute inset-0 h-20 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
+                      <div className="flex items-center gap-1.5 bg-background/90 border border-border rounded-full px-2.5 py-1 shadow-sm">
+                        <Lock className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Pro</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="px-3 py-2 bg-card border-t border-border/40 flex items-center justify-between gap-2">
@@ -375,17 +408,22 @@ export default function AppearancePage() {
                     <p className="text-[11px] text-muted-foreground truncate">{theme.description}</p>
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    {isLive && !isDraft && (
+                    {isLocked && (
+                      <span className="text-[9px] font-semibold uppercase tracking-wide text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded-full">
+                        Pro
+                      </span>
+                    )}
+                    {!isLocked && isLive && !isDraft && (
                       <span className="text-[9px] font-semibold uppercase tracking-wide text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full">
                         Live
                       </span>
                     )}
-                    {isDraft && !isLive && (
+                    {!isLocked && isDraft && !isLive && (
                       <span className="text-[9px] font-semibold uppercase tracking-wide text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded-full">
                         Draft
                       </span>
                     )}
-                    {isWorking && (
+                    {!isLocked && isWorking && (
                       <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
                         <Check className="h-3 w-3 text-primary-foreground" />
                       </div>
@@ -451,6 +489,42 @@ export default function AppearancePage() {
           </div>
         </div>
       </div>
+
+      {/* Upgrade modal */}
+      <Dialog open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen}>
+        <DialogContent className="sm:max-w-md" data-testid="modal-upgrade">
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <Sparkles className="h-4 w-4 text-amber-500" />
+              </div>
+              <DialogTitle>Unlock Premium Themes</DialogTitle>
+            </div>
+            <DialogDescription className="text-sm leading-relaxed">
+              <strong className="text-foreground">{lockedThemeName}</strong> is a Pro theme.
+              Upgrade your plan to access premium themes, advanced customisation, and more — and make your profile truly stand out.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col sm:flex-row gap-2 mt-2">
+            <Button
+              className="flex-1"
+              onClick={() => { setUpgradeModalOpen(false); window.location.href = "/konex-cards"; }}
+              data-testid="button-upgrade-plan"
+            >
+              <Sparkles className="h-4 w-4 mr-1.5" />
+              Upgrade plan
+            </Button>
+            <Button
+              variant="ghost"
+              className="flex-1"
+              onClick={() => setUpgradeModalOpen(false)}
+              data-testid="button-upgrade-later"
+            >
+              Maybe later
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
