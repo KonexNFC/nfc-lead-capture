@@ -38,6 +38,8 @@ export interface ProfileBranding {
   accentColor?: string;
   fontFamily?: string;
   selectedThemeId?: string;
+  themeDraft?: string;
+  themePublishedAt?: string;
   themeVariant?: string;
   themeCustomizations?: Record<string, string>;
 }
