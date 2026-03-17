@@ -148,6 +148,26 @@ export default function PublicProfile() {
       {/* Modules */}
       <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
 
+      {/* Order Konex Card CTA */}
+      <div className="w-full max-w-md mt-6 rounded-2xl border border-border/40 bg-card px-6 py-5 text-center space-y-3" data-testid="section-order-konex">
+        <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">Upgrade your networking</p>
+        <p className="text-sm font-medium">Get your own Konex NFC card</p>
+        <a
+          href="https://konexnfc.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="link-order-konex"
+        >
+          <Button
+            variant="outline"
+            className="w-full rounded-xl min-h-[44px] text-sm font-semibold border-primary/30 hover:bg-primary hover:text-primary-foreground transition-all"
+            size="lg"
+          >
+            Order Your Konex Card
+          </Button>
+        </a>
+      </div>
+
       {/* Lead Capture Dialog/Drawer */}
       {isDesktop ? (
         <Dialog open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : handleClose()}>
