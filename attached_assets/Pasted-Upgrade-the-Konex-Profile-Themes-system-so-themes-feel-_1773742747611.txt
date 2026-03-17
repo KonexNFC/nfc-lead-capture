@@ -1,0 +1,176 @@
+Upgrade the Konex Profile Themes system so themes feel materially different and support controlled user customization.
+
+IMPORTANT
+Do not rebuild the entire Appearance feature.
+Do not remove existing draft/publish, theme locking, or preview functionality.
+Do not redesign unrelated app areas.
+Keep the current architecture based on one shared profile renderer and config-based themes.
+
+CURRENT ISSUE
+The current themes are too visually similar.
+Switching between the free themes does not create a clearly different profile experience.
+The system currently feels like color swapping, not true theming.
+
+GOAL
+1. Make each theme visually and structurally distinct
+2. Add curated theme customization controls
+3. Keep everything brand-safe and scalable
+4. Preserve one shared renderer with theme tokens and layout variants
+
+THEMES TO IMPROVE
+- minimal_corporate
+- personal_brand
+- luxury_black
+
+REQUIRED THEME DIFFERENTIATION
+Update each theme so they differ across multiple dimensions, not just color.
+
+Minimal Corporate should feel:
+- clean
+- structured
+- restrained
+- professional
+Use:
+- tighter spacing
+- flatter surfaces
+- smaller border radius
+- simpler CTA styling
+- more formal typography pairing
+- more disciplined section rhythm
+
+Personal Brand should feel:
+- expressive
+- approachable
+- creator-led
+- modern
+Use:
+- softer shapes
+- larger avatar emphasis
+- more generous spacing
+- more vibrant accent treatment
+- stronger headline styling
+- friendlier CTA treatment
+- optional gradient or warmer header treatment
+
+Luxury Black should feel:
+- premium
+- elegant
+- dark
+- high-end
+Use:
+- dark surfaces
+- elevated cards
+- refined contrast
+- premium typography pairing
+- richer shadows
+- more dramatic spacing
+- luxury accent handling
+
+DO NOT create separate hardcoded profile pages for each theme.
+DO use one shared renderer with configurable layout and token differences.
+
+ADD CUSTOMIZATION CONTROLS
+Create a controlled customization panel inside Appearance for the selected theme.
+
+SUPPORTED CUSTOMIZATION OPTIONS
+Implement only these safe options for now:
+1. Accent color
+2. Button style
+   - filled
+   - outline
+   - pill
+3. Card radius
+   - sharp
+   - soft
+   - rounded
+4. Spacing density
+   - compact
+   - comfortable
+   - spacious
+5. Header style
+   - centered
+   - left-aligned
+   - banner
+6. Font style
+   - modern
+   - elegant
+   - bold
+
+THEME SUPPORT RULES
+Not every theme must support every option.
+Each theme config should declare what customization controls it supports.
+Only show controls that the selected theme supports.
+
+EXAMPLE
+Minimal Corporate may support:
+- accent color
+- button style
+- spacing density
+- header style
+
+Personal Brand may support:
+- accent color
+- button style
+- card radius
+- header style
+- font style
+
+Luxury Black may support:
+- accent color
+- button style
+- card radius
+- font style
+
+DATA MODEL
+Ensure theme customization settings are stored properly in:
+- themeCustomizations
+- themeDraft if draft exists
+- published theme state when published
+
+LIVE PREVIEW
+When a user changes a customization:
+- update preview immediately
+- keep changes in draft state until published
+- do not affect live public profile until publish
+
+PUBLIC PROFILE
+Public profile should render:
+- published selected theme
+- published customization values only
+- safe fallback defaults if any customization is missing or invalid
+
+THEME CONFIG REQUIREMENTS
+Expand theme config structure to include:
+- tokens
+- layout preferences
+- supported customization options
+- default customization values
+
+Each theme should define default values for:
+- accent color
+- button style
+- card radius
+- spacing density
+- header style
+- font style
+
+UI REQUIREMENTS
+Inside Appearance page:
+1. keep existing theme gallery
+2. keep preview panel
+3. add customization section below preview or beside it
+4. show only supported controls for selected theme
+5. keep save draft / publish behavior intact
+
+DELIVERABLES
+1. improve theme differentiation across layout and visual system
+2. add theme customization controls
+3. wire customization state into draft and publish flow
+4. ensure preview reflects customizations instantly
+5. ensure public profile uses published customizations only
+6. clearly list modified files
+
+OUTPUT REQUIREMENTS
+Make the smallest safe set of changes needed.
+Do not break existing functionality.
+Do not fake theme differences with color only.

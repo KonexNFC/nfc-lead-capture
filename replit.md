@@ -159,6 +159,44 @@ Core tables:
 - Landing page shows approved testimonials; falls back to 3 static testimonials if none are approved
 - "Leave a Review" link in sidebar for all authenticated users
 
+### Profile Themes & Appearance System
+Dashboard → Appearance page (`/dashboard/appearance`) lets users design their public profile look:
+
+**Three themes** (`client/src/lib/themes.ts`):
+- `minimal_corporate` (free): left-aligned layout, thin accent strip, compact flat card, rectangular CTA
+- `personal_brand` (free): large full-width gradient banner, avatar overlapping, pill-shaped CTA, expressive
+- `luxury_black` (pro): dark surfaces, gold accent, serif headings, dramatic shadows, centered layout
+
+**Theme config structure** per theme:
+- `tokens`: CSS variables (`--theme-bg`, `--theme-surface`, `--theme-text-*`, `--theme-accent`, `--theme-shadow`, `--theme-header-gradient`, etc.)
+- `supportedCustomizations`: which controls each theme exposes (subset of all options)
+- `defaultCustomizations`: defaults for all 6 customization dimensions
+
+**Customization options** (user-controlled per theme):
+- `accentColor` — color picker
+- `buttonStyle` — filled | outline | pill
+- `cardRadius` — sharp (4px) | soft (12px) | rounded (24px)
+- `spacingDensity` — compact | comfortable | spacious
+- `headerStyle` — centered | left-aligned | banner
+- `fontStyle` — modern (Inter) | elegant (Georgia serif) | bold (system-ui heavy)
+
+**Draft/Publish workflow** (stored in `profile.branding` JSON field):
+- `selectedThemeId` + `themeCustomizations`: live published state
+- `themeDraft` + `themeCustomizationsDraft`: draft state (not yet live)
+- `themePublishedAt`: timestamp of last publish
+- Save Draft button: saves `themeDraft` + `themeCustomizationsDraft` only
+- Publish button: writes to `selectedThemeId` + `themeCustomizations`, clears draft fields
+- Reset: discards draft, reverts to live
+
+**Premium gating**: `luxury_black` requires `plan: "pro"` — gated by `isPlanAtLeast()` from `client/src/lib/plan.ts`. Attempting to select it shows an upgrade modal.
+
+**Public profile** (`public-profile.tsx`): applies published `themeCustomizations` (accent color, font style, card radius) as CSS variable overrides on top of the base theme tokens.
+
+Key files:
+- `client/src/lib/themes.ts`: theme configs, types, utility functions (`resolveCustomizations`, `cardRadiusPx`, `fontFamilyFromStyle`, `spacingValues`)
+- `client/src/pages/dashboard/appearance.tsx`: Appearance page with `ThemeProfilePreview`, `CustomizationPanel`
+- `client/src/lib/plan.ts`: `useUserPlan()` hook — returns `"free"` placeholder, replace when billing is wired
+
 ### Shared Code
 The `shared/` directory contains code used by both frontend and backend:
 - `schema.ts`: Drizzle table definitions and Zod schemas

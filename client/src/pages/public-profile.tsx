@@ -20,7 +20,7 @@ import { z } from "zod";
 import { ProfileModulesRenderer } from "@/components/profile-modules";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 import { socialHandleToUrl } from "@/lib/social-utils";
-import { getThemeStyle } from "@/lib/themes";
+import { getThemeStyle, getTheme, resolveCustomizations, fontFamilyFromStyle, cardRadiusPx, type ThemeCustomizations } from "@/lib/themes";
 import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/schema";
 
 const STORAGE_KEY_PREFIX = "konex_contact_";
@@ -62,7 +62,7 @@ export default function PublicProfile() {
   const ctaLabel = textOverrides.ctaLabel || "Exchange Contact";
   const subtitleText = textOverrides.subheadline || "Share your contact details instantly.";
 
-  // Apply theme tokens first, then branding overrides on top
+  // Apply theme tokens first, then branding overrides on top, then published customizations
   const themeTokens = getThemeStyle(branding.selectedThemeId);
   const brandStyle: Record<string, string> = { ...themeTokens };
   if (branding.primaryColor) {
@@ -74,6 +74,23 @@ export default function PublicProfile() {
   }
   if (branding.fontFamily) {
     brandStyle.fontFamily = `"${branding.fontFamily}", system-ui, sans-serif`;
+  }
+  // Apply published theme customizations
+  const theme = getTheme(branding.selectedThemeId);
+  const resolvedCust = resolveCustomizations(theme, branding.themeCustomizations as ThemeCustomizations);
+  if (resolvedCust.accentColor) {
+    brandStyle["--theme-accent"] = resolvedCust.accentColor;
+    brandStyle["--brand-primary"] = brandStyle["--brand-primary"] || resolvedCust.accentColor;
+    brandStyle["--brand-accent"] = brandStyle["--brand-accent"] || resolvedCust.accentColor;
+  }
+  if (resolvedCust.cardRadius) {
+    brandStyle["--theme-border-radius"] = cardRadiusPx(resolvedCust.cardRadius);
+  }
+  if (resolvedCust.fontStyle) {
+    brandStyle["--theme-font-heading"] = fontFamilyFromStyle(resolvedCust.fontStyle);
+    if (!branding.fontFamily) {
+      brandStyle.fontFamily = fontFamilyFromStyle(resolvedCust.fontStyle);
+    }
   }
 
   const FormContent = isSubmitted ? (

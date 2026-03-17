@@ -42,6 +42,7 @@ export interface ProfileBranding {
   themePublishedAt?: string;
   themeVariant?: string;
   themeCustomizations?: Record<string, string>;
+  themeCustomizationsDraft?: Record<string, string>;
 }
 
 export interface ProfileTextOverrides {
