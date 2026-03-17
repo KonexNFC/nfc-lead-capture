@@ -454,7 +454,7 @@ export default function ModulesPage() {
                 {modules.videoObjectPath ? (
                   <div className="space-y-2">
                     <video
-                      src={modules.videoObjectPath.startsWith("http") ? modules.videoObjectPath : `/objects/${modules.videoObjectPath}`}
+                      src={modules.videoObjectPath.startsWith("http") || modules.videoObjectPath.startsWith("/") ? modules.videoObjectPath : `/objects/${modules.videoObjectPath}`}
                       controls
                       className="w-full rounded-md border border-border"
                       data-testid="video-preview-uploaded"

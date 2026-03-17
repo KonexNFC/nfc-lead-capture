@@ -154,7 +154,7 @@ function VideoModule({ modules }: { modules: ProfileModules }) {
   if (!hasUpload && !hasYoutube) return null;
 
   if (hasUpload) {
-    const src = modules.videoObjectPath!.startsWith("http")
+    const src = modules.videoObjectPath!.startsWith("http") || modules.videoObjectPath!.startsWith("/")
       ? modules.videoObjectPath!
       : `/objects/${modules.videoObjectPath}`;
     return (
