@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useActiveProfile } from "@/hooks/use-active-profile";
+import { useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
@@ -161,7 +163,8 @@ function StatusBadge({ kind }: { kind: StatusKind }) {
 // AppearancePage
 // ---------------------------------------------------------------------------
 export default function AppearancePage() {
-  const { activeProfile: profile, isLoading, updateProfile } = useActiveProfile();
+  const { activeProfile: profile, isLoading } = useActiveProfile();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
   // workingId: what the user has selected in the UI right now (preview uses this)
@@ -212,13 +215,18 @@ export default function AppearancePage() {
   const canPublish = workingId !== liveId || draftAheadOfLive;
   const canReset = workingId !== liveId || !!draftId;
 
+  const callUpdate = async (data: Record<string, unknown>) => {
+    await apiRequest("PUT", `/api/profiles/${profile!.id}`, data);
+    queryClient.invalidateQueries({ queryKey: ["/api/profiles"] });
+  };
+
   // Save Draft — persists themeDraft without touching selectedThemeId
   const handleSaveDraft = async () => {
     if (!profile) return;
     setIsSavingDraft(true);
     try {
       const b = (profile.branding as ProfileBranding) || {};
-      await updateProfile({ branding: { ...b, themeDraft: workingId } });
+      await callUpdate({ branding: { ...b, themeDraft: workingId } });
       setDraftId(workingId);
       toast({ title: "Draft saved", description: `${getTheme(workingId).name} saved as draft. Publish when you're ready.` });
     } catch {
@@ -228,14 +236,14 @@ export default function AppearancePage() {
     }
   };
 
-  // Publish — pushes draft (or current working) to selectedThemeId, clears themeDraft
+  // Publish — pushes working theme to selectedThemeId, clears themeDraft
   const handlePublish = async () => {
     if (!profile) return;
     setIsPublishing(true);
     try {
       const b = (profile.branding as ProfileBranding) || {};
       const themeToPublish = workingId;
-      await updateProfile({
+      await callUpdate({
         branding: {
           ...b,
           selectedThemeId: themeToPublish,
@@ -262,7 +270,7 @@ export default function AppearancePage() {
       setIsResetting(true);
       try {
         const b = (profile.branding as ProfileBranding) || {};
-        await updateProfile({ branding: { ...b, themeDraft: undefined } });
+        await callUpdate({ branding: { ...b, themeDraft: undefined } });
         setDraftId(null);
         toast({ title: "Reset", description: "Draft discarded. Showing your published theme." });
       } catch {
