@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db, pool } from "./db";
 import {
   users, profiles, leads, siteSettings, testimonials,
   cards, cardTapEvents, cardAssignmentsHistory,
@@ -17,6 +17,8 @@ import {
   type OrganizationCard, type InsertOrganizationCard
 } from "@shared/schema";
 import { eq, desc, sql, count, gte, and, like, inArray } from "drizzle-orm";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 
 export interface IStorage {
   // User
@@ -128,6 +130,17 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  readonly sessionStore: session.Store;
+
+  constructor() {
+    const PgSession = connectPgSimple(session);
+    this.sessionStore = new PgSession({
+      pool,
+      tableName: "session",
+      createTableIfMissing: true,
+    });
+  }
+
   // User
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));

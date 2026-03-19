@@ -29,9 +29,10 @@ interface ProfilePreviewProps {
   mock?: boolean;
   onSaveContact?: () => void;
   extraActions?: React.ReactNode;
+  headerStyle?: "left-aligned" | "banner" | "centered";
 }
 
-export function ProfilePreview({ profile, mock, onSaveContact, extraActions }: ProfilePreviewProps) {
+export function ProfilePreview({ profile, mock, onSaveContact, extraActions, headerStyle = "banner" }: ProfilePreviewProps) {
   const branding = (profile.branding as ProfileBranding) || {};
   const coverSrc = branding.coverUrl
     ? branding.coverUrl.startsWith("http") ? branding.coverUrl
@@ -65,66 +66,86 @@ export function ProfilePreview({ profile, mock, onSaveContact, extraActions }: P
         `}
         style={{ borderRadius: "var(--card-radius, 2rem)" }}
       >
-        {/* Full-width Cover Banner */}
+        {/* ── Header: varies by theme layout ── */}
+        {/* Always show cover photo if set, regardless of headerStyle */}
         {coverSrc ? (
           <div className="relative">
-            <div className="w-full h-24">
+            <div className="w-full h-28">
               <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
             </div>
             <div className="flex flex-col items-center -mt-14 relative z-10 px-6">
               <div className="p-1.5 bg-background rounded-full shadow-lg mb-3">
-                <Avatar className="h-28 w-28 border-2 border-primary/10">
-                  <AvatarImage 
-                    src={profile.photoUrl ? (
-                      profile.photoUrl.startsWith('http') ? profile.photoUrl : 
-                      profile.photoUrl.startsWith('/objects/') ? profile.photoUrl :
-                      `/objects/${profile.photoUrl}`
-                    ) : undefined} 
-                    alt={profile.name} 
-                    className="object-cover" 
-                  />
-                  <AvatarFallback className="text-2xl bg-secondary font-display font-bold text-primary">
-                    {profile.name.charAt(0)}
-                  </AvatarFallback>
+                <Avatar className="h-24 w-24 border-2 border-primary/10">
+                  <AvatarImage src={profile.photoUrl ? (profile.photoUrl.startsWith('http') ? profile.photoUrl : profile.photoUrl.startsWith('/objects/') ? profile.photoUrl : `/objects/${profile.photoUrl}`) : undefined} alt={profile.name} className="object-cover" />
+                  <AvatarFallback className="text-2xl bg-secondary font-display font-bold text-primary">{profile.name.charAt(0)}</AvatarFallback>
                 </Avatar>
               </div>
-              <div className="text-center space-y-1 mb-4">
+              <div className={`space-y-1 mb-4 ${headerStyle === "left-aligned" ? "self-start text-left" : "text-center"}`}>
                 <h2 className="text-2xl font-bold font-display text-foreground">{profile.name}</h2>
-                <div className="flex items-center justify-center gap-1.5 text-muted-foreground text-sm font-medium">
+                <div className={`flex items-center gap-1.5 text-muted-foreground text-sm font-medium ${headerStyle === "left-aligned" ? "" : "justify-center"}`}>
                   <Briefcase className="h-3.5 w-3.5" />
                   <span>{profile.title}</span>
                 </div>
-                {profile.company && (
-                  <p className="text-sm text-primary font-medium">{profile.company}</p>
-                )}
+                {profile.company && <p className="text-sm text-primary font-semibold">{profile.company}</p>}
               </div>
             </div>
           </div>
+        ) : headerStyle === "left-aligned" ? (
+          /* ── Left-aligned: no banner, avatar + info in a horizontal row ── */
+          <div className="px-5 pt-6 pb-4 flex items-center gap-4 border-b border-border/30">
+            <div className="shrink-0">
+              <Avatar className="h-[4.5rem] w-[4.5rem] border-2 border-primary/20">
+                <AvatarImage src={profile.photoUrl ? (profile.photoUrl.startsWith('http') ? profile.photoUrl : profile.photoUrl.startsWith('/objects/') ? profile.photoUrl : `/objects/${profile.photoUrl}`) : undefined} alt={profile.name} className="object-cover" />
+                <AvatarFallback className="text-xl bg-secondary font-display font-bold text-primary">{profile.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xl font-bold font-display text-foreground leading-tight truncate">{profile.name}</h2>
+              {profile.title && (
+                <div className="flex items-center gap-1 text-muted-foreground text-sm mt-0.5">
+                  <Briefcase className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{profile.title}</span>
+                </div>
+              )}
+              {profile.company && <p className="text-sm text-primary font-semibold mt-0.5 truncate">{profile.company}</p>}
+            </div>
+          </div>
+        ) : headerStyle === "centered" ? (
+          /* ── Centered: compact gradient strip, avatar centered below ── */
+          <>
+            <div className="h-16 relative shrink-0">
+              <div className="absolute inset-0" style={{ background: "var(--theme-header-gradient, linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))))" }} />
+            </div>
+            <div className="px-6 flex flex-col items-center -mt-10 relative z-10">
+              <Avatar className="h-20 w-20 border-[3px] border-background shadow-lg mb-3">
+                <AvatarImage src={profile.photoUrl ? (profile.photoUrl.startsWith('http') ? profile.photoUrl : profile.photoUrl.startsWith('/objects/') ? profile.photoUrl : `/objects/${profile.photoUrl}`) : undefined} alt={profile.name} className="object-cover" />
+                <AvatarFallback className="text-xl bg-secondary font-display font-bold text-primary">{profile.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div className="text-center space-y-0.5 mb-5">
+                <h2 className="text-xl font-bold font-display text-foreground tracking-tight">{profile.name}</h2>
+                {profile.title && (
+                  <div className="flex items-center justify-center gap-1.5 text-muted-foreground text-xs font-medium uppercase tracking-wider">
+                    <Briefcase className="h-3 w-3" />
+                    <span>{profile.title}</span>
+                  </div>
+                )}
+                {profile.company && <p className="text-sm text-primary font-semibold mt-1">{profile.company}</p>}
+              </div>
+            </div>
+          </>
         ) : (
+          /* ── Banner (default): tall gradient header, large overlapping avatar ── */
           <>
             <div className="h-32 relative">
-              <div
-                className="absolute inset-0"
-                style={{ background: "var(--theme-header-gradient, linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))))" }}
-              />
+              <div className="absolute inset-0" style={{ background: "var(--theme-header-gradient, linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))))" }} />
               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
             </div>
             <div className="px-6 flex flex-col items-center -mt-16 relative z-10">
               <div className="p-1.5 bg-background rounded-full shadow-lg mb-4">
                 <Avatar className="h-28 w-28 border-2 border-primary/10">
-                  <AvatarImage 
-                    src={profile.photoUrl ? (
-                      profile.photoUrl.startsWith('http') ? profile.photoUrl : 
-                      profile.photoUrl.startsWith('/objects/') ? profile.photoUrl :
-                      `/objects/${profile.photoUrl}`
-                    ) : undefined} 
-                    alt={profile.name} 
-                    className="object-cover" 
-                  />
-                  <AvatarFallback className="text-2xl bg-secondary font-display font-bold text-primary">
-                    {profile.name.charAt(0)}
-                  </AvatarFallback>
+                  <AvatarImage src={profile.photoUrl ? (profile.photoUrl.startsWith('http') ? profile.photoUrl : profile.photoUrl.startsWith('/objects/') ? profile.photoUrl : `/objects/${profile.photoUrl}`) : undefined} alt={profile.name} className="object-cover" />
+                  <AvatarFallback className="text-2xl bg-secondary font-display font-bold text-primary">{profile.name.charAt(0)}</AvatarFallback>
                 </Avatar>
               </div>
               <div className="text-center space-y-1 mb-6">
@@ -133,9 +154,7 @@ export function ProfilePreview({ profile, mock, onSaveContact, extraActions }: P
                   <Briefcase className="h-3.5 w-3.5" />
                   <span>{profile.title}</span>
                 </div>
-                {profile.company && (
-                  <p className="text-sm text-primary font-medium">{profile.company}</p>
-                )}
+                {profile.company && <p className="text-sm text-primary font-semibold">{profile.company}</p>}
               </div>
             </div>
           </>
@@ -146,7 +165,7 @@ export function ProfilePreview({ profile, mock, onSaveContact, extraActions }: P
 
           <div className="w-full space-y-3 flex-1 overflow-y-auto pb-6 scrollbar-hide">
             {profile.bio && (
-              <p className="text-sm text-muted-foreground text-center mb-6 leading-relaxed px-2">
+              <p className={`text-sm text-muted-foreground mb-6 leading-relaxed px-2 ${headerStyle === "left-aligned" ? "text-left" : "text-center"}`}>
                 {profile.bio}
               </p>
             )}

@@ -194,7 +194,8 @@ export default function PublicProfile() {
 
       {/* Profile Card */}
       <ProfilePreview 
-        profile={profile} 
+        profile={profile}
+        headerStyle={resolvedCust.headerStyle}
         extraActions={
           <button
             className="w-full rounded-xl min-h-[48px] py-2 px-3 text-sm font-semibold shadow-lg flex items-center justify-center gap-1.5 leading-tight text-white"
