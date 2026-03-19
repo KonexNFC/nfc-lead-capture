@@ -6,6 +6,7 @@ export type SpacingDensity = "compact" | "comfortable" | "spacious";
 export type HeaderStyle = "centered" | "left-aligned" | "banner";
 export type FontStyle = "modern" | "elegant" | "bold";
 export type SocialLayout = "icons" | "tiles";
+export type LayoutVariant = "corporate" | "personal" | "luxury" | "social";
 
 export interface ThemeCustomizations {
   accentColor?: string;
@@ -15,6 +16,7 @@ export interface ThemeCustomizations {
   headerStyle?: HeaderStyle;
   fontStyle?: FontStyle;
   socialLayout?: SocialLayout;
+  layoutVariant?: LayoutVariant;
 }
 
 export type CustomizationKey = keyof ThemeCustomizations;
@@ -79,6 +81,7 @@ export const THEMES: ThemeConfig[] = [
       headerStyle: "left-aligned",
       fontStyle: "modern",
       socialLayout: "icons",
+      layoutVariant: "corporate",
     },
   },
   {
@@ -108,6 +111,7 @@ export const THEMES: ThemeConfig[] = [
       headerStyle: "banner",
       fontStyle: "modern",
       socialLayout: "icons",
+      layoutVariant: "personal",
     },
   },
   {
@@ -137,6 +141,7 @@ export const THEMES: ThemeConfig[] = [
       headerStyle: "centered",
       fontStyle: "elegant",
       socialLayout: "icons",
+      layoutVariant: "luxury",
     },
   },
   {
@@ -166,6 +171,7 @@ export const THEMES: ThemeConfig[] = [
       headerStyle: "banner",
       fontStyle: "modern",
       socialLayout: "tiles",
+      layoutVariant: "social",
     },
   },
 ];

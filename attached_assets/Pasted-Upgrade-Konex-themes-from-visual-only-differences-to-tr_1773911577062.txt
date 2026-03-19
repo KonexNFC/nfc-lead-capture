@@ -1,0 +1,91 @@
+Upgrade Konex themes from visual-only differences to true layout-level themes.
+
+IMPORTANT
+Do not remove the existing theme system.
+Do not break current theme switching, draft/publish, or customization logic.
+Do not rebuild unrelated components.
+
+CURRENT ISSUE
+Themes now change colors and some styling, but all themes still share the same layout and structure.
+This makes them feel identical despite different colors.
+
+GOAL
+Make each theme structurally different at the layout level while still using a shared renderer.
+
+REQUIRED CHANGE
+Introduce layout variants inside the theme system.
+
+Each theme must define:
+- layoutVariant
+- headerStyle
+- ctaLayout
+- sectionSpacing
+- avatarStyle
+
+REQUIRED LAYOUT VARIANTS
+
+1. Minimal Corporate
+- header: clean, minimal, less overlay
+- avatar: smaller, structured
+- layout: tighter spacing
+- CTA: inline row, smaller buttons
+- card: flatter, minimal elevation
+
+2. Personal Brand
+- header: expressive, gradient or soft overlay
+- avatar: larger and more prominent
+- layout: more vertical spacing
+- CTA: larger rounded buttons
+- card: softer, more padding
+
+3. Luxury Black
+- header: dark cinematic overlay
+- avatar: framed with ring or glow
+- layout: dramatic spacing
+- CTA: stacked or large premium buttons
+- card: elevated with shadow and depth
+
+IMPLEMENTATION
+Update the ProfileRenderer to support layout variants:
+
+Instead of one rigid layout:
+- create conditional layout blocks based on theme.layoutVariant
+
+For example:
+- if layoutVariant === "corporate" → render compact structured layout
+- if layoutVariant === "personal" → render expressive layout
+- if layoutVariant === "luxury" → render premium layout
+
+DO NOT create completely separate pages.
+DO reuse components but change:
+- structure
+- order
+- spacing
+- emphasis
+
+KEY AREAS TO MODIFY
+1. Header / hero section
+2. Avatar size and placement
+3. CTA layout (row vs stacked vs large buttons)
+4. Card/container structure
+5. Section spacing rhythm
+
+SUCCESS CRITERIA
+- switching themes should feel like switching products, not colors
+- user should instantly notice layout difference
+- themes must feel like:
+  - corporate profile
+  - creator profile
+  - luxury profile
+
+DELIVERABLES
+1. add layoutVariant support to theme config
+2. update ProfileRenderer to support layout branching
+3. adjust header, CTA, and spacing per theme
+4. ensure preview reflects changes instantly
+5. ensure public profile uses correct layout
+
+OUTPUT REQUIREMENTS
+Make minimal but high-impact changes.
+Do not break existing logic.
+Do not duplicate entire components unnecessarily.
