@@ -2,12 +2,7 @@
 
 ## Overview
 
-KONEX is a full-featured NFC digital business card and lead capture platform. It enables NFC tap → live professional profile → lead capture → analytics flow. Users create digital business cards, share them via NFC cards or QR codes, and capture leads from visitors without requiring a mobile app.
-
-The platform serves three user types:
-- **Profile Owners**: Create accounts, manage profiles, activate NFC cards, view analytics, and receive lead notifications
-- **Visitors**: Tap NFC cards or scan QR codes to view profiles and submit contact information
-- **Admins**: Manage users, card inventory, testimonials, and view platform analytics
+KONEX is a comprehensive platform for NFC digital business cards and lead capture. It facilitates a flow from NFC tap to a live professional profile, enabling lead capture and analytics. Users can create, share (via NFC or QR), and manage their digital business cards, capturing leads without requiring visitors to download an app. The platform supports Profile Owners, Visitors, and Admins, offering functionalities like profile management, lead notifications, card activation, and system administration.
 
 ## User Preferences
 
@@ -15,238 +10,67 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
+### Frontend
 - **Framework**: React 18 with TypeScript
-- **Routing**: Wouter (lightweight React router)
-- **State Management**: TanStack React Query for server state
-- **UI Components**: shadcn/ui with Radix UI primitives
-- **Styling**: Tailwind CSS with custom design tokens
-- **Build Tool**: Vite with HMR support
+- **Routing**: Wouter
+- **State Management**: TanStack React Query
+- **UI Components**: shadcn/ui with Radix UI
+- **Styling**: Tailwind CSS
+- **Build Tool**: Vite
+- **Structure**: Feature-based, with public, protected, and admin routes.
 
-The frontend follows a feature-based structure with:
-- Public routes (`/`, `/auth`, `/u/:slug`, `/t/:cardCode`, `/activate/:cardCode`, `/konex-cards`, `/konex-cards/:tierId`) for landing, authentication, public profiles, NFC tap routing, card activation, and product pages
-- Protected routes (`/dashboard/*`) wrapped in `LayoutShell` with sidebar navigation
-- Admin routes (`/dashboard/admin/*`) visible only to users with `isAdmin` flag
-- Custom hooks for auth, profiles, leads, and file uploads
-
-### Backend Architecture
+### Backend
 - **Runtime**: Node.js with Express
-- **Language**: TypeScript (ESM modules)
-- **Authentication**: Passport.js with local strategy (email/password)
-- **Sessions**: Express-session with PostgreSQL store (connect-pg-simple)
-- **API Design**: RESTful endpoints under `/api/*`
-
-Key server components:
-- `server/routes.ts`: API route definitions with Zod validation
-- `server/storage.ts`: Database abstraction layer
-- `server/auth.ts`: Authentication setup with password hashing (scrypt)
+- **Language**: TypeScript
+- **Authentication**: Passport.js (local strategy)
+- **Sessions**: Express-session with PostgreSQL store
+- **API Design**: RESTful endpoints with Zod validation.
 
 ### Multi-Profile Support
-Users can create and manage multiple digital business cards (e.g., personal, business). Key architecture:
-- **Profile Context**: `client/src/hooks/use-active-profile.tsx` - React context providing active profile state, profile list, and CRUD mutations
-- **Profile Switcher**: Dropdown in sidebar (`layout-shell.tsx`) lets users switch between profiles or create new ones
-- **Active Profile Persistence**: Stored in localStorage (`konex_active_profile_id`) across sessions
-- **API Endpoints**:
-  - `GET /api/profiles` - list all user's profiles
-  - `POST /api/profiles` - create new profile
-  - `GET /api/profiles/:id` - get specific profile (ownership validated)
-  - `PUT /api/profiles/:id` - update specific profile (ownership validated)
-  - `DELETE /api/profiles/:id` - delete profile and its leads (ownership validated)
-- **Legacy Compat**: `GET /api/profile` and `PUT /api/profile` still work (first profile)
-- **Leads Filtering**: `GET /api/leads?profileId=X` filters by profile; without param returns all with profileName attached
-- **Dashboard Pages**: All pages (Dashboard, Edit, Modules, Leads, Cards) use `useActiveProfile()` hook to operate on the currently selected profile
-- **Edit Page**: Supports `?new=1` query param for creating new profiles; includes delete profile confirmation dialog
+Users can manage multiple digital business cards. The system allows switching between profiles, with active profile persistence and dedicated API endpoints for CRUD operations on profiles. Leads can be filtered by profile.
 
 ### NFC Card Management System
-Physical NFC card tracking, activation, and analytics infrastructure.
-
-#### Database Tables
-- `cards`: Physical card registry with cardCode (unique public ID), chipUid (nullable), ownerId, profileId, productTier (basic/premium/elite/custom), status (unassigned/active/suspended/lost/archived), nickname, tapCount, qrScanCount, lastTapAt, activatedAt
-- `card_tap_events`: Detailed tap analytics with cardId, ownerId, eventType (nfc_tap/qr_scan/direct_visit), userAgent, referer, ipAddress, country, city, destinationUrl
-- `card_assignments_history`: Audit log with cardId, previousOwnerId, newOwnerId, actionType (activated/reassigned/deactivated/suspended/restored), note
-
-#### NFC Tap Router (`/t/:cardCode`)
-- Public route that resolves card_code to profile redirect
-- Active cards → log tap event, increment counters, redirect to `/u/:slug`
-- Unassigned cards → redirect to activation flow
-- Suspended/lost cards → show branded inactive page
-- Unknown codes → branded 404 page
-
-#### Card Activation Flow (`/activate/:cardCode`)
-- Requires authentication (redirects to `/auth?redirect=/activate/:cardCode`)
-- Validates card ownership (prevents claiming already-owned cards)
-- Assigns card to user, links to primary profile, creates assignment history
-- Success screen with navigation to dashboard/cards/profile
-
-#### User Card Routes
-- `GET /api/cards/my` - list user's cards
-- `POST /api/cards/activate` - activate a card
-- `PATCH /api/cards/:id` - update card (nickname, profileId)
-- `POST /api/cards/:id/suspend` - suspend a card
-- `POST /api/cards/:id/reactivate` - reactivate a card
-- `POST /api/cards/:id/lost` - mark card as lost
-- `GET /api/cards/:id/analytics` - card tap analytics
-
-#### Admin Card Routes
-- `GET /api/admin/cards` - list all cards (with status/tier/search filters)
-- `GET /api/admin/cards/stats` - card inventory stats
-- `POST /api/admin/cards/batch-create` - batch generate cards (quantity, tier, startNumber; prefix auto-derived: KONEX-B/P/E/C); validates no duplicate codes
-- `PATCH /api/admin/cards/:id/assign` - assign/reassign card to user
-- `PATCH /api/admin/cards/:id/status` - change card status
-- `GET /api/admin/cards/export` - export full cards CSV (all fields)
-- `GET /api/admin/cards/encoding-csv` - export encoding CSV (card_code, url=https://konexnfc.com/t/{code})
-
-#### Frontend Pages
-- `client/src/pages/tap-router.tsx` - NFC tap resolution page
-- `client/src/pages/activate-card.tsx` - Card activation flow
-- `client/src/pages/dashboard/cards.tsx` - My Cards management (KPIs, card grid, actions)
-- `client/src/pages/dashboard/admin/cards.tsx` - Admin card inventory (batch create, search, assign, export, encoding CSV, per-card Copy Tap URL / Download QR / View Details)
+This system handles the lifecycle of physical NFC cards, including tracking, activation, and analytics.
+- **Database Tables**: `cards` (card registry), `card_tap_events` (tap analytics), `card_assignments_history` (audit log).
+- **NFC Tap Router**: Resolves `/t/:cardCode` to profile redirects, activation flows, or inactive pages based on card status.
+- **Card Activation Flow**: Authenticated process to assign a physical card to a user and link it to a profile.
+- **API Routes**: Comprehensive API for user and admin management of cards, including activation, status changes, assignments, and analytics.
 
 ### Database
-- **ORM**: Drizzle ORM with PostgreSQL dialect
-- **Schema Location**: `shared/schema.ts`
-- **Migrations**: Drizzle Kit (`drizzle-kit push`)
-
-Core tables:
-- `users`: Authentication (email, hashed password)
-- `profiles`: Digital business cards with modular features
-  - Basic fields: name, title, company, bio, photoUrl, slug, theme, views
-  - `links` (jsonb): Social/contact links (phone, whatsapp, email, linkedin, facebook, instagram, x, tiktok, youtube, snapchat, website)
-  - `modules` (jsonb): Modular features - tiles (custom links/PDFs), videoUrl, bookingUrl/bookingLabel, reviews, address
-  - `branding` (jsonb): Visual customization - logoUrl, heroUrl, heroVideoUrl, primaryColor, accentColor, fontFamily
-  - `textOverrides` (jsonb): Multilingual text - headline, subheadline, ctaLabel, bioOverride, locale
-- `leads`: Captured contacts (name, telephone, whatsapp, email, company, note, source)
-- `cards`: Physical NFC card inventory (see NFC Card Management System above)
-- `card_tap_events`: Tap analytics (see above)
-- `card_assignments_history`: Assignment audit log (see above)
-- `organizations`: Team/company workspaces (name, slug, logoUrl, ownerUserId, planType: free/pro/business/enterprise)
-- `organization_members`: Membership (organizationId, userId, role: owner/admin/manager/member, department, status: invited/active/suspended)
-- `organization_invitations`: Invite tokens (organizationId, email, role, token, status: pending/accepted/expired, expiresAt)
-- `organization_cards`: Cards assigned to orgs (organizationId, cardId, assignedUserId)
+- **ORM**: Drizzle ORM with PostgreSQL.
+- **Schema**: Defined in `shared/schema.ts`, managed with Drizzle Kit migrations.
+- **Core Tables**: `users`, `profiles` (with modular `links`, `modules`, `branding`, `textOverrides` JSON fields), `leads`, `cards`, `card_tap_events`, `card_assignments_history`, `organizations`, `organization_members`, `organization_invitations`, `organization_cards`.
 
 ### Organization System
-- Users can create organizations and invite team members via token-based invitations
-- Role-based permissions: owner (full), admin (manage members/cards), manager (view analytics/manage cards), member (own profile/cards)
-- Cards can belong to individuals OR organizations (non-destructive, parallel ownership)
-- Organization analytics: total cards, active cards, total taps, total leads (aggregated from member profiles)
-- API routes: `/api/organizations`, `/api/organizations/:id`, `/api/organizations/:id/invite`, `/api/organizations/accept-invite`, `/api/organizations/:id/members`, `/api/organizations/:id/cards`, `/api/organizations/:id/analytics`, `/api/organizations/:id/invitations`
-- Frontend pages: `/dashboard/organization`, `/dashboard/organization/members`, `/dashboard/organization/cards`, `/dashboard/organization/settings`
-- Sidebar shows "Organization" link for all logged-in users
+Enables users to create and manage organizations, invite members with role-based permissions (owner, admin, manager, member), and assign cards to organizations. Provides organization-level analytics.
 
 ### Admin Panel
-- Admin users have `isAdmin: true` flag in the users table
-- Admin routes: `/api/admin/analytics`, `/api/admin/users`, `/api/admin/users/:id`, `/api/admin/users/:id/profile`, `/api/admin/leads`, `DELETE /api/admin/users/:id`, `/api/admin/growth`, `/api/admin/top-profiles`, `/api/admin/activity`, `PATCH /api/admin/users/:id/toggle-admin`
-- Admin card inventory: `/api/admin/cards`, `/api/admin/cards/stats`, `/api/admin/cards/batch-create`, `/api/admin/cards/:id/assign`, `/api/admin/cards/:id/status`, `/api/admin/cards/export`
-- Admin middleware checks `req.user.isAdmin` and returns 403 for non-admins
-- Frontend admin pages at `/dashboard/admin/*`: overview, user management, all leads, card inventory, testimonials
-- Admin link in sidebar only visible to admin users
-- Current admin account: info@konexnfc.com
-- Admin dashboard uses Recharts for growth area charts (signups and leads over 30 days)
-- `ensureAdminAccount()` runs on app startup to reset admin password and ensure admin flag
+Accessible to users with `isAdmin: true`. Includes routes for analytics, user management, lead management, card inventory, growth metrics, and activity monitoring. Features batch card creation, assignment, and status updates, along with data export.
 
 ### Testimonials System
-- Users can submit testimonials from their dashboard at `/dashboard/testimonial` (one per user)
-- Testimonials require admin approval before appearing on the homepage
-- Table: `testimonials` (id, userId, name, title, quote, rating, status, createdAt)
-- Status values: `pending` (default), `approved`, `rejected`
-- API routes:
-  - `POST /api/testimonials` - submit testimonial (authenticated, one per user)
-  - `GET /api/testimonials/mine` - get current user's testimonials
-  - `GET /api/public/testimonials` - get approved testimonials (public)
-  - `GET /api/admin/testimonials` - get all testimonials (admin)
-  - `PATCH /api/admin/testimonials/:id` - update status (admin)
-  - `DELETE /api/admin/testimonials/:id` - delete testimonial (admin)
-- Landing page shows approved testimonials; falls back to 3 static testimonials if none are approved
-- "Leave a Review" link in sidebar for all authenticated users
+Allows users to submit testimonials, which require admin approval before public display. Includes API endpoints for submission, retrieval, and admin moderation.
 
 ### Profile Themes & Appearance System
-Dashboard → Appearance page (`/dashboard/appearance`) lets users design their public profile look:
-
-**Three themes** (`client/src/lib/themes.ts`):
-- `minimal_corporate` (free): left-aligned layout, thin accent strip, compact flat card, rectangular CTA
-- `personal_brand` (free): large full-width gradient banner, avatar overlapping, pill-shaped CTA, expressive
-- `luxury_black` (pro): dark surfaces, gold accent, serif headings, dramatic shadows, centered layout
-
-**Theme config structure** per theme:
-- `tokens`: CSS variables (`--theme-bg`, `--theme-surface`, `--theme-text-*`, `--theme-accent`, `--theme-shadow`, `--theme-header-gradient`, etc.)
-- `supportedCustomizations`: which controls each theme exposes (subset of all options)
-- `defaultCustomizations`: defaults for all 6 customization dimensions
-
-**Customization options** (user-controlled per theme):
-- `accentColor` — color picker
-- `buttonStyle` — filled | outline | pill
-- `cardRadius` — sharp (4px) | soft (12px) | rounded (24px)
-- `spacingDensity` — compact | comfortable | spacious
-- `headerStyle` — centered | left-aligned | banner
-- `fontStyle` — modern (Inter) | elegant (Georgia serif) | bold (system-ui heavy)
-
-**Draft/Publish workflow** (stored in `profile.branding` JSON field):
-- `selectedThemeId` + `themeCustomizations`: live published state
-- `themeDraft` + `themeCustomizationsDraft`: draft state (not yet live)
-- `themePublishedAt`: timestamp of last publish
-- Save Draft button: saves `themeDraft` + `themeCustomizationsDraft` only
-- Publish button: writes to `selectedThemeId` + `themeCustomizations`, clears draft fields
-- Reset: discards draft, reverts to live
-
-**Premium gating**: `luxury_black` requires `plan: "pro"` — gated by `isPlanAtLeast()` from `client/src/lib/plan.ts`. Attempting to select it shows an upgrade modal.
-
-**Public profile** (`public-profile.tsx`): applies published `themeCustomizations` (accent color, font style, card radius) as CSS variable overrides on top of the base theme tokens.
-
-Key files:
-- `client/src/lib/themes.ts`: theme configs, types, utility functions (`resolveCustomizations`, `cardRadiusPx`, `fontFamilyFromStyle`, `spacingValues`)
-- `client/src/pages/dashboard/appearance.tsx`: Appearance page with `ThemeProfilePreview`, `CustomizationPanel`
-- `client/src/lib/plan.ts`: `useUserPlan()` hook — returns `"free"` placeholder, replace when billing is wired
+Users can customize their public profile appearance through an "Appearance" dashboard page.
+- **Themes**: Three predefined themes (`minimal_corporate`, `personal_brand`, `luxury_black`).
+- **Customization Options**: Accent color, button style, card radius, spacing density, header style, font style.
+- **Workflow**: Supports draft and publish functionality, allowing users to preview changes before making them live.
+- **Premium Gating**: Certain themes are restricted to "pro" plan users.
 
 ### Shared Code
-The `shared/` directory contains code used by both frontend and backend:
-- `schema.ts`: Drizzle table definitions and Zod schemas
-- `routes.ts`: API contract definitions with type-safe request/response schemas
+The `shared/` directory contains common code for frontend and backend, including Drizzle schemas and Zod-based API route definitions for type safety.
 
 ### File Uploads
-- **Storage**: Google Cloud Storage via Replit Object Storage integration
-- **Upload Flow**: Presigned URL pattern with Uppy dashboard
-- **Routes**: `/api/uploads/request-url` for presigned URLs, `/objects/uploads/:id` for serving
+Utilizes Google Cloud Storage (via Replit Object Storage) with a presigned URL pattern for secure file uploads, primarily for profile photos.
 
 ### Contact Card & vCard
-After a visitor submits the lead capture form, they see an iOS-style contact card with:
-- Profile owner's info (name, title, company, phone)
-- Quick action buttons: Message (sms:), Call (tel:), WhatsApp (wa.me), Email (mailto:)
-- Social links: Facebook, X, LinkedIn, Instagram, TikTok
-- "Save Contact" button that downloads a vCard (.vcf) file
-
-Key files:
-- `client/src/lib/vcard.ts`: vCard 3.0 generation utility
-- `client/src/components/contact-card.tsx`: iOS-style contact card component
+Visitors who submit a lead form are presented with an iOS-style contact card, including profile owner's details, quick action buttons (message, call, WhatsApp, email), social links, and a "Save Contact" button to download a vCard (.vcf) file.
 
 ## External Dependencies
 
-### Database
-- PostgreSQL via `DATABASE_URL` environment variable
-- Drizzle ORM for queries and migrations
-
-### Cloud Storage
-- Google Cloud Storage through Replit's sidecar proxy (`http://127.0.0.1:1106`)
-- Used for profile photo uploads
-
-### Authentication
-- Session-based auth with cookies
-- Session secret via `SESSION_SECRET` environment variable
-
-### UI Libraries
-- Radix UI for accessible primitives
-- Uppy for file upload interface
-- Recharts for analytics visualization
-- Lucide React for icons
-
-### Build & Development
-- Vite for frontend bundling with React plugin
-- esbuild for server bundling
-- TSX for TypeScript execution in development
-
-### Email Notifications
-- **Provider**: SendGrid via Replit connector (connection:conn_sendgrid_01KGTZG5GDMAJN99QWA90VEKZM)
-- **Module**: `server/email.ts` - SendGrid client setup and email templates
-- **Password Reset**: HTML email with reset button link, sent when user requests password reset
-- **Lead Notifications**: HTML email with lead details (name, contact info, company, note) sent to profile owner when a new lead is captured
-- **Error Handling**: Email failures are caught and logged but don't block API responses (fire-and-forget pattern)
-- **Authentication**: API key managed via Replit connector, never cached per integration guidelines
+- **Database**: PostgreSQL (via `DATABASE_URL`).
+- **Cloud Storage**: Google Cloud Storage (via Replit Object Storage integration) for profile photo uploads.
+- **Authentication**: Session-based with cookies, `SESSION_SECRET` environment variable.
+- **UI Libraries**: Radix UI, Uppy (for file uploads), Recharts (for analytics), Lucide React (for icons).
+- **Build & Development**: Vite (frontend), esbuild (server), TSX (TypeScript execution).
+- **Email Notifications**: SendGrid (via Replit connector) for password resets and lead notifications. Implements a fire-and-forget pattern for email sending.
