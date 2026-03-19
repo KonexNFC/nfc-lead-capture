@@ -11,5 +11,7 @@ export function isPlanAtLeast(userPlan: UserPlan, required: ThemePlan): boolean 
 }
 
 export function useUserPlan(): UserPlan {
-  return "free";
+  // NOTE: Returns "pro" for all users during trial period.
+  // Replace with real billing lookup when payments are wired up.
+  return "pro";
 }
