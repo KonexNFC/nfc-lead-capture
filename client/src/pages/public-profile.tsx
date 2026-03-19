@@ -25,6 +25,27 @@ import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/sch
 
 const STORAGE_KEY_PREFIX = "konex_contact_";
 
+/** Convert a 6-digit hex color to the HSL triple Tailwind CSS variables expect (no hsl() wrapper). */
+function hexToHslVar(hex: string): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let hue = 0, sat = 0;
+  if (max !== min) {
+    const d = max - min;
+    sat = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: hue = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: hue = ((b - r) / d + 2) / 6; break;
+      case b: hue = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return `${Math.round(hue * 360)} ${Math.round(sat * 100)}% ${Math.round(l * 100)}%`;
+}
+
 export default function PublicProfile() {
   const [match, params] = useRoute("/u/:slug");
   const slug = params?.slug || "";
@@ -92,6 +113,31 @@ export default function PublicProfile() {
       brandStyle.fontFamily = fontFamilyFromStyle(resolvedCust.fontStyle);
     }
   }
+
+  // ── Bridge hex theme tokens → Tailwind HSL CSS variables ─────────────────
+  // Tailwind colors use `hsl(var(--primary) / alpha)` so variables must be
+  // HSL triples without the hsl() wrapper (e.g. "217 73% 47%").
+  // Without this bridge, ProfilePreview's Tailwind classes ignore theme tokens.
+  const tt = theme.tokens;
+  const finalAccent = resolvedCust.accentColor || tt["--theme-accent"];
+  try {
+    brandStyle["--background"]        = hexToHslVar(tt["--theme-surface"]);
+    brandStyle["--card"]              = hexToHslVar(tt["--theme-surface"]);
+    brandStyle["--card-foreground"]   = hexToHslVar(tt["--theme-text-primary"]);
+    brandStyle["--foreground"]        = hexToHslVar(tt["--theme-text-primary"]);
+    brandStyle["--muted-foreground"]  = hexToHslVar(tt["--theme-text-secondary"]);
+    brandStyle["--primary"]           = hexToHslVar(finalAccent);
+    brandStyle["--primary-foreground"]= "0 0% 100%";
+    brandStyle["--accent"]            = hexToHslVar(finalAccent);
+    brandStyle["--card-radius"]       = resolvedCust.cardRadius
+      ? cardRadiusPx(resolvedCust.cardRadius)
+      : tt["--theme-border-radius"];
+  } catch {
+    // hexToHslVar failed (e.g. non-hex token) — safe to skip; defaults remain
+  }
+  // Direct CSS properties for elements that don't use Tailwind color classes
+  brandStyle["backgroundColor"] = tt["--theme-bg"];
+  brandStyle["color"]           = tt["--theme-text-primary"];
 
   const FormContent = isSubmitted ? (
     <ContactCard 

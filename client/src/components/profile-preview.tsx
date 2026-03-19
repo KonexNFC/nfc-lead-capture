@@ -57,11 +57,14 @@ export function ProfilePreview({ profile, mock, onSaveContact, extraActions }: P
 
   return (
     <div className="w-full max-w-sm mx-auto perspective-1000">
-      <Card className={`
-        relative overflow-hidden bg-background border-border/50 shadow-2xl 
-        rounded-[2rem] min-h-[600px] flex flex-col
-        ${mock ? 'scale-90 opacity-90' : 'transform-gpu transition-transform hover:scale-[1.01]'}
-      `}>
+      <Card
+        className={`
+          relative overflow-hidden bg-background border-border/50 shadow-2xl 
+          rounded-[2rem] min-h-[600px] flex flex-col
+          ${mock ? 'scale-90 opacity-90' : 'transform-gpu transition-transform hover:scale-[1.01]'}
+        `}
+        style={{ borderRadius: "var(--card-radius, 2rem)" }}
+      >
         {/* Full-width Cover Banner */}
         {coverSrc ? (
           <div className="relative">
@@ -101,8 +104,11 @@ export function ProfilePreview({ profile, mock, onSaveContact, extraActions }: P
         ) : (
           <>
             <div className="h-32 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-purple-500" />
-              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
+              <div
+                className="absolute inset-0"
+                style={{ background: "var(--theme-header-gradient, linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))))" }}
+              />
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
             </div>
             <div className="px-6 flex flex-col items-center -mt-16 relative z-10">
               <div className="p-1.5 bg-background rounded-full shadow-lg mb-4">

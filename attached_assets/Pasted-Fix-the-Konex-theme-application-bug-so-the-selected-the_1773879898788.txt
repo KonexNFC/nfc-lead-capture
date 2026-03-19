@@ -1,0 +1,115 @@
+Fix the Konex theme application bug so the selected theme actually changes the public profile card and preview renderer.
+
+IMPORTANT
+Do not rebuild the Appearance page.
+Do not redesign the theme gallery.
+Do not change premium locking or draft/publish flow unless required for this fix.
+Keep all current functionality intact.
+
+CURRENT ISSUE
+The theme cards in Appearance change correctly, but the actual profile card preview/public renderer does not materially change when switching themes.
+For example, switching from Minimal Corporate to Personal Brand still shows essentially the same public profile card style.
+
+GOAL
+Make the selected theme visibly and correctly affect the real profile renderer in both:
+1. the dashboard preview
+2. the public-facing profile
+
+EXPECTED RESULT
+When switching themes, the actual rendered profile should visibly change in:
+- header treatment
+- typography style
+- border radius
+- spacing density
+- button style
+- surface/card feel
+- accent usage
+- avatar treatment where supported
+
+DIAGNOSE AND FIX
+Inspect and correct the full theme application path:
+
+1. Theme selection state
+- verify selected theme and draft theme are correctly stored in state
+- verify preview uses draft theme when editing
+- verify public profile uses published theme only
+
+2. Theme lookup
+- verify renderer resolves the correct theme config by selectedThemeId
+- verify fallback only applies when theme is missing/invalid
+
+3. Renderer integration
+- verify the real profile renderer consumes the theme config
+- remove any hardcoded default styling that prevents themes from changing
+- ensure the renderer uses theme tokens and layout settings
+
+4. Component styling
+- verify card container, header, text, CTA buttons, spacing, radius, and section styles all respond to theme values
+- ensure Personal Brand is visibly different from Minimal Corporate
+- ensure Luxury Black is visibly different from both
+
+REQUIRED IMPLEMENTATION
+Use one shared renderer, but make it truly theme-aware.
+
+The renderer must apply:
+- theme.tokens
+- theme.layout
+- themeCustomizations (where present)
+in a real way to the profile card UI.
+
+REQUIRED DIFFERENCES
+Minimal Corporate:
+- structured
+- flatter surface feel
+- tighter spacing
+- smaller radius
+- formal typography
+- more restrained CTA styling
+
+Personal Brand:
+- softer and more expressive
+- more generous spacing
+- larger avatar emphasis if supported
+- more vibrant accent handling
+- friendlier CTA/button treatment
+- visually distinct header treatment
+
+Luxury Black:
+- dark premium surface
+- stronger contrast
+- elevated card feel
+- richer shadow
+- refined premium styling
+
+DO NOT fake theme changes with just a different preview thumbnail.
+The actual rendered profile card must change.
+
+CHECK FOR THESE LIKELY BUGS
+- preview component always using fallback theme
+- renderer importing default theme directly instead of resolved active theme
+- theme props not passed down to ProfileCard/PublicProfile components
+- theme styles calculated but not applied to className/style output
+- customizations ignored due to merge order bug
+- memoized component not rerendering when theme changes
+- published theme and draft theme confusion in preview
+
+DEBUGGING REQUIREMENTS
+Temporarily log:
+- active preview theme id
+- active public theme id
+- resolved theme config
+- final merged theme tokens/layout sent to renderer
+
+Then keep only minimal useful logs.
+
+DELIVERABLES
+1. identify exact root cause
+2. fix theme application in preview renderer
+3. fix theme application in public profile renderer
+4. ensure theme switching produces visibly different cards
+5. clearly list modified files and what changed
+
+OUTPUT REQUIREMENTS
+Make the smallest safe set of changes needed.
+Do not break current save/publish or locking features.
+Do not leave hardcoded default styling blocking theme changes.
