@@ -30,9 +30,10 @@ interface ProfilePreviewProps {
   onSaveContact?: () => void;
   extraActions?: React.ReactNode;
   headerStyle?: "left-aligned" | "banner" | "centered";
+  socialLayout?: "icons" | "tiles";
 }
 
-export function ProfilePreview({ profile, mock, onSaveContact, extraActions, headerStyle = "banner" }: ProfilePreviewProps) {
+export function ProfilePreview({ profile, mock, onSaveContact, extraActions, headerStyle = "banner", socialLayout = "icons" }: ProfilePreviewProps) {
   const branding = (profile.branding as ProfileBranding) || {};
   const coverSrc = branding.coverUrl
     ? branding.coverUrl.startsWith("http") ? branding.coverUrl
@@ -170,55 +171,112 @@ export function ProfilePreview({ profile, mock, onSaveContact, extraActions, hea
               </p>
             )}
 
+            {/* ── Contact icons ── */}
             {(links.phone || links.whatsapp || links.sms || links.email) && (
-              <div className="flex items-center justify-center gap-3 px-2 mb-3">
-                {links.phone && (
-                  <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                    <div className="h-11 w-11 rounded-full bg-green-500/10 flex items-center justify-center text-green-600 transition-all group-hover:bg-green-500 group-hover:text-white">
-                      <Phone className="h-5 w-5" />
-                    </div>
-                    <span className="text-[10px] font-medium text-muted-foreground">Call</span>
-                  </a>
-                )}
-                {(links.sms || links.phone) && (
-                  <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                    <div className="h-11 w-11 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 transition-all group-hover:bg-blue-500 group-hover:text-white">
-                      <MessageSquare className="h-5 w-5" />
-                    </div>
-                    <span className="text-[10px] font-medium text-muted-foreground">Text</span>
-                  </a>
-                )}
-                {links.whatsapp && (
-                  <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 group">
-                    <div className="h-11 w-11 rounded-full bg-green-600/10 flex items-center justify-center text-green-700 transition-all group-hover:bg-green-600 group-hover:text-white">
-                      <MessageCircle className="h-5 w-5" />
-                    </div>
-                    <span className="text-[10px] font-medium text-muted-foreground">WhatsApp</span>
-                  </a>
-                )}
-                {links.email && (
-                  <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1.5 group">
-                    <div className="h-11 w-11 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-700 transition-all group-hover:bg-blue-600 group-hover:text-white">
-                      <Mail className="h-5 w-5" />
-                    </div>
-                    <span className="text-[10px] font-medium text-muted-foreground">Email</span>
-                  </a>
-                )}
-              </div>
+              socialLayout === "tiles" ? (
+                /* Solid filled circles for Social Hub */
+                <div className="flex items-center justify-center gap-4 px-2 mb-4">
+                  {links.phone && (
+                    <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-2 group">
+                      <div className="h-14 w-14 rounded-full bg-[#1a4731] flex items-center justify-center text-[#25d366] transition-all group-hover:brightness-110">
+                        <Phone className="h-6 w-6" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Call</span>
+                    </a>
+                  )}
+                  {(links.sms || links.phone) && (
+                    <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-2 group">
+                      <div className="h-14 w-14 rounded-full bg-[#1a2d4a] flex items-center justify-center text-[#4a9eff] transition-all group-hover:brightness-110">
+                        <MessageSquare className="h-6 w-6" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Text</span>
+                    </a>
+                  )}
+                  {links.whatsapp && (
+                    <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group">
+                      <div className="h-14 w-14 rounded-full bg-[#1a4731] flex items-center justify-center text-[#25d366] transition-all group-hover:brightness-110">
+                        <MessageCircle className="h-6 w-6" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">WhatsApp</span>
+                    </a>
+                  )}
+                  {links.email && (
+                    <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-2 group">
+                      <div className="h-14 w-14 rounded-full bg-[#1a2d4a] flex items-center justify-center text-[#4a9eff] transition-all group-hover:brightness-110">
+                        <Mail className="h-6 w-6" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Email</span>
+                    </a>
+                  )}
+                </div>
+              ) : (
+                /* Default subtle icon circles */
+                <div className="flex items-center justify-center gap-3 px-2 mb-3">
+                  {links.phone && (
+                    <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1.5 group">
+                      <div className="h-11 w-11 rounded-full bg-green-500/10 flex items-center justify-center text-green-600 transition-all group-hover:bg-green-500 group-hover:text-white">
+                        <Phone className="h-5 w-5" />
+                      </div>
+                      <span className="text-[10px] font-medium text-muted-foreground">Call</span>
+                    </a>
+                  )}
+                  {(links.sms || links.phone) && (
+                    <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1.5 group">
+                      <div className="h-11 w-11 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 transition-all group-hover:bg-blue-500 group-hover:text-white">
+                        <MessageSquare className="h-5 w-5" />
+                      </div>
+                      <span className="text-[10px] font-medium text-muted-foreground">Text</span>
+                    </a>
+                  )}
+                  {links.whatsapp && (
+                    <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 group">
+                      <div className="h-11 w-11 rounded-full bg-green-600/10 flex items-center justify-center text-green-700 transition-all group-hover:bg-green-600 group-hover:text-white">
+                        <MessageCircle className="h-5 w-5" />
+                      </div>
+                      <span className="text-[10px] font-medium text-muted-foreground">WhatsApp</span>
+                    </a>
+                  )}
+                  {links.email && (
+                    <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1.5 group">
+                      <div className="h-11 w-11 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-700 transition-all group-hover:bg-blue-600 group-hover:text-white">
+                        <Mail className="h-5 w-5" />
+                      </div>
+                      <span className="text-[10px] font-medium text-muted-foreground">Email</span>
+                    </a>
+                  )}
+                </div>
+              )
             )}
 
+            {/* ── Social links ── */}
             {socialLinks.length > 0 && (
-            <div className="grid grid-cols-4 gap-3 px-2">
+            <div className={`grid px-2 ${socialLayout === "tiles" ? "grid-cols-4 gap-2.5" : "grid-cols-4 gap-3"}`}>
               {socialLinks.map(([key, value]) => {
                 if (!value) return null;
                 const config = socialConfig[key] || { icon: LinkIcon, color: "#6B7280", label: key };
                 const Icon = config.icon;
-                
                 const href = socialHandleToUrl(key, value);
-
                 const isSnapchat = key === "snapchat";
 
-                return (
+                return socialLayout === "tiles" ? (
+                  /* Large brand-coloured square tiles (Social Hub) */
+                  <a
+                    key={key}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-1.5 group"
+                  >
+                    <div
+                      className="h-14 w-14 rounded-2xl flex items-center justify-center transition-all group-hover:brightness-110 group-hover:-translate-y-0.5"
+                      style={{ backgroundColor: config.color, color: isSnapchat ? "#000" : "#fff" }}
+                    >
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{config.label}</span>
+                  </a>
+                ) : (
+                  /* Default compact square tiles */
                   <a
                     key={key}
                     href={href}
@@ -226,7 +284,7 @@ export function ProfilePreview({ profile, mock, onSaveContact, extraActions, hea
                     rel="noopener noreferrer"
                     className="flex flex-col items-center gap-2 group"
                   >
-                    <div 
+                    <div
                       className="h-12 w-12 rounded-2xl flex items-center justify-center transition-all group-hover:shadow-lg group-hover:-translate-y-1"
                       style={{ backgroundColor: config.color, color: isSnapchat ? "#000" : "#fff" }}
                     >

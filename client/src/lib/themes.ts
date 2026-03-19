@@ -5,6 +5,7 @@ export type CardRadius = "sharp" | "soft" | "rounded";
 export type SpacingDensity = "compact" | "comfortable" | "spacious";
 export type HeaderStyle = "centered" | "left-aligned" | "banner";
 export type FontStyle = "modern" | "elegant" | "bold";
+export type SocialLayout = "icons" | "tiles";
 
 export interface ThemeCustomizations {
   accentColor?: string;
@@ -13,6 +14,7 @@ export interface ThemeCustomizations {
   spacingDensity?: SpacingDensity;
   headerStyle?: HeaderStyle;
   fontStyle?: FontStyle;
+  socialLayout?: SocialLayout;
 }
 
 export type CustomizationKey = keyof ThemeCustomizations;
@@ -76,6 +78,7 @@ export const THEMES: ThemeConfig[] = [
       spacingDensity: "compact",
       headerStyle: "left-aligned",
       fontStyle: "modern",
+      socialLayout: "icons",
     },
   },
   {
@@ -104,6 +107,7 @@ export const THEMES: ThemeConfig[] = [
       spacingDensity: "comfortable",
       headerStyle: "banner",
       fontStyle: "modern",
+      socialLayout: "icons",
     },
   },
   {
@@ -132,6 +136,36 @@ export const THEMES: ThemeConfig[] = [
       spacingDensity: "comfortable",
       headerStyle: "centered",
       fontStyle: "elegant",
+      socialLayout: "icons",
+    },
+  },
+  {
+    id: "social_hub",
+    name: "Social Hub",
+    description: "Dark, tile-based layout built for social-first creators.",
+    plan: "pro",
+    preview: { bg: "#0d0d0d", accent: "#38bdf8", surface: "#161616" },
+    tokens: {
+      "--theme-bg": "#0d0d0d",
+      "--theme-surface": "#161616",
+      "--theme-text-primary": "#ffffff",
+      "--theme-text-secondary": "#888888",
+      "--theme-accent": "#38bdf8",
+      "--theme-border-radius": "20px",
+      "--theme-font-heading": "Inter, system-ui, sans-serif",
+      "--theme-font-body": "Inter, system-ui, sans-serif",
+      "--theme-shadow": "0 8px 48px rgba(0,0,0,0.8)",
+      "--theme-header-gradient": "linear-gradient(180deg, #1a1a2e 0%, #0d0d0d 100%)",
+    },
+    supportedCustomizations: ["accentColor", "cardRadius", "fontStyle"],
+    defaultCustomizations: {
+      accentColor: "#38bdf8",
+      buttonStyle: "pill",
+      cardRadius: "rounded",
+      spacingDensity: "comfortable",
+      headerStyle: "banner",
+      fontStyle: "modern",
+      socialLayout: "tiles",
     },
   },
 ];
