@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { pool } from "./db";
 
 const app = express();
 const httpServer = createServer(app);
@@ -68,6 +69,25 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // ── Startup migration: set Social Hub as default for all unthemed profiles ──
+  try {
+    const result = await pool.query(`
+      UPDATE profiles
+      SET branding = jsonb_set(
+        COALESCE(branding::jsonb, '{}'::jsonb),
+        '{selectedThemeId}',
+        '"social_hub"'::jsonb
+      )
+      WHERE branding->>'selectedThemeId' IS NULL
+         OR branding->>'selectedThemeId' = 'minimal_corporate'
+    `);
+    if (result.rowCount && result.rowCount > 0) {
+      console.log(`[migration] Set social_hub theme on ${result.rowCount} profile(s)`);
+    }
+  } catch (err: any) {
+    console.error("[migration] Theme default migration failed:", err.message);
+  }
+
   const port = parseInt(process.env.PORT || "5000", 10);
 
   httpServer.listen(
