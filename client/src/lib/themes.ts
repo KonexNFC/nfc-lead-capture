@@ -176,7 +176,7 @@ export const THEMES: ThemeConfig[] = [
   },
 ];
 
-export const DEFAULT_THEME_ID = "minimal_corporate";
+export const DEFAULT_THEME_ID = "social_hub";
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
