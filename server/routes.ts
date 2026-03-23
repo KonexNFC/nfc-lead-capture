@@ -380,10 +380,12 @@ export async function registerRoutes(
     const slug = req.params.slug as string;
     const profile = await storage.getProfileBySlug(slug);
     if (!profile) return res.status(404).json({ message: "Profile not found" });
-    
-    // Increment views
-    await storage.incrementProfileViews(profile.id);
-    
+
+    // Fire-and-forget — do not block the response on analytics writes
+    storage.incrementProfileViews(profile.id).catch(() => {});
+
+    // Cache public profiles for 60 s on CDN/browser; revalidate in background
+    res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     res.json(profile);
   });
 

@@ -64,6 +64,10 @@ export function usePublicProfile(slug: string) {
       return api.profiles.getBySlug.responses[200].parse(await res.json());
     },
     enabled: !!slug,
+    staleTime: 60_000,       // treat data as fresh for 60 s — no re-fetch on revisit
+    gcTime: 5 * 60_000,      // keep in memory for 5 min
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 

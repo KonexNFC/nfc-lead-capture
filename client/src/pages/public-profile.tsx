@@ -14,7 +14,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { leadFormSchema } from "@shared/routes";
 import { useSubmitLead } from "@/hooks/use-leads";
 import { useMediaQuery } from "@/hooks/use-mobile";
-import { Loader2, Share2 } from "lucide-react";
+import { Share2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SiFacebook } from "react-icons/si";
 import { z } from "zod";
 import { ProfileModulesRenderer } from "@/components/profile-modules";
@@ -75,7 +76,29 @@ export default function PublicProfile() {
     }, 300);
   };
 
-  if (isLoading) return <div className="h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" data-testid="loading-spinner" /></div>;
+  if (isLoading) return (
+    <div className="min-h-screen bg-[#0d0d0d] flex flex-col items-center py-8 px-4" data-testid="loading-skeleton">
+      {/* Banner */}
+      <Skeleton className="w-full max-w-sm h-36 rounded-xl bg-neutral-800" />
+      {/* Avatar */}
+      <Skeleton className="w-20 h-20 rounded-full bg-neutral-700 -mt-10 border-4 border-[#0d0d0d]" />
+      {/* Name / title */}
+      <div className="mt-3 flex flex-col items-center gap-2 w-full max-w-sm">
+        <Skeleton className="h-5 w-40 rounded bg-neutral-800" />
+        <Skeleton className="h-4 w-28 rounded bg-neutral-800" />
+      </div>
+      {/* Contact circles */}
+      <div className="flex gap-4 mt-6">
+        {[0,1,2].map(i => <Skeleton key={i} className="w-12 h-12 rounded-full bg-neutral-800" />)}
+      </div>
+      {/* Social tile grid */}
+      <div className="grid grid-cols-4 gap-2 mt-6 w-full max-w-sm">
+        {[0,1,2,3,4,5,6,7].map(i => <Skeleton key={i} className="h-14 rounded-lg bg-neutral-800" />)}
+      </div>
+      {/* CTA button */}
+      <Skeleton className="mt-6 h-12 w-full max-w-sm rounded-full bg-neutral-800" />
+    </div>
+  );
   if (!profile || error) return <div className="h-screen flex items-center justify-center text-muted-foreground" data-testid="text-profile-not-found">Profile not found</div>;
 
   const branding = (profile.branding as ProfileBranding) || {};
