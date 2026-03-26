@@ -17,7 +17,8 @@ import {
   MessageSquareQuote,
   CreditCard,
   Building2,
-  Palette
+  Palette,
+  BarChart2
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -45,6 +46,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'My Profile', href: '/dashboard/edit', icon: UserCircle },
     { name: 'Modules', href: '/dashboard/modules', icon: Blocks },
+    { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart2 },
     { name: 'Leads', href: '/dashboard/leads', icon: Users },
     { name: 'My Cards', href: '/dashboard/cards', icon: CreditCard },
     { name: 'Appearance', href: '/dashboard/appearance', icon: Palette },

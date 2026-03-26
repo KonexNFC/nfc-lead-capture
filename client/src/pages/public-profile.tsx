@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { leadFormSchema } from "@shared/routes";
 import { useSubmitLead } from "@/hooks/use-leads";
 import { useMediaQuery } from "@/hooks/use-mobile";
-import { Share2 } from "lucide-react";
+import { Share2, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SiFacebook } from "react-icons/si";
 import { z } from "zod";
@@ -25,6 +25,26 @@ import { getThemeStyle, getTheme, resolveCustomizations, fontFamilyFromStyle, ca
 import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/schema";
 
 const STORAGE_KEY_PREFIX = "konex_contact_";
+
+/** Fire-and-forget profile event tracking. Never throws. */
+function trackEvent(slug: string, eventType: string, metadata?: Record<string, string>) {
+  fetch("/api/public/track", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ slug, eventType, metadata }),
+  }).catch(() => {});
+}
+
+/** Detect the event type from a click target href */
+function eventTypeFromHref(href: string): string | null {
+  if (href.startsWith("tel:")) return "call_click";
+  if (href.startsWith("mailto:")) return "email_click";
+  if (href.includes("wa.me") || href.includes("whatsapp")) return "whatsapp_click";
+  if (href.includes("calendly") || href.includes("booking") || href.includes("cal.com")) return "booking_click";
+  if (href.match(/linkedin|twitter|x\.com|facebook|instagram|tiktok|youtube|snapchat|github/)) return "social_click";
+  if (href.startsWith("http") && !href.includes("konex")) return "website_click";
+  return null;
+}
 
 /** Convert a 6-digit hex color to the HSL triple Tailwind CSS variables expect (no hsl() wrapper). */
 function hexToHslVar(hex: string): string {
@@ -57,24 +77,45 @@ export default function PublicProfile() {
   const isDesktop = useMediaQuery("(min-width: 768px)");
   
 
-  const handleSuccess = (data: { whatsapp?: string }) => {
-    setSubmittedData(data);
-    setIsSubmitted(true);
-    if (data.whatsapp || data) {
-      try {
-        localStorage.setItem(`${STORAGE_KEY_PREFIX}${slug}`, JSON.stringify(data));
-      } catch (e) {}
-    }
-  };
-
   const handleClose = () => {
     setIsOpen(false);
-    // Reset after animation completes
     setTimeout(() => {
       setIsSubmitted(false);
       setSubmittedData(null);
     }, 300);
   };
+
+  const handleSuccess = (data: { whatsapp?: string }) => {
+    setSubmittedData(data);
+    setIsSubmitted(true);
+    trackEvent(slug, "form_submit");
+    if (data.whatsapp || data) {
+      try { localStorage.setItem(`${STORAGE_KEY_PREFIX}${slug}`, JSON.stringify(data)); } catch (e) {}
+    }
+  };
+
+  // Track page view once profile loads
+  useEffect(() => {
+    if (profile && slug) {
+      const source = document.referrer
+        ? document.referrer.includes("wa.me") ? "whatsapp"
+          : document.referrer.includes("t.me") ? "telegram"
+          : document.referrer.includes("linkedin") ? "linkedin"
+          : document.referrer.includes("instagram") ? "instagram"
+          : "referral"
+        : "direct";
+      trackEvent(slug, "view", { source });
+    }
+  }, [profile?.id]);
+
+  // Event delegation: catch all contact/social link clicks inside the profile card
+  function handleProfileAreaClick(e: React.MouseEvent<HTMLDivElement>) {
+    const target = e.target as HTMLElement;
+    const anchor = target.closest("a");
+    if (!anchor || !anchor.href) return;
+    const evType = eventTypeFromHref(anchor.href);
+    if (evType) trackEvent(slug, evType);
+  }
 
   if (isLoading) return (
     <div className="min-h-screen bg-[#0d0d0d] flex flex-col items-center py-8 px-4" data-testid="loading-skeleton">
@@ -187,7 +228,7 @@ export default function PublicProfile() {
     : null;
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-4 pb-24" style={brandStyle}>
+    <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-4 pb-32 md:pb-24" style={brandStyle}>
       {/* Hero Banner */}
       {heroUrl && (
         <div className="w-full max-w-md rounded-md overflow-hidden mb-4 relative" data-testid="hero-banner">
@@ -215,24 +256,24 @@ export default function PublicProfile() {
         </p>
       </div>
 
-      {/* Profile Card */}
-      <ProfilePreview 
-        profile={profile}
-        layoutVariant={resolvedCust.layoutVariant}
-        extraActions={
-          <button
-            className="w-full rounded-xl min-h-[48px] py-2 px-3 text-sm font-semibold shadow-lg flex items-center justify-center gap-1.5 leading-tight text-white"
-            style={{
-              backgroundColor: branding.primaryColor || 'hsl(var(--primary))',
-            }}
-            onClick={() => setIsOpen(true)}
-            data-testid="button-exchange-contact"
-          >
-            <Share2 className="h-4 w-4 shrink-0" />
-            <span>{ctaLabel}</span>
-          </button>
-        }
-      />
+      {/* Profile Card — wrapped for link-click event delegation */}
+      <div className="w-full" onClick={handleProfileAreaClick}>
+        <ProfilePreview 
+          profile={profile}
+          layoutVariant={resolvedCust.layoutVariant}
+          extraActions={
+            <button
+              className="w-full rounded-xl min-h-[48px] py-2 px-3 text-sm font-semibold shadow-lg flex items-center justify-center gap-1.5 leading-tight text-white"
+              style={{ backgroundColor: branding.primaryColor || 'hsl(var(--primary))' }}
+              onClick={() => { trackEvent(slug, "cta_click"); setIsOpen(true); }}
+              data-testid="button-exchange-contact"
+            >
+              <Share2 className="h-4 w-4 shrink-0" />
+              <span>{ctaLabel}</span>
+            </button>
+          }
+        />
+      </div>
 
 
       {/* Modules */}
@@ -301,7 +342,25 @@ export default function PublicProfile() {
         </Drawer>
       )}
 
-      {/* Footer Branding */}
+      {/* Sticky Mobile Action Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-safe" style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}>
+        <div
+          className="rounded-2xl shadow-2xl border border-white/10 overflow-hidden"
+          style={{ backgroundColor: tt["--theme-surface"] || "#111" }}
+        >
+          <button
+            className="w-full h-14 flex items-center justify-center gap-2 text-base font-semibold text-white"
+            style={{ backgroundColor: branding.primaryColor || finalAccent || "#6366f1" }}
+            onClick={() => { trackEvent(slug, "cta_click"); setIsOpen(true); }}
+            data-testid="button-sticky-cta"
+          >
+            <Share2 className="h-5 w-5" />
+            {ctaLabel}
+          </button>
+        </div>
+      </div>
+
+      {/* Footer Branding — desktop only */}
       <div className="fixed bottom-4 right-4 hidden md:flex items-center gap-2 text-xs text-muted-foreground/50">
         <img src={konexLogo} alt="KONEX" className="h-4 w-auto opacity-50" />
         <span>Powered by KONEX</span>

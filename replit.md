@@ -52,10 +52,19 @@ Allows users to submit testimonials, which require admin approval before public 
 
 ### Profile Themes & Appearance System
 Users can customize their public profile appearance through an "Appearance" dashboard page.
-- **Themes**: Three predefined themes (`minimal_corporate`, `personal_brand`, `luxury_black`).
+- **Themes**: Four predefined themes (`minimal_corporate`, `personal_brand`, `luxury_black`, `social_hub`). Default: `social_hub`.
+- **Layout Variants**: Each theme has a distinct layout variant (`corporate`, `personal`, `luxury`, `social`) applied in `ProfilePreview`.
 - **Customization Options**: Accent color, button style, card radius, spacing density, header style, font style.
 - **Workflow**: Supports draft and publish functionality, allowing users to preview changes before making them live.
 - **Premium Gating**: Certain themes are restricted to "pro" plan users.
+
+### Analytics & Conversion Tracking System
+- **`profile_events` table**: Tracks all profile interaction events (view, cta_click, call_click, email_click, whatsapp_click, website_click, social_click, booking_click, save_contact, form_submit, qr_scan, payment_click).
+- **Public tracking endpoint**: `POST /api/public/track` — rate-limited (30 req/min/IP), fire-and-forget from public profile page.
+- **Analytics API**: `GET /api/analytics/overview`, `/trend?days=N`, `/ctas`, `/sources` — all authenticated.
+- **Analytics Dashboard**: `/dashboard/analytics` — stat cards, trend chart (Recharts), CTA performance bar chart, traffic source pie chart, ROI messaging, leads CTA.
+- **Event tracking on public profile**: View tracked on mount with referrer source detection; all contact/social link clicks tracked via event delegation; CTA button click tracked directly.
+- **Sticky mobile action bar**: Fixed bottom bar on mobile with primary CTA button, respects safe-area-inset.
 
 ### Shared Code
 The `shared/` directory contains common code for frontend and backend, including Drizzle schemas and Zod-based API route definitions for type safety.

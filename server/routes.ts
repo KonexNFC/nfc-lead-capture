@@ -480,6 +480,63 @@ export async function registerRoutes(
     res.json({ totalLeads, recentLeads: allLeads.slice(0, 5), totalViews });
   });
 
+  // === Profile Event Tracking (Public, rate-limited) ===
+  const eventRateLimits = new Map<string, { count: number; resetAt: number }>();
+  function eventRateLimit(req: any, res: any, next: any) {
+    const key = req.ip || "unknown";
+    const now = Date.now();
+    const entry = eventRateLimits.get(key);
+    if (!entry || entry.resetAt < now) {
+      eventRateLimits.set(key, { count: 1, resetAt: now + 60_000 });
+      return next();
+    }
+    if (entry.count >= 30) return res.status(429).json({ message: "Too many events" });
+    entry.count++;
+    return next();
+  }
+  // Purge stale entries every 5 minutes
+  setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of eventRateLimits) if (v.resetAt < now) eventRateLimits.delete(k);
+  }, 300_000);
+
+  app.post("/api/public/track", eventRateLimit, async (req, res) => {
+    const { slug, eventType, metadata } = req.body;
+    if (!slug || !eventType || typeof eventType !== "string") return res.status(400).json({ message: "slug and eventType required" });
+    const allowed = ["view","cta_click","call_click","email_click","whatsapp_click","website_click","social_click","booking_click","save_contact","form_submit","qr_scan","payment_click"];
+    if (!allowed.includes(eventType)) return res.status(400).json({ message: "Unknown event type" });
+    const profile = await storage.getProfileBySlug(slug);
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+    await storage.createProfileEvent({ profileId: profile.id, eventType, metadata: metadata || {} });
+    res.json({ ok: true });
+  });
+
+  // === Analytics (Authenticated) ===
+  app.get("/api/analytics/overview", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const overview = await storage.getAnalyticsOverview(req.user.id);
+    res.json(overview);
+  });
+
+  app.get("/api/analytics/trend", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const days = Math.min(parseInt(req.query.days as string || "30"), 90);
+    const trend = await storage.getAnalyticsTrend(req.user.id, days);
+    res.json(trend);
+  });
+
+  app.get("/api/analytics/ctas", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const ctas = await storage.getAnalyticsCtas(req.user.id);
+    res.json(ctas);
+  });
+
+  app.get("/api/analytics/sources", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const sources = await storage.getAnalyticsSources(req.user.id);
+    res.json(sources);
+  });
+
   // === Auth Middleware ===
   function requireAuth(req: any, res: any, next: any) {
     if (!req.isAuthenticated()) return res.sendStatus(401);

@@ -3,6 +3,7 @@ import {
   users, profiles, leads, siteSettings, testimonials,
   cards, cardTapEvents, cardAssignmentsHistory,
   organizations, organizationMembers, organizationInvitations, organizationCards,
+  profileEvents,
   type User, type InsertUser,
   type Profile, type InsertProfile, type UpdateProfileRequest,
   type Lead, type InsertLead,
@@ -127,6 +128,16 @@ export interface IStorage {
     topCard: { cardCode: string; taps: number } | null;
     topMember: { name: string; email: string; taps: number } | null;
   }>;
+
+  // Profile Events (conversion analytics)
+  createProfileEvent(event: { profileId: number; eventType: string; metadata?: Record<string, string> }): Promise<void>;
+  getAnalyticsOverview(userId: number): Promise<{
+    views: number; taps: number; leads: number; formSubmits: number;
+    ctaClicks: number; saveContacts: number; conversionRate: number;
+  }>;
+  getAnalyticsTrend(userId: number, days: number): Promise<{ date: string; views: number; leads: number; clicks: number }[]>;
+  getAnalyticsCtas(userId: number): Promise<{ eventType: string; count: number }[]>;
+  getAnalyticsSources(userId: number): Promise<{ source: string; count: number }[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -782,6 +793,115 @@ export class DatabaseStorage implements IStorage {
     }
 
     return { totalCards, activeCards, totalTaps, totalLeads, topCard, topMember };
+  }
+
+  // ── Profile Events (conversion analytics) ─────────────────────────────────
+
+  async createProfileEvent(event: { profileId: number; eventType: string; metadata?: Record<string, string> }): Promise<void> {
+    await db.insert(profileEvents).values(event);
+  }
+
+  async getAnalyticsOverview(userId: number): Promise<{
+    views: number; taps: number; leads: number; formSubmits: number;
+    ctaClicks: number; saveContacts: number; conversionRate: number;
+  }> {
+    const userProfiles = await db.select({ id: profiles.id, views: profiles.views }).from(profiles).where(eq(profiles.userId, userId));
+    if (userProfiles.length === 0) return { views: 0, taps: 0, leads: 0, formSubmits: 0, ctaClicks: 0, saveContacts: 0, conversionRate: 0 };
+
+    const profileIds = userProfiles.map(p => p.id);
+    const totalViews = userProfiles.reduce((s, p) => s + (p.views || 0), 0);
+
+    const userCards = await db.select({ tapCount: cards.tapCount }).from(cards).where(eq(cards.ownerId, userId));
+    const totalTaps = userCards.reduce((s, c) => s + (c.tapCount || 0), 0);
+
+    const [leadCount] = await db.select({ count: count() }).from(leads).where(inArray(leads.profileId, profileIds));
+
+    const eventCounts = await db
+      .select({ eventType: profileEvents.eventType, count: count() })
+      .from(profileEvents)
+      .where(inArray(profileEvents.profileId, profileIds))
+      .groupBy(profileEvents.eventType);
+
+    const byType: Record<string, number> = {};
+    for (const row of eventCounts) byType[row.eventType] = Number(row.count);
+
+    const formSubmits = byType["form_submit"] || 0;
+    const ctaClicks = (byType["cta_click"] || 0);
+    const saveContacts = byType["save_contact"] || 0;
+    const leadsTotal = Number(leadCount?.count || 0);
+    const conversionRate = totalViews > 0 ? Math.round((leadsTotal / totalViews) * 100 * 10) / 10 : 0;
+
+    return { views: totalViews, taps: totalTaps, leads: leadsTotal, formSubmits, ctaClicks, saveContacts, conversionRate };
+  }
+
+  async getAnalyticsTrend(userId: number, days: number): Promise<{ date: string; views: number; leads: number; clicks: number }[]> {
+    const userProfiles = await db.select({ id: profiles.id }).from(profiles).where(eq(profiles.userId, userId));
+    if (userProfiles.length === 0) return [];
+    const profileIds = userProfiles.map(p => p.id);
+
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    const clickTypes = ["cta_click", "call_click", "email_click", "whatsapp_click", "website_click", "social_click", "booking_click", "save_contact"];
+    const clickTypeLiterals = clickTypes.map(t => `'${t}'`).join(",");
+
+    const rows = await pool.query<{ day: string; leads: string; clicks: string }>(`
+      SELECT
+        to_char(d.day, 'YYYY-MM-DD') AS day,
+        COALESCE(l.cnt, 0)::int AS leads,
+        COALESCE(e.cnt, 0)::int AS clicks
+      FROM generate_series($1::date, CURRENT_DATE, '1 day'::interval) AS d(day)
+      LEFT JOIN (
+        SELECT date_trunc('day', created_at) AS day, count(*) AS cnt
+        FROM leads WHERE profile_id = ANY($2) AND created_at >= $1 GROUP BY 1
+      ) l ON l.day = d.day
+      LEFT JOIN (
+        SELECT date_trunc('day', created_at) AS day, count(*) AS cnt
+        FROM profile_events WHERE profile_id = ANY($2) AND created_at >= $1 AND event_type IN (${clickTypeLiterals}) GROUP BY 1
+      ) e ON e.day = d.day
+      ORDER BY d.day
+    `, [since.toISOString().split("T")[0], profileIds]);
+
+    return rows.rows.map(r => ({ date: r.day, views: 0, leads: Number(r.leads), clicks: Number(r.clicks) }));
+  }
+
+  async getAnalyticsCtas(userId: number): Promise<{ eventType: string; count: number }[]> {
+    const userProfiles = await db.select({ id: profiles.id }).from(profiles).where(eq(profiles.userId, userId));
+    if (userProfiles.length === 0) return [];
+    const profileIds = userProfiles.map(p => p.id);
+
+    const rows = await db
+      .select({ eventType: profileEvents.eventType, count: count() })
+      .from(profileEvents)
+      .where(inArray(profileEvents.profileId, profileIds))
+      .groupBy(profileEvents.eventType)
+      .orderBy(desc(count()));
+
+    return rows.map(r => ({ eventType: r.eventType, count: Number(r.count) }));
+  }
+
+  async getAnalyticsSources(userId: number): Promise<{ source: string; count: number }[]> {
+    const userProfiles = await db.select({ id: profiles.id }).from(profiles).where(eq(profiles.userId, userId));
+    if (userProfiles.length === 0) return [];
+    const profileIds = userProfiles.map(p => p.id);
+
+    const rows = await pool.query<{ source: string; cnt: string }>(`
+      SELECT COALESCE(metadata->>'source', 'direct') AS source, count(*) AS cnt
+      FROM profile_events
+      WHERE profile_id = ANY($1) AND event_type = 'view'
+      GROUP BY 1 ORDER BY 2 DESC LIMIT 6
+    `, [profileIds]);
+
+    if (rows.rows.length === 0) {
+      // Fall back to lead sources for context
+      const leadRows = await pool.query<{ source: string; cnt: string }>(`
+        SELECT COALESCE(source, 'direct') AS source, count(*) AS cnt
+        FROM leads WHERE profile_id = ANY($1) GROUP BY 1 ORDER BY 2 DESC
+      `, [profileIds]);
+      return leadRows.rows.map(r => ({ source: r.source, count: Number(r.cnt) }));
+    }
+
+    return rows.rows.map(r => ({ source: r.source, count: Number(r.cnt) }));
   }
 }
 
