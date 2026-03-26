@@ -219,6 +219,23 @@ export const cardAssignmentsHistoryRelations = relations(cardAssignmentsHistory,
   card: one(cards, { fields: [cardAssignmentsHistory.cardId], references: [cards.id] }),
 }));
 
+// Profile interaction events (analytics)
+export const profileEvents = pgTable("profile_events", {
+  id: serial("id").primaryKey(),
+  profileId: integer("profile_id").notNull(),
+  eventType: text("event_type").notNull(), // view|cta_click|call_click|email_click|whatsapp_click|website_click|social_click|booking_click|save_contact|form_submit|qr_scan
+  metadata: jsonb("metadata").$type<Record<string, string>>(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const profileEventsRelations = relations(profileEvents, ({ one }) => ({
+  profile: one(profiles, { fields: [profileEvents.profileId], references: [profiles.id] }),
+}));
+
+export const insertProfileEventSchema = createInsertSchema(profileEvents).omit({ id: true, createdAt: true });
+export type ProfileEvent = typeof profileEvents.$inferSelect;
+export type InsertProfileEvent = z.infer<typeof insertProfileEventSchema>;
+
 // Organizations
 export const organizations = pgTable("organizations", {
   id: serial("id").primaryKey(),
