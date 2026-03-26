@@ -89,7 +89,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
         <ChevronDown className={`h-4 w-4 text-white/30 shrink-0 transition-transform ${switcherOpen ? "rotate-180" : ""}`} />
       </button>
       {switcherOpen && (
-        <div className="mt-1 rounded-xl border border-white/6 overflow-hidden" style={{ background: "#161616" }}>
+        <div className="mt-1 rounded-xl border border-white/6 overflow-hidden" style={{ background: "#22222E" }}>
           {profiles.map((p) => (
             <button
               key={p.id}
@@ -123,7 +123,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
   );
 
   const NavContent = () => (
-    <div className="flex flex-col h-full" style={{ background: "#0D0D0D" }}>
+    <div className="flex flex-col h-full" style={{ background: "#181820" }}>
       <div className="p-6 border-b border-white/6">
         <div className="flex items-center gap-2">
           <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto" />
@@ -156,7 +156,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
       </div>
 
       <div className="p-4 border-t border-white/6">
-        <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-xl" style={{ background: "#161616" }}>
+        <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-xl" style={{ background: "#22222E" }}>
           <div className="h-8 w-8 rounded-full bg-blue-600/20 flex items-center justify-center text-blue-400 font-bold text-sm shrink-0">
             {user?.email?.charAt(0).toUpperCase()}
           </div>
@@ -177,14 +177,14 @@ export function LayoutShell({ children }: LayoutShellProps) {
   );
 
   return (
-    <div className="min-h-screen flex" style={{ background: "#0A0A0A" }}>
+    <div className="min-h-screen flex" style={{ background: "#13131A" }}>
       {/* Desktop Sidebar */}
-      <div className="hidden md:block w-64 shrink-0 fixed h-full z-30 border-r border-white/6" style={{ background: "#0D0D0D" }}>
+      <div className="hidden md:block w-64 shrink-0 fixed h-full z-30 border-r border-white/6" style={{ background: "#181820" }}>
         <NavContent />
       </div>
 
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 backdrop-blur-xl border-b border-white/6 z-40 flex items-center justify-between px-4" style={{ background: "rgba(13,13,13,0.9)" }}>
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 backdrop-blur-xl border-b border-white/6 z-40 flex items-center justify-between px-4" style={{ background: "rgba(19,19,26,0.9)" }}>
         <div className="flex items-center gap-2">
           <img src={konexLogo} alt="KONEX Logo" className="h-6 w-auto" />
         </div>
@@ -194,7 +194,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-72 border-white/6" style={{ background: "#0D0D0D" }}>
+          <SheetContent side="left" className="p-0 w-72 border-white/6" style={{ background: "#181820" }}>
             <NavContent />
           </SheetContent>
         </Sheet>

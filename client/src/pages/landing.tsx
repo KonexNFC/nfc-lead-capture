@@ -150,13 +150,13 @@ export default function LandingPage() {
       : fallbackTestimonials;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#0A0A0A", color: "#fff" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "#13131A", color: "#fff" }}>
 
       {/* ── Navbar ── */}
       <nav
         className={`w-full fixed top-0 z-50 transition-all duration-300 ease-in-out border-b ${
           scrolled
-            ? "bg-[#0A0A0A]/96 backdrop-blur-xl border-white/8 shadow-[0_1px_20px_rgba(0,0,0,0.6)]"
+            ? "bg-[#13131A]/96 backdrop-blur-xl border-white/8 shadow-[0_1px_20px_rgba(0,0,0,0.6)]"
             : "bg-transparent border-transparent"
         }`}
       >
@@ -315,7 +315,7 @@ export default function LandingPage() {
                     <div
                       className="group cursor-pointer rounded-2xl p-2 border border-white/6 hover:border-blue-500/30 transition-all duration-250 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
                       data-testid={`hero-card-${card.label.toLowerCase()}`}
-                      style={{ background: "#121212" }}
+                      style={{ background: "#1E1E28" }}
                     >
                       <img
                         src={card.img}
@@ -350,7 +350,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── How It Works ── */}
-        <section id="how-it-works" className="py-28" style={{ background: "#0A0A0A" }}>
+        <section id="how-it-works" className="py-28" style={{ background: "#13131A" }}>
           <div className="max-w-7xl mx-auto px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <Badge className="mb-4 bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/15">How It Works</Badge>
@@ -393,7 +393,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── Use Cases ── */}
-        <section id="use-cases" className="py-28 border-y border-white/6" style={{ background: "#0D0D0D" }}>
+        <section id="use-cases" className="py-28 border-y border-white/6" style={{ background: "#181820" }}>
           <div className="max-w-7xl mx-auto px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <Badge className="mb-4 bg-blue-500/10 text-blue-400 border-blue-500/20">Use Cases</Badge>
@@ -409,7 +409,7 @@ export default function LandingPage() {
                 <div
                   key={i}
                   className={`rounded-3xl border ${uc.border} p-8 transition-all duration-250 hover:-translate-y-1 hover:shadow-[0_8px_40px_rgba(0,0,0,0.5)]`}
-                  style={{ background: "#121212" }}
+                  style={{ background: "#1E1E28" }}
                   data-testid={`use-case-${i}`}
                 >
                   <div className={`h-12 w-12 rounded-2xl ${uc.bg} flex items-center justify-center mb-6`}>
@@ -433,7 +433,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── Feature Blocks ── */}
-        <section id="features" className="py-28" style={{ background: "#0A0A0A" }}>
+        <section id="features" className="py-28" style={{ background: "#13131A" }}>
           <div className="max-w-7xl mx-auto px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <Badge className="mb-4 bg-blue-500/10 text-blue-400 border-blue-500/20">Features</Badge>
@@ -449,7 +449,7 @@ export default function LandingPage() {
                 <div
                   key={i}
                   className="p-7 rounded-2xl border border-white/6 transition-all duration-250 hover:-translate-y-1 hover:border-white/12 hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
-                  style={{ background: "#121212" }}
+                  style={{ background: "#1E1E28" }}
                   data-testid={`feature-block-${i}`}
                 >
                   <div className={`h-12 w-12 rounded-2xl ${f.bg} flex items-center justify-center mb-5`}>
@@ -464,7 +464,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── Card Showcase ── */}
-        <section className="py-28 border-y border-white/6" style={{ background: "#0D0D0D" }}>
+        <section className="py-28 border-y border-white/6" style={{ background: "#181820" }}>
           <div className="max-w-7xl mx-auto px-4 md:px-6">
             <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-20 mb-16">
               <div className="flex-1 relative">
@@ -529,7 +529,7 @@ export default function LandingPage() {
                 <Link key={i} href={card.href}>
                   <div
                     className="group rounded-2xl p-4 border border-white/6 hover:border-blue-500/25 transition-all duration-250 cursor-pointer hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(59,130,246,0.1)]"
-                    style={{ background: "#161616" }}
+                    style={{ background: "#22222E" }}
                     data-testid={`showcase-card-${card.name.toLowerCase()}`}
                   >
                     <img src={card.img} alt={`KONEX ${card.name}`} className="w-full rounded-xl mb-4" data-testid={`img-showcase-${card.name.toLowerCase()}`} />
@@ -544,7 +544,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── ROI Section ── */}
-        <section className="py-28" style={{ background: "#0A0A0A" }} data-testid="section-roi">
+        <section className="py-28" style={{ background: "#13131A" }} data-testid="section-roi">
           <div className="max-w-6xl mx-auto px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <Badge className="mb-4 bg-blue-500/10 text-blue-400 border-blue-500/20">Why It Pays Off</Badge>
@@ -557,7 +557,7 @@ export default function LandingPage() {
             </div>
             <div className="grid md:grid-cols-3 gap-6 mb-16">
               {[
-                { stat: "88%", label: "of paper business cards are thrown away within a week", icon: Zap, accent: "text-white/50", bg: "#161616", border: "border-white/8" },
+                { stat: "88%", label: "of paper business cards are thrown away within a week", icon: Zap, accent: "text-white/50", bg: "#22222E", border: "border-white/8" },
                 { stat: "3×", label: "more leads captured per event with KONEX vs paper cards", icon: TrendingUp, accent: "text-green-400", bg: "#0f1a11", border: "border-green-500/20" },
                 { stat: "£0", label: "extra cost when you update your profile — card works forever", icon: ShieldCheck, accent: "text-green-400", bg: "#0f1a11", border: "border-green-500/20" },
               ].map((item, i) => (
@@ -615,7 +615,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── Testimonials ── */}
-        <section id="testimonials" className="py-28 border-t border-white/6" style={{ background: "#0D0D0D" }}>
+        <section id="testimonials" className="py-28 border-t border-white/6" style={{ background: "#181820" }}>
           <div className="max-w-7xl mx-auto px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <Badge className="mb-4 bg-blue-500/10 text-blue-400 border-blue-500/20">Testimonials</Badge>
@@ -627,7 +627,7 @@ export default function LandingPage() {
                 <div
                   key={i}
                   className="p-8 rounded-3xl border border-white/6 flex flex-col transition-all duration-250 hover:-translate-y-1 hover:border-white/12 hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
-                  style={{ background: "#121212" }}
+                  style={{ background: "#1E1E28" }}
                   data-testid={`testimonial-card-${i}`}
                 >
                   <Quote className="h-8 w-8 text-blue-500/30 mb-4" />
@@ -703,7 +703,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="py-6 border-t border-white/6 text-center text-white/30 text-sm" style={{ background: "#0A0A0A" }}>
+      <footer className="py-6 border-t border-white/6 text-center text-white/30 text-sm" style={{ background: "#13131A" }}>
         <p>&copy; {new Date().getFullYear()} KONEX. All rights reserved.</p>
       </footer>
     </div>
