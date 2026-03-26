@@ -45,7 +45,7 @@ This system handles the lifecycle of physical NFC cards, including tracking, act
 - **Core Tables**: `users`, `profiles` (with modular `links`, `modules`, `branding`, `textOverrides` JSON fields), `leads`, `cards`, `card_tap_events`, `card_assignments_history`, `organizations`, `organization_members`, `organization_invitations`, `organization_cards`.
 
 ### Enterprise / Organization System
-Enables any authenticated user to create and manage organizations (no admin required). Full team management workflow:
+Enables admin users to create organizations. Regular users can be invited into orgs by admins. Full team management workflow:
 - **Roles**: owner, admin, manager, member — with granular permissions
 - **Card Management**: Assign/reassign physical NFC cards to org members via the Org Cards page. Filter cards by status (All/Assigned/Unassigned/Active). Status summary stat cards.
 - **Team Analytics**: Per-member performance table on org dashboard (`/dashboard/organization`) showing taps, leads, and activation status for each member. Data via `GET /api/organizations/:id/member-analytics`.

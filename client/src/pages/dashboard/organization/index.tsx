@@ -13,6 +13,7 @@ import { Link, useSearch } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useActiveOrg } from "@/hooks/use-active-org";
+import { useAuth } from "@/hooks/use-auth";
 
 interface OrgAnalytics {
   totalCards: number;
@@ -45,6 +46,7 @@ const roleColors: Record<string, string> = {
 export default function OrganizationDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const { orgs, activeOrg, isLoading, setActiveOrgId } = useActiveOrg();
   const [createOpen, setCreateOpen] = useState(false);
   const [orgName, setOrgName] = useState("");
@@ -179,12 +181,16 @@ export default function OrganizationDashboard() {
             <Building2 className="h-16 w-16 text-muted-foreground/50" />
             <h2 className="text-xl font-semibold">No Organization Yet</h2>
             <p className="text-muted-foreground text-center max-w-md">
-              Create an organization to manage your team's NFC cards, track performance, and capture leads at scale.
+              {user?.isAdmin
+                ? "Create an organization to manage your team's NFC cards, track performance, and capture leads at scale."
+                : "You haven't been added to an organization yet. Ask your admin to invite you, or contact support."}
             </p>
-            <Button onClick={() => setCreateOpen(true)} data-testid="button-create-org">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Organization
-            </Button>
+            {user?.isAdmin && (
+              <Button onClick={() => setCreateOpen(true)} data-testid="button-create-org">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Organization
+              </Button>
+            )}
           </CardContent>
         </Card>
         {createDialog}
@@ -202,10 +208,12 @@ export default function OrganizationDashboard() {
             <Badge variant="outline" className="text-xs" data-testid="text-org-role">{activeOrg?.role}</Badge>
           </div>
         </div>
-        <Button variant="outline" onClick={() => setCreateOpen(true)} data-testid="button-create-org">
-          <Plus className="h-4 w-4 mr-2" />
-          New Organization
-        </Button>
+        {user?.isAdmin && (
+          <Button variant="outline" onClick={() => setCreateOpen(true)} data-testid="button-create-org">
+            <Plus className="h-4 w-4 mr-2" />
+            New Organization
+          </Button>
+        )}
       </div>
 
       {orgs.length > 1 && (

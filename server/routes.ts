@@ -1138,7 +1138,7 @@ export async function registerRoutes(
     };
   };
 
-  app.post("/api/organizations", requireAuth, async (req, res) => {
+  app.post("/api/organizations", requireAuth, requireAdmin, async (req, res) => {
     const schema = z.object({
       name: z.string().min(2).max(100),
       slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/),
