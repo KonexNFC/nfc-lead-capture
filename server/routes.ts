@@ -1138,7 +1138,7 @@ export async function registerRoutes(
     };
   };
 
-  app.post("/api/organizations", requireAuth, requireAdmin, async (req, res) => {
+  app.post("/api/organizations", requireAuth, async (req, res) => {
     const schema = z.object({
       name: z.string().min(2).max(100),
       slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/),
@@ -1188,6 +1188,8 @@ export async function registerRoutes(
       name: z.string().min(2).max(100).optional(),
       logoUrl: z.string().nullable().optional(),
       planType: z.enum(["free", "pro", "business", "enterprise"]).optional(),
+      brandingColor: z.string().nullable().optional(),
+      defaultTheme: z.string().nullable().optional(),
     });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
@@ -1374,11 +1376,32 @@ export async function registerRoutes(
     res.status(201).json(orgCard);
   });
 
+  app.patch("/api/organizations/:id/cards/:orgCardId", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
+    const orgCardId = parseInt(req.params.orgCardId);
+    const orgId = parseInt(req.params.id);
+    if (isNaN(orgCardId) || isNaN(orgId)) return res.status(400).json({ message: "Invalid ID" });
+    const schema = z.object({ assignedUserId: z.number().nullable() });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
+    if (parsed.data.assignedUserId !== null) {
+      const member = await storage.getOrganizationMember(orgId, parsed.data.assignedUserId);
+      if (!member) return res.status(400).json({ message: "User is not a member of this organization" });
+    }
+    const updated = await storage.updateOrganizationCard(orgCardId, { assignedUserId: parsed.data.assignedUserId });
+    res.json(updated);
+  });
+
   app.delete("/api/organizations/:id/cards/:orgCardId", requireAuth, requireOrgRole(["owner", "admin"]), async (req, res) => {
     const orgCardId = parseInt(req.params.orgCardId);
     if (isNaN(orgCardId)) return res.status(400).json({ message: "Invalid ID" });
     await storage.removeOrganizationCard(orgCardId);
     res.json({ message: "Card removed from organization" });
+  });
+
+  app.get("/api/organizations/:id/member-analytics", requireAuth, requireOrgRole(["owner", "admin", "manager"]), async (req, res) => {
+    const orgId = parseInt(req.params.id);
+    const data = await storage.getOrganizationMemberAnalytics(orgId);
+    res.json(data);
   });
 
   app.post("/api/org/cards/assign", requireAuth, async (req, res) => {

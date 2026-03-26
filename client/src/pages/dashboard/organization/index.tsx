@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, CreditCard, MousePointerClick, UserPlus, Plus, Loader2, Check, Settings, Trophy, Star } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Building2, Users, CreditCard, MousePointerClick, UserPlus, Plus, Loader2, Check, Settings, Trophy, Star, Zap, TrendingUp } from "lucide-react";
 import { Link, useSearch } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -21,6 +22,25 @@ interface OrgAnalytics {
   topCard: { cardCode: string; taps: number } | null;
   topMember: { name: string; email: string; taps: number } | null;
 }
+
+interface MemberAnalytic {
+  memberId: number;
+  userId: number;
+  name: string;
+  email: string;
+  role: string;
+  assignedCards: number;
+  totalTaps: number;
+  totalLeads: number;
+  activationRate: number;
+}
+
+const roleColors: Record<string, string> = {
+  owner: "bg-purple-500/20 text-purple-400",
+  admin: "bg-blue-500/20 text-blue-400",
+  manager: "bg-amber-500/20 text-amber-400",
+  member: "bg-zinc-500/20 text-zinc-400",
+};
 
 export default function OrganizationDashboard() {
   const { toast } = useToast();
@@ -65,6 +85,10 @@ export default function OrganizationDashboard() {
   const createMutation = useMutation({
     mutationFn: async (data: { name: string; slug: string }) => {
       const res = await apiRequest("POST", "/api/organizations", data);
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.message || "Failed to create organization");
+      }
       return await res.json();
     },
     onSuccess: (newOrg) => {
@@ -155,7 +179,7 @@ export default function OrganizationDashboard() {
             <Building2 className="h-16 w-16 text-muted-foreground/50" />
             <h2 className="text-xl font-semibold">No Organization Yet</h2>
             <p className="text-muted-foreground text-center max-w-md">
-              Create an organization workspace to manage team members, cards, and analytics in one place.
+              Create an organization to manage your team's NFC cards, track performance, and capture leads at scale.
             </p>
             <Button onClick={() => setCreateOpen(true)} data-testid="button-create-org">
               <Plus className="h-4 w-4 mr-2" />
@@ -211,7 +235,7 @@ export default function OrganizationDashboard() {
               <Users className="h-8 w-8 text-blue-500" />
               <div>
                 <h3 className="font-semibold">Team Members</h3>
-                <p className="text-sm text-muted-foreground">Manage your team</p>
+                <p className="text-sm text-muted-foreground">Manage roles & invitations</p>
               </div>
             </CardContent>
           </Card>
@@ -222,7 +246,7 @@ export default function OrganizationDashboard() {
               <CreditCard className="h-8 w-8 text-amber-500" />
               <div>
                 <h3 className="font-semibold">Organization Cards</h3>
-                <p className="text-sm text-muted-foreground">Manage assigned cards</p>
+                <p className="text-sm text-muted-foreground">Assign & track NFC cards</p>
               </div>
             </CardContent>
           </Card>
@@ -232,13 +256,17 @@ export default function OrganizationDashboard() {
             <CardContent className="flex items-center gap-4 py-6">
               <Settings className="h-8 w-8 text-purple-500" />
               <div>
-                <h3 className="font-semibold">Settings</h3>
-                <p className="text-sm text-muted-foreground">Organization settings</p>
+                <h3 className="font-semibold">Settings & Branding</h3>
+                <p className="text-sm text-muted-foreground">Logo, colors & defaults</p>
               </div>
             </CardContent>
           </Card>
         </Link>
       </div>
+
+      {activeOrg && (activeOrg.role === "owner" || activeOrg.role === "admin" || activeOrg.role === "manager") && (
+        <TeamAnalyticsTable orgId={activeOrg.id} />
+      )}
 
       {createDialog}
     </div>
@@ -257,21 +285,15 @@ function OrgAnalyticsCards({ orgId }: { orgId: number }) {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-        </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
       </div>
     );
   }
 
   const stats = [
     { label: "Total Cards", value: analytics?.totalCards ?? 0, icon: CreditCard, color: "text-blue-500" },
-    { label: "Active Cards", value: analytics?.activeCards ?? 0, icon: CreditCard, color: "text-green-500" },
+    { label: "Active Cards", value: analytics?.activeCards ?? 0, icon: Zap, color: "text-green-500" },
     { label: "Total NFC Taps", value: analytics?.totalTaps ?? 0, icon: MousePointerClick, color: "text-amber-500" },
     { label: "Leads Captured", value: analytics?.totalLeads ?? 0, icon: UserPlus, color: "text-purple-500" },
   ];
@@ -303,7 +325,7 @@ function OrgAnalyticsCards({ orgId }: { orgId: number }) {
           <CardContent>
             {analytics?.topCard ? (
               <div>
-                <div className="text-xl font-bold" data-testid="text-top-card-code">{analytics.topCard.cardCode}</div>
+                <div className="text-xl font-bold font-mono" data-testid="text-top-card-code">{analytics.topCard.cardCode}</div>
                 <p className="text-sm text-muted-foreground">{analytics.topCard.taps.toLocaleString()} taps</p>
               </div>
             ) : (
@@ -314,7 +336,7 @@ function OrgAnalyticsCards({ orgId }: { orgId: number }) {
 
         <Card className="border-border/50 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Top Performing Team Member</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Top Performing Member</CardTitle>
             <Star className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
@@ -333,3 +355,77 @@ function OrgAnalyticsCards({ orgId }: { orgId: number }) {
   );
 }
 
+function TeamAnalyticsTable({ orgId }: { orgId: number }) {
+  const { data: memberAnalytics, isLoading } = useQuery<MemberAnalytic[]>({
+    queryKey: ["/api/organizations", orgId, "member-analytics"],
+    queryFn: async () => {
+      const res = await fetch(`/api/organizations/${orgId}/member-analytics`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch member analytics");
+      return res.json();
+    },
+  });
+
+  return (
+    <Card className="border-border/50">
+      <CardHeader className="flex flex-row items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-5 w-5 text-primary" />
+          <CardTitle className="text-base font-semibold">Team Performance</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Member</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead className="text-right">Cards</TableHead>
+              <TableHead className="text-right">NFC Taps</TableHead>
+              <TableHead className="text-right">Leads</TableHead>
+              <TableHead className="text-right">Activation</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                </TableCell>
+              </TableRow>
+            ) : !memberAnalytics || memberAnalytics.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-20 text-center text-muted-foreground text-sm">
+                  No team members yet. Invite your team to see performance data.
+                </TableCell>
+              </TableRow>
+            ) : (
+              memberAnalytics.map((member) => (
+                <TableRow key={member.memberId} data-testid={`row-member-analytics-${member.memberId}`}>
+                  <TableCell>
+                    <div>
+                      <p className="font-medium">{member.name}</p>
+                      <p className="text-xs text-muted-foreground">{member.email}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary" className={`text-xs ${roleColors[member.role] || ""}`}>
+                      {member.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right font-medium">{member.assignedCards}</TableCell>
+                  <TableCell className="text-right font-medium">{member.totalTaps.toLocaleString()}</TableCell>
+                  <TableCell className="text-right font-medium">{member.totalLeads}</TableCell>
+                  <TableCell className="text-right">
+                    <span className={`font-medium ${member.activationRate === 100 ? "text-green-500" : member.activationRate > 50 ? "text-amber-500" : "text-muted-foreground"}`}>
+                      {member.activationRate}%
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}

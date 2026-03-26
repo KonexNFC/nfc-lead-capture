@@ -21,7 +21,6 @@ import {
   BarChart2
 } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
@@ -36,12 +35,6 @@ export function LayoutShell({ children }: LayoutShellProps) {
   const { profiles, activeProfile, setActiveProfileId } = useActiveProfile();
   const [isOpen, setIsOpen] = useState(false);
 
-  const { data: userOrgs } = useQuery<{ id: number }[]>({
-    queryKey: ["/api/organizations"],
-    enabled: !!user,
-  });
-  const hasOrgs = userOrgs && userOrgs.length > 0;
-
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'My Profile', href: '/dashboard/edit', icon: UserCircle },
@@ -50,7 +43,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
     { name: 'Leads', href: '/dashboard/leads', icon: Users },
     { name: 'My Cards', href: '/dashboard/cards', icon: CreditCard },
     { name: 'Appearance', href: '/dashboard/appearance', icon: Palette },
-    ...(hasOrgs || user?.isAdmin ? [{ name: 'Organization', href: '/dashboard/organization', icon: Building2 }] : []),
+    { name: 'Organization', href: '/dashboard/organization', icon: Building2 },
     { name: 'Leave a Review', href: '/dashboard/testimonial', icon: MessageSquareQuote },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
     ...(user?.isAdmin ? [

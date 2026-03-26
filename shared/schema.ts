@@ -244,6 +244,8 @@ export const organizations = pgTable("organizations", {
   logoUrl: text("logo_url"),
   ownerUserId: integer("owner_user_id").notNull(),
   planType: text("plan_type").notNull().default("free"),
+  brandingColor: text("branding_color"),
+  defaultTheme: text("default_theme"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

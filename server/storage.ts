@@ -120,6 +120,17 @@ export interface IStorage {
   removeOrganizationCard(id: number): Promise<void>;
 
   // Organization Analytics
+  getOrganizationMemberAnalytics(orgId: number): Promise<{
+    memberId: number;
+    userId: number;
+    name: string;
+    email: string;
+    role: string;
+    assignedCards: number;
+    totalTaps: number;
+    totalLeads: number;
+    activationRate: number;
+  }[]>;
   getOrganizationAnalytics(orgId: number): Promise<{
     totalCards: number;
     activeCards: number;
@@ -722,6 +733,69 @@ export class DatabaseStorage implements IStorage {
 
   async removeOrganizationCard(id: number): Promise<void> {
     await db.delete(organizationCards).where(eq(organizationCards.id, id));
+  }
+
+  async getOrganizationMemberAnalytics(orgId: number): Promise<{
+    memberId: number;
+    userId: number;
+    name: string;
+    email: string;
+    role: string;
+    assignedCards: number;
+    totalTaps: number;
+    totalLeads: number;
+    activationRate: number;
+  }[]> {
+    const memberRows = await db.select({
+      id: organizationMembers.id,
+      userId: organizationMembers.userId,
+      role: organizationMembers.role,
+    }).from(organizationMembers)
+      .where(eq(organizationMembers.organizationId, orgId));
+
+    const orgCardRows = await db.select({
+      cardId: organizationCards.cardId,
+      assignedUserId: organizationCards.assignedUserId,
+    }).from(organizationCards)
+      .where(eq(organizationCards.organizationId, orgId));
+
+    const cardIds = orgCardRows.map(c => c.cardId);
+    const cardRows = cardIds.length > 0
+      ? await db.select({ id: cards.id, tapCount: cards.tapCount, status: cards.status }).from(cards).where(inArray(cards.id, cardIds))
+      : [];
+
+    const result = await Promise.all(memberRows.map(async (member) => {
+      const [userRow] = await db.select({ email: users.email }).from(users).where(eq(users.id, member.userId));
+      const [profileRow] = await db.select({ name: profiles.name }).from(profiles).where(eq(profiles.userId, member.userId));
+
+      const memberCardIds = orgCardRows.filter(oc => oc.assignedUserId === member.userId).map(oc => oc.cardId);
+      const memberCards = cardRows.filter(c => memberCardIds.includes(c.id));
+      const assignedCards = memberCards.length;
+      const totalTaps = memberCards.reduce((sum, c) => sum + c.tapCount, 0);
+      const activeCards = memberCards.filter(c => c.status === "active").length;
+      const activationRate = assignedCards > 0 ? Math.round((activeCards / assignedCards) * 100) : 0;
+
+      let totalLeads = 0;
+      const [profileLeadRow] = await db.select({ id: profiles.id }).from(profiles).where(eq(profiles.userId, member.userId));
+      if (profileLeadRow) {
+        const [leadCount] = await db.select({ count: sql<number>`count(*)::int` }).from(leads).where(eq(leads.profileId, profileLeadRow.id));
+        totalLeads = leadCount?.count ?? 0;
+      }
+
+      return {
+        memberId: member.id,
+        userId: member.userId,
+        name: profileRow?.name || userRow?.email || "Unknown",
+        email: userRow?.email || "",
+        role: member.role,
+        assignedCards,
+        totalTaps,
+        totalLeads,
+        activationRate,
+      };
+    }));
+
+    return result.sort((a, b) => b.totalTaps - a.totalTaps);
   }
 
   async getOrganizationAnalytics(orgId: number): Promise<{

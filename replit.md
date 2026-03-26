@@ -2,7 +2,10 @@
 
 ## Overview
 
-KONEX is a comprehensive platform for NFC digital business cards and lead capture. It facilitates a flow from NFC tap to a live professional profile, enabling lead capture and analytics. Users can create, share (via NFC or QR), and manage their digital business cards, capturing leads without requiring visitors to download an app. The platform supports Profile Owners, Visitors, and Admins, offering functionalities like profile management, lead notifications, card activation, and system administration.
+KONEX is an NFC-powered connection and conversion platform. It turns every tap into a business opportunity — from NFC card tap to live professional profile, real-time lead capture, and analytics. Users can create, share (via NFC or QR), and manage their digital business cards, capturing leads without requiring visitors to download an app. The platform supports individual professionals, teams/enterprises (via Organizations), and Admins.
+
+### Homepage Positioning
+The public landing page (`/`) is conversion-focused, positioned as "Turn every tap into a business opportunity." It includes: hero with dual CTAs, trust strip (10K+ profiles, 500K+ taps, 3× lead improvement, 500+ teams), 4-step How It Works, 3 use case segments (Sales Teams, Real Estate, Founders), 6 feature blocks, ROI statistics section (88% profile completion, 3× more leads, £0 app cost), testimonials carousel, and footer CTA.
 
 ## User Preferences
 
@@ -41,8 +44,14 @@ This system handles the lifecycle of physical NFC cards, including tracking, act
 - **Schema**: Defined in `shared/schema.ts`, managed with Drizzle Kit migrations.
 - **Core Tables**: `users`, `profiles` (with modular `links`, `modules`, `branding`, `textOverrides` JSON fields), `leads`, `cards`, `card_tap_events`, `card_assignments_history`, `organizations`, `organization_members`, `organization_invitations`, `organization_cards`.
 
-### Organization System
-Enables users to create and manage organizations, invite members with role-based permissions (owner, admin, manager, member), and assign cards to organizations. Provides organization-level analytics.
+### Enterprise / Organization System
+Enables any authenticated user to create and manage organizations (no admin required). Full team management workflow:
+- **Roles**: owner, admin, manager, member — with granular permissions
+- **Card Management**: Assign/reassign physical NFC cards to org members via the Org Cards page. Filter cards by status (All/Assigned/Unassigned/Active). Status summary stat cards.
+- **Team Analytics**: Per-member performance table on org dashboard (`/dashboard/organization`) showing taps, leads, and activation status for each member. Data via `GET /api/organizations/:id/member-analytics`.
+- **Org Branding Defaults**: Settings page lets org owners set a default branding color (8 presets + custom picker) and default theme for all org member cards. Stored in `branding_color` and `default_theme` columns on `organizations` table.
+- **API Routes**: `PATCH /api/organizations/:id/cards/:orgCardId` (card reassignment), `GET /api/organizations/:id/member-analytics` (per-member analytics breakdown).
+- **Sidebar**: Organization link is always visible in the sidebar for all logged-in users (not conditional on having an org).
 
 ### Admin Panel
 Accessible to users with `isAdmin: true`. Includes routes for analytics, user management, lead management, card inventory, growth metrics, and activity monitoring. Features batch card creation, assignment, and status updates, along with data export.
