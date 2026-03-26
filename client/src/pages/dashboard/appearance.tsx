@@ -2,28 +2,29 @@ import { useState, useEffect } from "react";
 import { useActiveProfile } from "@/hooks/use-active-profile";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Check, Palette, Smartphone, Monitor,
   AlertCircle, BookOpen, Globe, RotateCcw, Lock, Sparkles, Settings2,
 } from "lucide-react";
 import {
-  THEMES, DEFAULT_THEME_ID, getTheme, resolveCustomizations,
-  cardRadiusPx, fontFamilyFromStyle, spacingValues,
+  THEMES, DEFAULT_THEME_ID, getTheme, resolveCustomizations, buildThemeCssVars,
   type ThemeCustomizations, type ButtonStyle, type CardRadius,
-  type SpacingDensity, type HeaderStyle, type FontStyle,
+  type FontStyle, type AvatarShape, type SectionDivider, type IconStyle,
+  type BackgroundStyle,
 } from "@/lib/themes";
 import { useUserPlan, isPlanAtLeast } from "@/lib/plan";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { ProfilePreview } from "@/components/profile-preview";
 import type { ProfileBranding, Profile } from "@shared/schema";
 
-// ─── ThemeProfilePreview ──────────────────────────────────────────────────────
+// ─── Themed preview wrapper ───────────────────────────────────────────────────
+// Uses the ACTUAL ProfilePreview so what you see = what goes live.
 
-function ThemeProfilePreview({
+function ThemedPreviewWrapper({
   profile,
   themeId,
   customizations,
@@ -33,558 +34,97 @@ function ThemeProfilePreview({
   customizations: ThemeCustomizations;
 }) {
   const theme = getTheme(themeId);
-  const t = theme.tokens;
   const c = resolveCustomizations(theme, customizations);
-
-  const branding = (profile.branding as ProfileBranding) || {};
-  const links = (profile.links as Record<string, string>) || {};
-
-  const photoSrc = profile.photoUrl
-    ? profile.photoUrl.startsWith("http")
-      ? profile.photoUrl
-      : profile.photoUrl.startsWith("/objects/")
-      ? profile.photoUrl
-      : `/objects/${profile.photoUrl}`
-    : undefined;
-
-  // Resolved values from customizations
-  const accent = c.accentColor || t["--theme-accent"];
-  const cr = cardRadiusPx(c.cardRadius);
-  const sp = spacingValues(c.spacingDensity);
-  const headingFont = fontFamilyFromStyle(c.fontStyle);
-  const bodyFont = t["--theme-font-body"];
-
-  // Button styles
-  const btnStyle: React.CSSProperties =
-    c.buttonStyle === "outline"
-      ? {
-          backgroundColor: "transparent",
-          color: accent,
-          border: `1.5px solid ${accent}`,
-          borderRadius: c.cardRadius === "sharp" ? "4px" : c.cardRadius === "soft" ? "8px" : "8px",
-        }
-      : c.buttonStyle === "pill"
-      ? { backgroundColor: accent, color: "#fff", border: "none", borderRadius: "999px" }
-      : { backgroundColor: accent, color: "#fff", border: "none", borderRadius: cr === "24px" ? "10px" : cr };
-
-  const contactActions = [
-    links.phone && { label: "Call" },
-    links.whatsapp && { label: "WhatsApp" },
-    links.sms && { label: "Text" },
-    links.email && { label: "Email" },
-  ].filter(Boolean);
-
-  // ── Header: left-aligned layout ──────────────────────────────────────────
-  if (c.headerStyle === "left-aligned") {
-    const avatarPx = 52;
-    return (
-      <div
-        style={{
-          backgroundColor: t["--theme-bg"],
-          fontFamily: bodyFont,
-          minHeight: "100%",
-          display: "flex",
-          flexDirection: "column",
-          padding: sp.px,
-          gap: sp.sectionGap,
-        }}
-      >
-        {/* Thin accent strip */}
-        <div style={{ height: 3, backgroundColor: accent, borderRadius: 2 }} />
-
-        {/* Card */}
-        <div
-          style={{
-            backgroundColor: t["--theme-surface"],
-            borderRadius: cr,
-            boxShadow: t["--theme-shadow"],
-            border: `1px solid ${t["--theme-text-secondary"]}18`,
-            overflow: "hidden",
-          }}
-        >
-          {/* Avatar + identity row */}
-          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: `${sp.px}px` }}>
-            <div style={{ flexShrink: 0 }}>
-              <Avatar style={{ width: avatarPx, height: avatarPx }}>
-                <AvatarImage src={photoSrc} alt={profile.name} className="object-cover" />
-                <AvatarFallback
-                  style={{
-                    backgroundColor: `${accent}18`,
-                    color: accent,
-                    fontWeight: 700,
-                    fontSize: 18,
-                    width: avatarPx,
-                    height: avatarPx,
-                  }}
-                >
-                  {profile.name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p
-                style={{
-                  fontFamily: headingFont,
-                  fontWeight: 700,
-                  fontSize: 15,
-                  color: t["--theme-text-primary"],
-                  margin: 0,
-                  lineHeight: 1.2,
-                }}
-              >
-                {profile.name}
-              </p>
-              {profile.title && (
-                <p style={{ fontSize: 11, color: t["--theme-text-secondary"], margin: "2px 0 0", lineHeight: 1.3 }}>
-                  {profile.title}
-                </p>
-              )}
-              {profile.company && (
-                <p style={{ fontSize: 10, color: accent, fontWeight: 600, margin: "1px 0 0", letterSpacing: "0.03em" }}>
-                  {profile.company}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div style={{ height: 1, backgroundColor: `${t["--theme-text-secondary"]}14`, marginInline: sp.px }} />
-
-          {/* Bio */}
-          {profile.bio && (
-            <p
-              style={{
-                fontSize: 11,
-                color: t["--theme-text-secondary"],
-                padding: `${sp.bioGap}px ${sp.px}px`,
-                lineHeight: 1.55,
-                margin: 0,
-              }}
-            >
-              {profile.bio.length > 110 ? profile.bio.slice(0, 110) + "…" : profile.bio}
-            </p>
-          )}
-
-          {/* Contact actions */}
-          {contactActions.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                gap: 6,
-                padding: `0 ${sp.px}px ${sp.bioGap}px`,
-                flexWrap: "wrap",
-              }}
-            >
-              {contactActions.slice(0, 4).map((a: any) => (
-                <div
-                  key={a.label}
-                  style={{
-                    fontSize: 10,
-                    color: t["--theme-text-secondary"],
-                    backgroundColor: `${t["--theme-text-secondary"]}0e`,
-                    border: `1px solid ${t["--theme-text-secondary"]}18`,
-                    borderRadius: "4px",
-                    padding: "2px 7px",
-                    fontWeight: 500,
-                  }}
-                >
-                  {a.label}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* CTA */}
-          <div style={{ padding: `0 ${sp.px}px ${sp.px}px` }}>
-            <div
-              style={{
-                ...btnStyle,
-                padding: "9px 0",
-                textAlign: "center",
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: "0.04em",
-                cursor: "default",
-              }}
-            >
-              Save Contact
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Header: banner layout ─────────────────────────────────────────────────
-  if (c.headerStyle === "banner") {
-    const bannerH = c.spacingDensity === "compact" ? 90 : c.spacingDensity === "spacious" ? 130 : 110;
-    const avatarPx = c.spacingDensity === "compact" ? 68 : c.spacingDensity === "spacious" ? 88 : 80;
-    const avatarOverlap = avatarPx / 2;
-    return (
-      <div
-        style={{
-          backgroundColor: t["--theme-bg"],
-          fontFamily: bodyFont,
-          minHeight: "100%",
-          display: "flex",
-          flexDirection: "column",
-          padding: sp.px,
-          gap: sp.sectionGap,
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: t["--theme-surface"],
-            borderRadius: cr,
-            boxShadow: t["--theme-shadow"],
-            overflow: "hidden",
-          }}
-        >
-          {/* Banner */}
-          <div
-            style={{
-              height: bannerH,
-              background: t["--theme-header-gradient"],
-              position: "relative",
-            }}
-          />
-          {/* Avatar overlapping banner */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              marginTop: -avatarOverlap,
-              paddingBottom: sp.bioGap,
-            }}
-          >
-            <div
-              style={{
-                padding: 3,
-                backgroundColor: t["--theme-surface"],
-                borderRadius: "50%",
-                boxShadow: `0 4px 16px ${accent}30`,
-              }}
-            >
-              <Avatar style={{ width: avatarPx, height: avatarPx }}>
-                <AvatarImage src={photoSrc} alt={profile.name} className="object-cover" />
-                <AvatarFallback
-                  style={{
-                    backgroundColor: `${accent}22`,
-                    color: accent,
-                    fontWeight: 700,
-                    fontSize: avatarPx * 0.35,
-                    width: avatarPx,
-                    height: avatarPx,
-                  }}
-                >
-                  {profile.name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-            <div style={{ textAlign: "center", marginTop: sp.bioGap, paddingInline: sp.px }}>
-              <p
-                style={{
-                  fontFamily: headingFont,
-                  fontWeight: 800,
-                  fontSize: 20,
-                  color: t["--theme-text-primary"],
-                  margin: 0,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                {profile.name}
-              </p>
-              {profile.title && (
-                <p style={{ fontSize: 13, color: t["--theme-text-secondary"], margin: "4px 0 0" }}>
-                  {profile.title}
-                </p>
-              )}
-              {profile.company && (
-                <p style={{ fontSize: 12, color: accent, fontWeight: 700, margin: "2px 0 0" }}>
-                  {profile.company}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Bio */}
-          {profile.bio && (
-            <p
-              style={{
-                fontSize: 12,
-                color: t["--theme-text-secondary"],
-                textAlign: "center",
-                padding: `0 ${sp.px}px ${sp.bioGap}px`,
-                lineHeight: 1.6,
-                margin: 0,
-              }}
-            >
-              {profile.bio.length > 120 ? profile.bio.slice(0, 120) + "…" : profile.bio}
-            </p>
-          )}
-
-          {/* Contact actions */}
-          {contactActions.length > 0 && (
-            <div style={{ display: "flex", justifyContent: "center", gap: sp.sectionGap, padding: `0 ${sp.px}px ${sp.bioGap}px` }}>
-              {contactActions.slice(0, 4).map((a: any) => (
-                <div key={a.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                  <div
-                    style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: "50%",
-                      backgroundColor: `${accent}18`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <div style={{ width: 14, height: 14, borderRadius: "50%", backgroundColor: accent, opacity: 0.75 }} />
-                  </div>
-                  <span style={{ fontSize: 9, color: t["--theme-text-secondary"], textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                    {a.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* CTA */}
-          <div style={{ padding: `0 ${sp.px}px ${sp.px}px` }}>
-            <div
-              style={{
-                ...btnStyle,
-                padding: "11px 0",
-                textAlign: "center",
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: "default",
-              }}
-            >
-              Save Contact
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Header: centered layout (default) ────────────────────────────────────
-  const headerH = c.spacingDensity === "compact" ? 60 : c.spacingDensity === "spacious" ? 90 : 72;
-  const avatarPx = c.spacingDensity === "compact" ? 60 : c.spacingDensity === "spacious" ? 84 : 72;
-  const avatarOverlap = avatarPx / 2;
+  const cssVars = buildThemeCssVars(themeId, customizations);
 
   return (
     <div
       style={{
-        backgroundColor: t["--theme-bg"],
-        fontFamily: bodyFont,
+        ...cssVars,
+        backgroundColor: theme.tokens["--theme-bg"],
+        color: theme.tokens["--theme-text-primary"],
         minHeight: "100%",
-        display: "flex",
-        flexDirection: "column",
-        padding: sp.px,
-        gap: sp.sectionGap,
+        padding: "16px",
       }}
     >
-      <div
-        style={{
-          backgroundColor: t["--theme-surface"],
-          borderRadius: cr,
-          boxShadow: t["--theme-shadow"],
-          border: `1px solid ${t["--theme-text-secondary"]}15`,
-          overflow: "hidden",
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            height: headerH,
-            background: t["--theme-header-gradient"],
-          }}
-        />
-
-        {/* Avatar + identity */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            marginTop: -avatarOverlap,
-            paddingBottom: sp.bioGap,
-          }}
-        >
-          <div
-            style={{
-              padding: 3,
-              backgroundColor: t["--theme-surface"],
-              borderRadius: "50%",
-              boxShadow: `0 2px 12px rgba(0,0,0,0.18), 0 0 0 1px ${accent}30`,
-            }}
-          >
-            <Avatar style={{ width: avatarPx, height: avatarPx }}>
-              <AvatarImage src={photoSrc} alt={profile.name} className="object-cover" />
-              <AvatarFallback
-                style={{
-                  backgroundColor: `${accent}22`,
-                  color: accent,
-                  fontWeight: 700,
-                  fontSize: avatarPx * 0.35,
-                  width: avatarPx,
-                  height: avatarPx,
-                }}
-              >
-                {profile.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-          <div style={{ textAlign: "center", marginTop: sp.bioGap, paddingInline: sp.px }}>
-            <p
-              style={{
-                fontFamily: headingFont,
-                fontWeight: 700,
-                fontSize: 17,
-                color: t["--theme-text-primary"],
-                margin: 0,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              {profile.name}
-            </p>
-            {profile.title && (
-              <p style={{ fontSize: 12, color: t["--theme-text-secondary"], margin: "3px 0 0" }}>
-                {profile.title}
-              </p>
-            )}
-            {profile.company && (
-              <p style={{ fontSize: 11, color: accent, fontWeight: 600, margin: "2px 0 0", letterSpacing: "0.04em" }}>
-                {profile.company}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Bio */}
-        {profile.bio && (
-          <p
-            style={{
-              fontSize: 11,
-              color: t["--theme-text-secondary"],
-              textAlign: "center",
-              padding: `0 ${sp.px}px ${sp.bioGap}px`,
-              lineHeight: 1.55,
-              margin: 0,
-            }}
-          >
-            {profile.bio.length > 115 ? profile.bio.slice(0, 115) + "…" : profile.bio}
-          </p>
-        )}
-
-        {/* Contact actions */}
-        {contactActions.length > 0 && (
-          <div style={{ display: "flex", justifyContent: "center", gap: sp.sectionGap, padding: `0 ${sp.px}px ${sp.bioGap}px` }}>
-            {contactActions.slice(0, 4).map((a: any) => (
-              <div key={a.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    backgroundColor: `${accent}18`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <div style={{ width: 13, height: 13, borderRadius: "50%", backgroundColor: accent, opacity: 0.7 }} />
-                </div>
-                <span style={{ fontSize: 9, color: t["--theme-text-secondary"], textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {a.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* CTA */}
-        <div style={{ padding: `0 ${sp.px}px ${sp.px}px` }}>
-          <div
-            style={{
-              ...btnStyle,
-              padding: "10px 0",
-              textAlign: "center",
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: "0.05em",
-              cursor: "default",
-            }}
-          >
-            Save Contact
-          </div>
-        </div>
-      </div>
+      <ProfilePreview
+        profile={profile}
+        layoutVariant={c.layoutVariant}
+        themeCustomizations={customizations}
+        themeId={themeId}
+      />
     </div>
   );
 }
 
-// ─── CustomizationPanel ───────────────────────────────────────────────────────
+// ─── Customization controls ───────────────────────────────────────────────────
 
-const BUTTON_STYLE_LABELS: Record<ButtonStyle, string> = {
-  filled: "Filled",
-  outline: "Outline",
-  pill: "Pill",
-};
-const CARD_RADIUS_LABELS: Record<CardRadius, string> = {
-  sharp: "Sharp",
-  soft: "Soft",
-  rounded: "Rounded",
-};
-const SPACING_LABELS: Record<SpacingDensity, string> = {
-  compact: "Compact",
-  comfortable: "Comfortable",
-  spacious: "Spacious",
-};
-const HEADER_LABELS: Record<HeaderStyle, string> = {
-  centered: "Centered",
-  "left-aligned": "Left aligned",
-  banner: "Banner",
-};
-const FONT_LABELS: Record<FontStyle, string> = {
-  modern: "Modern",
-  elegant: "Elegant",
-  bold: "Bold",
-};
+const BUTTON_STYLE_OPTIONS: { value: ButtonStyle; label: string; desc: string }[] = [
+  { value: "filled",  label: "Filled",  desc: "Solid colour" },
+  { value: "outline", label: "Outline", desc: "Bordered" },
+  { value: "pill",    label: "Pill",    desc: "Rounded ends" },
+];
+const CARD_RADIUS_OPTIONS: { value: CardRadius; label: string }[] = [
+  { value: "sharp",   label: "Sharp" },
+  { value: "soft",    label: "Soft" },
+  { value: "rounded", label: "Rounded" },
+];
+const FONT_STYLE_OPTIONS: { value: FontStyle; label: string; sample: string }[] = [
+  { value: "modern",  label: "Modern",  sample: "Inter" },
+  { value: "elegant", label: "Elegant", sample: "Georgia" },
+  { value: "bold",    label: "Bold",    sample: "Helvetica" },
+];
+const AVATAR_SHAPE_OPTIONS: { value: AvatarShape; label: string; radius: string }[] = [
+  { value: "circle",   label: "Circle",   radius: "50%" },
+  { value: "squircle", label: "Squircle", radius: "22%" },
+  { value: "square",   label: "Square",   radius: "6px" },
+];
+const DIVIDER_OPTIONS: { value: SectionDivider; label: string; desc: string }[] = [
+  { value: "none",     label: "None",     desc: "Clean" },
+  { value: "line",     label: "Line",     desc: "Subtle" },
+  { value: "gradient", label: "Gradient", desc: "Accent glow" },
+];
+const ICON_STYLE_OPTIONS: { value: IconStyle; label: string; desc: string }[] = [
+  { value: "solid",   label: "Solid",   desc: "Coloured fill" },
+  { value: "outline", label: "Outline", desc: "Bordered" },
+  { value: "ghost",   label: "Ghost",   desc: "Translucent" },
+];
+const BG_STYLE_OPTIONS: { value: BackgroundStyle; label: string; desc: string }[] = [
+  { value: "flat",     label: "Flat",    desc: "Clean solid" },
+  { value: "gradient", label: "Gradient",desc: "Accent fade" },
+  { value: "pattern",  label: "Pattern", desc: "Subtle dots" },
+];
 
-function OptionRow<T extends string>({
+function OptionChips<T extends string>({
   label,
   value,
   options,
-  labels,
   onChange,
+  renderOption,
 }: {
   label: string;
   value: T;
-  options: T[];
-  labels: Record<T, string>;
+  options: { value: T; label: string; [k: string]: any }[];
   onChange: (v: T) => void;
+  renderOption?: (opt: { value: T; label: string; [k: string]: any }) => React.ReactNode;
 }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{label}</p>
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{label}</p>
       <div className="flex flex-wrap gap-1.5">
         {options.map((opt) => (
           <button
-            key={opt}
+            key={opt.value}
             type="button"
-            onClick={() => onChange(opt)}
-            className={`text-[11px] px-2.5 py-1 rounded border font-medium transition-colors ${
-              value === opt
-                ? "border-primary bg-primary/10 text-primary"
+            onClick={() => onChange(opt.value)}
+            className={`text-[11px] px-2.5 py-1.5 rounded-lg border font-medium transition-all ${
+              value === opt.value
+                ? "border-primary bg-primary/10 text-primary shadow-sm"
                 : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
             }`}
-            data-testid={`customization-${label.toLowerCase().replace(/\s/g, "-")}-${opt}`}
+            data-testid={`customization-${label.toLowerCase().replace(/\s+/g, "-")}-${opt.value}`}
           >
-            {labels[opt]}
+            {renderOption ? renderOption(opt) : opt.label}
           </button>
         ))}
       </div>
@@ -602,93 +142,167 @@ function CustomizationPanel({
   onChange: (updated: ThemeCustomizations) => void;
 }) {
   const theme = getTheme(themeId);
-  const supported = theme.supportedCustomizations;
   const c = resolveCustomizations(theme, customizations);
+  const accent = c.accentColor || theme.tokens["--theme-accent"];
 
-  const update = (key: keyof ThemeCustomizations, val: string) =>
+  const update = <K extends keyof ThemeCustomizations>(key: K, val: ThemeCustomizations[K]) =>
     onChange({ ...customizations, [key]: val });
 
-  if (supported.length === 0) return null;
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center gap-1.5 px-1">
         <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Customise</p>
       </div>
 
-      {supported.includes("accentColor") && (
-        <div>
-          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Accent colour</p>
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              value={c.accentColor}
-              onChange={(e) => update("accentColor", e.target.value)}
-              className="h-7 w-10 rounded border border-border cursor-pointer bg-transparent p-0.5"
-              data-testid="customization-accent-color"
-            />
-            <span className="text-xs text-muted-foreground font-mono">{c.accentColor}</span>
-            <button
-              type="button"
-              onClick={() => update("accentColor", theme.defaultCustomizations.accentColor)}
-              className="text-[10px] text-muted-foreground hover:text-foreground ml-auto"
-            >
-              Reset
-            </button>
-          </div>
+      {/* 1 — Accent colour */}
+      <div>
+        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Accent colour</p>
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={accent}
+            onChange={(e) => update("accentColor", e.target.value)}
+            className="h-8 w-12 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
+            data-testid="customization-accent-color"
+          />
+          <span className="text-xs text-muted-foreground font-mono">{accent}</span>
+          <button
+            type="button"
+            onClick={() => update("accentColor", theme.defaultCustomizations.accentColor)}
+            className="text-[10px] text-muted-foreground hover:text-foreground ml-auto underline underline-offset-2"
+          >
+            Reset
+          </button>
         </div>
-      )}
+        {/* Quick accent presets */}
+        <div className="flex gap-1.5 mt-2">
+          {["#1a56db","#c084fc","#c9a84c","#38bdf8","#ef4444","#22c55e","#f59e0b","#ec4899"].map((col) => (
+            <button
+              key={col}
+              type="button"
+              onClick={() => update("accentColor", col)}
+              className="h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 focus:outline-none"
+              style={{
+                backgroundColor: col,
+                borderColor: c.accentColor === col ? "#fff" : "transparent",
+                outline: c.accentColor === col ? `2px solid ${col}` : "none",
+              }}
+              data-testid={`accent-preset-${col.replace("#","")}`}
+            />
+          ))}
+        </div>
+      </div>
 
-      {supported.includes("buttonStyle") && (
-        <OptionRow
-          label="Button style"
-          value={c.buttonStyle}
-          options={["filled", "outline", "pill"]}
-          labels={BUTTON_STYLE_LABELS}
-          onChange={(v) => update("buttonStyle", v)}
-        />
-      )}
+      {/* 2 — Background style */}
+      <OptionChips
+        label="Background style"
+        value={c.backgroundStyle}
+        options={BG_STYLE_OPTIONS}
+        onChange={(v) => update("backgroundStyle", v)}
+      />
 
-      {supported.includes("cardRadius") && (
-        <OptionRow
-          label="Card radius"
-          value={c.cardRadius}
-          options={["sharp", "soft", "rounded"]}
-          labels={CARD_RADIUS_LABELS}
-          onChange={(v) => update("cardRadius", v)}
-        />
-      )}
+      {/* 3 — Button style */}
+      <div>
+        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Button style</p>
+        <div className="flex gap-2">
+          {BUTTON_STYLE_OPTIONS.map((opt) => {
+            const isActive = c.buttonStyle === opt.value;
+            const radius = opt.value === "pill" ? "999px" : c.cardRadius === "sharp" ? "4px" : "8px";
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => update("buttonStyle", opt.value)}
+                className={`flex-1 py-2 text-[10px] font-semibold transition-all border-2 ${
+                  isActive ? "border-primary" : "border-border hover:border-primary/40"
+                }`}
+                style={{ borderRadius: radius, backgroundColor: isActive ? `${accent}15` : "transparent", color: isActive ? accent : undefined }}
+                data-testid={`customization-button-style-${opt.value}`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-      {supported.includes("spacingDensity") && (
-        <OptionRow
-          label="Spacing"
-          value={c.spacingDensity}
-          options={["compact", "comfortable", "spacious"]}
-          labels={SPACING_LABELS}
-          onChange={(v) => update("spacingDensity", v)}
-        />
-      )}
+      {/* 4 — Font style */}
+      <div>
+        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Font style</p>
+        <div className="flex gap-1.5">
+          {FONT_STYLE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => update("fontStyle", opt.value)}
+              className={`flex-1 py-2 rounded-lg border text-[11px] font-medium transition-all ${
+                c.fontStyle === opt.value
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:border-primary/40"
+              }`}
+              style={{
+                fontFamily: opt.sample === "Georgia" ? "Georgia, serif"
+                  : opt.sample === "Helvetica" ? "'Helvetica Neue', sans-serif"
+                  : "Inter, sans-serif",
+              }}
+              data-testid={`customization-font-style-${opt.value}`}
+            >
+              Aa
+              <span className="block text-[9px] mt-0.5 opacity-70 font-normal">{opt.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {supported.includes("headerStyle") && (
-        <OptionRow
-          label="Header style"
-          value={c.headerStyle}
-          options={["centered", "left-aligned", "banner"]}
-          labels={HEADER_LABELS}
-          onChange={(v) => update("headerStyle", v)}
-        />
-      )}
+      {/* 5 — Profile image shape */}
+      <div>
+        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Photo shape</p>
+        <div className="flex gap-2">
+          {AVATAR_SHAPE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => update("avatarShape", opt.value)}
+              className={`flex-1 py-2.5 flex flex-col items-center gap-1.5 border-2 transition-all ${
+                c.avatarShape === opt.value ? "border-primary bg-primary/10" : "border-border hover:border-primary/40"
+              }`}
+              style={{ borderRadius: "8px" }}
+              data-testid={`customization-avatar-shape-${opt.value}`}
+            >
+              <div
+                className="h-7 w-7 bg-muted-foreground/40"
+                style={{ borderRadius: opt.radius }}
+              />
+              <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">{opt.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {supported.includes("fontStyle") && (
-        <OptionRow
-          label="Font style"
-          value={c.fontStyle}
-          options={["modern", "elegant", "bold"]}
-          labels={FONT_LABELS}
-          onChange={(v) => update("fontStyle", v)}
-        />
-      )}
+      {/* 6 — Card radius */}
+      <OptionChips
+        label="Card radius"
+        value={c.cardRadius}
+        options={CARD_RADIUS_OPTIONS}
+        onChange={(v) => update("cardRadius", v)}
+      />
+
+      {/* 7 — Section dividers */}
+      <OptionChips
+        label="Section dividers"
+        value={c.sectionDivider}
+        options={DIVIDER_OPTIONS}
+        onChange={(v) => update("sectionDivider", v)}
+      />
+
+      {/* 8 — Icon style */}
+      <OptionChips
+        label="Icon style"
+        value={c.iconStyle}
+        options={ICON_STYLE_OPTIONS}
+        onChange={(v) => update("iconStyle", v)}
+      />
     </div>
   );
 }
@@ -728,14 +342,10 @@ export default function AppearancePage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // workingId: theme selected in the UI (preview uses this)
   const [workingId, setWorkingId] = useState(DEFAULT_THEME_ID);
-  // workingCustomizations: customizations being edited right now
   const [workingCustomizations, setWorkingCustomizations] = useState<ThemeCustomizations>({});
-  // draftId / draftCustomizations: last saved draft
   const [draftId, setDraftId] = useState<string | null>(null);
   const [draftCustomizations, setDraftCustomizations] = useState<ThemeCustomizations>({});
-  // liveId / liveCustomizations: published state
   const [liveId, setLiveId] = useState(DEFAULT_THEME_ID);
   const [liveCustomizations, setLiveCustomizations] = useState<ThemeCustomizations>({});
 
@@ -757,11 +367,9 @@ export default function AppearancePage() {
       return;
     }
     setWorkingId(themeId);
-    // Reset customizations to the new theme's defaults when switching
     setWorkingCustomizations(getTheme(themeId).defaultCustomizations);
   };
 
-  // Seed state from saved profile branding
   useEffect(() => {
     if (profile) {
       const b = (profile.branding as ProfileBranding) || {};
@@ -773,13 +381,11 @@ export default function AppearancePage() {
       setLiveCustomizations(liveCust);
       setDraftId(draft);
       setDraftCustomizations(draftCust);
-      // Working state = draft if exists, else live
       setWorkingId(draft ?? published);
       setWorkingCustomizations(draft ? draftCust : liveCust);
     }
   }, [profile]);
 
-  // Derived status
   const custKey = JSON.stringify(workingCustomizations);
   const draftCustKey = JSON.stringify(draftCustomizations);
   const liveCustKey = JSON.stringify(liveCustomizations);
@@ -798,7 +404,6 @@ export default function AppearancePage() {
     queryClient.invalidateQueries({ queryKey: ["/api/profiles"] });
   };
 
-  // Save Draft — persists themeDraft + themeCustomizationsDraft without touching live
   const handleSaveDraft = async () => {
     if (!profile) return;
     setIsSavingDraft(true);
@@ -821,7 +426,6 @@ export default function AppearancePage() {
     }
   };
 
-  // Publish — writes to selectedThemeId + themeCustomizations, clears draft
   const handlePublish = async () => {
     if (!profile) return;
     setIsPublishing(true);
@@ -845,7 +449,7 @@ export default function AppearancePage() {
       setDraftCustomizations({});
       setWorkingId(themeToPublish);
       setWorkingCustomizations(custToPublish);
-      toast({ title: "Published", description: `${getTheme(themeToPublish).name} is now live on your public profile.` });
+      toast({ title: "Published!", description: `${getTheme(themeToPublish).name} is now live on your public profile.` });
     } catch {
       toast({ title: "Publish failed", description: "Could not publish. Please try again.", variant: "destructive" });
     } finally {
@@ -853,7 +457,6 @@ export default function AppearancePage() {
     }
   };
 
-  // Reset — discards working + saved draft, reverts to live
   const handleReset = async () => {
     if (!profile) return;
     setWorkingId(liveId);
@@ -905,13 +508,7 @@ export default function AppearancePage() {
             <StatusBadge kind={status} />
 
             {canReset && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleReset}
-                disabled={isResetting}
-                data-testid="button-reset-theme"
-              >
+              <Button variant="ghost" size="sm" onClick={handleReset} disabled={isResetting} data-testid="button-reset-theme">
                 {isResetting
                   ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
                   : <RotateCcw className="h-3.5 w-3.5 mr-1" />}
@@ -919,24 +516,13 @@ export default function AppearancePage() {
               </Button>
             )}
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSaveDraft}
-              disabled={isSavingDraft || !canSaveDraft}
-              data-testid="button-save-draft"
-            >
+            <Button variant="outline" size="sm" onClick={handleSaveDraft} disabled={isSavingDraft || !canSaveDraft} data-testid="button-save-draft">
               {isSavingDraft
                 ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Saving…</>
                 : <><BookOpen className="h-3.5 w-3.5 mr-1.5" />Save Draft</>}
             </Button>
 
-            <Button
-              size="sm"
-              onClick={handlePublish}
-              disabled={isPublishing || !canPublish}
-              data-testid="button-publish-theme"
-            >
+            <Button size="sm" onClick={handlePublish} disabled={isPublishing || !canPublish} data-testid="button-publish-theme">
               {isPublishing
                 ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Publishing…</>
                 : <><Globe className="h-3.5 w-3.5 mr-1.5" />Publish</>}
@@ -944,7 +530,6 @@ export default function AppearancePage() {
           </div>
         </div>
 
-        {/* Live theme indicator */}
         <p className="text-xs text-muted-foreground mt-2">
           Currently live:{" "}
           <span className="font-medium text-foreground">{getTheme(liveId).name}</span>
@@ -954,14 +539,14 @@ export default function AppearancePage() {
         </p>
       </div>
 
-      {/* ── Body — two columns on lg+ ── */}
+      {/* ── Body ── */}
       <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
 
         {/* Left: Theme gallery + customization panel */}
         <div className="lg:w-72 xl:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-border/50 overflow-y-auto p-4 space-y-5">
 
           {/* Theme gallery */}
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">Themes</p>
             {THEMES.map((theme) => {
               const isWorking = workingId === theme.id;
@@ -982,18 +567,21 @@ export default function AppearancePage() {
                   }`}
                   data-testid={`theme-card-${theme.id}`}
                 >
-                  {/* Mini colour preview */}
-                  <div className="h-20 w-full flex flex-col justify-between p-3" style={{ backgroundColor: theme.preview.bg }}>
-                    <div className="flex gap-1.5">
-                      <div className="h-2 w-16 rounded-full opacity-60" style={{ backgroundColor: theme.tokens["--theme-text-primary"] }} />
-                      <div className="h-2 w-10 rounded-full opacity-30" style={{ backgroundColor: theme.tokens["--theme-text-primary"] }} />
+                  {/* Visual preview */}
+                  <div className="h-16 w-full flex flex-col justify-between p-3" style={{ backgroundColor: theme.preview.bg }}>
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-full" style={{ backgroundColor: theme.preview.surface, border: `1.5px solid ${theme.preview.accent}40` }} />
+                      <div className="flex flex-col gap-1">
+                        <div className="h-1.5 w-16 rounded-full opacity-70" style={{ backgroundColor: theme.tokens["--theme-text-primary"] }} />
+                        <div className="h-1 w-10 rounded-full opacity-35" style={{ backgroundColor: theme.tokens["--theme-text-secondary"] }} />
+                      </div>
                     </div>
                     <div
-                      className="h-6 w-full"
-                      style={{ backgroundColor: theme.preview.accent, borderRadius: theme.tokens["--theme-border-radius"] }}
+                      className="h-5 w-full"
+                      style={{ backgroundColor: theme.preview.accent, borderRadius: theme.tokens["--theme-border-radius"], opacity: 0.9 }}
                     />
                     {isLocked && (
-                      <div className="absolute inset-0 h-20 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
+                      <div className="absolute inset-0 h-16 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
                         <div className="flex items-center gap-1.5 bg-background/90 border border-border rounded-full px-2.5 py-1 shadow-sm">
                           <Lock className="h-3 w-3 text-muted-foreground" />
                           <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Pro</span>
@@ -1035,10 +623,9 @@ export default function AppearancePage() {
             })}
           </div>
 
-          {/* Divider */}
           <div className="border-t border-border/40" />
 
-          {/* Customization panel */}
+          {/* Customization controls */}
           <CustomizationPanel
             themeId={workingId}
             customizations={workingCustomizations}
@@ -1079,20 +666,21 @@ export default function AppearancePage() {
           </div>
 
           {/* Preview canvas */}
-          <div className="flex-1 overflow-y-auto flex items-start justify-center p-6" style={{ backgroundColor: "#1a1a2e10" }}>
+          <div className="flex-1 overflow-y-auto flex items-start justify-center p-6">
             {profile ? (
               <div
                 style={{
-                  width: viewport === "mobile" ? 375 : 600,
+                  width: viewport === "mobile" ? 390 : 640,
                   maxWidth: "100%",
-                  borderRadius: 16,
+                  borderRadius: 24,
                   overflow: "hidden",
-                  boxShadow: "0 16px 48px rgba(0,0,0,0.18)",
+                  boxShadow: "0 24px 64px rgba(0,0,0,0.22), 0 2px 12px rgba(0,0,0,0.1)",
                   transition: "width 0.25s ease",
+                  border: "1px solid rgba(255,255,255,0.08)",
                 }}
                 data-testid="preview-container"
               >
-                <ThemeProfilePreview
+                <ThemedPreviewWrapper
                   profile={profile}
                   themeId={workingId}
                   customizations={workingCustomizations}
@@ -1117,7 +705,7 @@ export default function AppearancePage() {
             </div>
             <DialogDescription className="text-sm leading-relaxed">
               <strong className="text-foreground">{lockedThemeName}</strong> is a Pro theme.
-              Upgrade your plan to access premium themes, advanced customisation, and more — and make your profile truly stand out.
+              Upgrade your plan to access premium themes, advanced customisation, and more.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col sm:flex-row gap-2 mt-2">

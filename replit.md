@@ -53,10 +53,13 @@ Allows users to submit testimonials, which require admin approval before public 
 ### Profile Themes & Appearance System
 Users can customize their public profile appearance through an "Appearance" dashboard page.
 - **Themes**: Four predefined themes (`minimal_corporate`, `personal_brand`, `luxury_black`, `social_hub`). Default: `social_hub`.
-- **Layout Variants**: Each theme has a distinct layout variant (`corporate`, `personal`, `luxury`, `social`) applied in `ProfilePreview`.
-- **Customization Options**: Accent color, button style, card radius, spacing density, header style, font style.
-- **Workflow**: Supports draft and publish functionality, allowing users to preview changes before making them live.
-- **Premium Gating**: Certain themes are restricted to "pro" plan users.
+- **Layout Variants**: Each theme has a genuinely distinct structural layout variant (`corporate`=compact row header, `personal`=large avatar + gradient banner, `luxury`=cinematic dark header with gold accent ring, `social`=dark tiles + large contact circles). Applied in `ProfilePreview`.
+- **8 Customization Controls** (all themes): accent color (with presets), background style (flat/gradient/pattern), button style (filled/outline/pill), font style (modern/elegant/bold), profile image shape (circle/squircle/square), card radius (sharp/soft/rounded), section dividers (none/line/gradient), icon style (solid/outline/ghost).
+- **Token System**: `buildThemeCssVars()` in `themes.ts` generates all CSS variables (including Tailwind HSL bridges). Used by both the appearance preview and the public profile page, ensuring preview exactly matches reality.
+- **Live Preview**: The appearance editor uses the actual `ProfilePreview` component wrapped in a CSS-variable scope div — no separate preview renderer. Desktop/mobile viewport toggle.
+- **Workflow**: Draft/publish pattern — save draft to iterate, publish when ready. Status badge shows unsaved/draft/live state.
+- **Premium Gating**: `luxury_black` and `social_hub` require pro plan.
+- **Architecture**: `hexToHslVar()` shared in `themes.ts`. `resolveCustomizations()` merges saved customizations over theme defaults.
 
 ### Analytics & Conversion Tracking System
 - **`profile_events` table**: Tracks all profile interaction events (view, cta_click, call_click, email_click, whatsapp_click, website_click, social_click, booking_click, save_contact, form_submit, qr_scan, payment_click).

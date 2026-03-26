@@ -21,7 +21,7 @@ import { z } from "zod";
 import { ProfileModulesRenderer } from "@/components/profile-modules";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 import { socialHandleToUrl } from "@/lib/social-utils";
-import { getThemeStyle, getTheme, resolveCustomizations, fontFamilyFromStyle, cardRadiusPx, type ThemeCustomizations } from "@/lib/themes";
+import { getTheme, resolveCustomizations, buildThemeCssVars, fontFamilyFromStyle, type ThemeCustomizations } from "@/lib/themes";
 import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/schema";
 
 const STORAGE_KEY_PREFIX = "konex_contact_";
@@ -46,26 +46,6 @@ function eventTypeFromHref(href: string): string | null {
   return null;
 }
 
-/** Convert a 6-digit hex color to the HSL triple Tailwind CSS variables expect (no hsl() wrapper). */
-function hexToHslVar(hex: string): string {
-  const h = hex.replace("#", "");
-  const r = parseInt(h.slice(0, 2), 16) / 255;
-  const g = parseInt(h.slice(2, 4), 16) / 255;
-  const b = parseInt(h.slice(4, 6), 16) / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  const l = (max + min) / 2;
-  let hue = 0, sat = 0;
-  if (max !== min) {
-    const d = max - min;
-    sat = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r: hue = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-      case g: hue = ((b - r) / d + 2) / 6; break;
-      case b: hue = ((r - g) / d + 4) / 6; break;
-    }
-  }
-  return `${Math.round(hue * 360)} ${Math.round(sat * 100)}% ${Math.round(l * 100)}%`;
-}
 
 export default function PublicProfile() {
   const [match, params] = useRoute("/u/:slug");
@@ -147,9 +127,16 @@ export default function PublicProfile() {
   const ctaLabel = textOverrides.ctaLabel || "Exchange Contact";
   const subtitleText = textOverrides.subheadline || "Share your contact details instantly.";
 
-  // Apply theme tokens first, then branding overrides on top, then published customizations
-  const themeTokens = getThemeStyle(branding.selectedThemeId);
-  const brandStyle: Record<string, string> = { ...themeTokens };
+  // Build all theme CSS variables from the shared utility (same logic as the appearance preview)
+  const theme = getTheme(branding.selectedThemeId);
+  const resolvedCust = resolveCustomizations(theme, branding.themeCustomizations as ThemeCustomizations);
+  const brandStyle: Record<string, string> = {
+    ...buildThemeCssVars(branding.selectedThemeId, branding.themeCustomizations as ThemeCustomizations),
+  };
+  // Direct background/color for the page wrapper itself
+  brandStyle["backgroundColor"] = theme.tokens["--theme-bg"];
+  brandStyle["color"]           = theme.tokens["--theme-text-primary"];
+  // Optional branding overrides
   if (branding.primaryColor) {
     brandStyle["--brand-primary"] = branding.primaryColor;
     brandStyle["--brand-primary-fg"] = "#ffffff";
@@ -159,49 +146,9 @@ export default function PublicProfile() {
   }
   if (branding.fontFamily) {
     brandStyle.fontFamily = `"${branding.fontFamily}", system-ui, sans-serif`;
+  } else if (resolvedCust.fontStyle) {
+    brandStyle.fontFamily = fontFamilyFromStyle(resolvedCust.fontStyle);
   }
-  // Apply published theme customizations
-  const theme = getTheme(branding.selectedThemeId);
-  const resolvedCust = resolveCustomizations(theme, branding.themeCustomizations as ThemeCustomizations);
-  if (resolvedCust.accentColor) {
-    brandStyle["--theme-accent"] = resolvedCust.accentColor;
-    brandStyle["--brand-primary"] = brandStyle["--brand-primary"] || resolvedCust.accentColor;
-    brandStyle["--brand-accent"] = brandStyle["--brand-accent"] || resolvedCust.accentColor;
-  }
-  if (resolvedCust.cardRadius) {
-    brandStyle["--theme-border-radius"] = cardRadiusPx(resolvedCust.cardRadius);
-  }
-  if (resolvedCust.fontStyle) {
-    brandStyle["--theme-font-heading"] = fontFamilyFromStyle(resolvedCust.fontStyle);
-    if (!branding.fontFamily) {
-      brandStyle.fontFamily = fontFamilyFromStyle(resolvedCust.fontStyle);
-    }
-  }
-
-  // ── Bridge hex theme tokens → Tailwind HSL CSS variables ─────────────────
-  // Tailwind colors use `hsl(var(--primary) / alpha)` so variables must be
-  // HSL triples without the hsl() wrapper (e.g. "217 73% 47%").
-  // Without this bridge, ProfilePreview's Tailwind classes ignore theme tokens.
-  const tt = theme.tokens;
-  const finalAccent = resolvedCust.accentColor || tt["--theme-accent"];
-  try {
-    brandStyle["--background"]        = hexToHslVar(tt["--theme-surface"]);
-    brandStyle["--card"]              = hexToHslVar(tt["--theme-surface"]);
-    brandStyle["--card-foreground"]   = hexToHslVar(tt["--theme-text-primary"]);
-    brandStyle["--foreground"]        = hexToHslVar(tt["--theme-text-primary"]);
-    brandStyle["--muted-foreground"]  = hexToHslVar(tt["--theme-text-secondary"]);
-    brandStyle["--primary"]           = hexToHslVar(finalAccent);
-    brandStyle["--primary-foreground"]= "0 0% 100%";
-    brandStyle["--accent"]            = hexToHslVar(finalAccent);
-    brandStyle["--card-radius"]       = resolvedCust.cardRadius
-      ? cardRadiusPx(resolvedCust.cardRadius)
-      : tt["--theme-border-radius"];
-  } catch {
-    // hexToHslVar failed (e.g. non-hex token) — safe to skip; defaults remain
-  }
-  // Direct CSS properties for elements that don't use Tailwind color classes
-  brandStyle["backgroundColor"] = tt["--theme-bg"];
-  brandStyle["color"]           = tt["--theme-text-primary"];
 
   const FormContent = isSubmitted ? (
     <ContactCard 
@@ -258,9 +205,11 @@ export default function PublicProfile() {
 
       {/* Profile Card — wrapped for link-click event delegation */}
       <div className="w-full" onClick={handleProfileAreaClick}>
-        <ProfilePreview 
+        <ProfilePreview
           profile={profile}
           layoutVariant={resolvedCust.layoutVariant}
+          themeCustomizations={branding.themeCustomizations as ThemeCustomizations}
+          themeId={branding.selectedThemeId}
           extraActions={
             <button
               className="w-full rounded-xl min-h-[48px] py-2 px-3 text-sm font-semibold shadow-lg flex items-center justify-center gap-1.5 leading-tight text-white"
@@ -346,11 +295,11 @@ export default function PublicProfile() {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-safe" style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}>
         <div
           className="rounded-2xl shadow-2xl border border-white/10 overflow-hidden"
-          style={{ backgroundColor: tt["--theme-surface"] || "#111" }}
+          style={{ backgroundColor: theme.tokens["--theme-surface"] || "#111" }}
         >
           <button
             className="w-full h-14 flex items-center justify-center gap-2 text-base font-semibold text-white"
-            style={{ backgroundColor: branding.primaryColor || finalAccent || "#6366f1" }}
+            style={{ backgroundColor: branding.primaryColor || resolvedCust.accentColor || theme.tokens["--theme-accent"] || "#6366f1" }}
             onClick={() => { trackEvent(slug, "cta_click"); setIsOpen(true); }}
             data-testid="button-sticky-cta"
           >

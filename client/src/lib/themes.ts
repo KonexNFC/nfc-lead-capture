@@ -7,14 +7,23 @@ export type HeaderStyle = "centered" | "left-aligned" | "banner";
 export type FontStyle = "modern" | "elegant" | "bold";
 export type SocialLayout = "icons" | "tiles";
 export type LayoutVariant = "corporate" | "personal" | "luxury" | "social";
+export type AvatarShape = "circle" | "square" | "squircle";
+export type SectionDivider = "none" | "line" | "gradient";
+export type IconStyle = "solid" | "outline" | "ghost";
+export type BackgroundStyle = "flat" | "gradient" | "pattern";
 
 export interface ThemeCustomizations {
   accentColor?: string;
+  backgroundStyle?: BackgroundStyle;
   buttonStyle?: ButtonStyle;
+  fontStyle?: FontStyle;
+  avatarShape?: AvatarShape;
   cardRadius?: CardRadius;
+  sectionDivider?: SectionDivider;
+  iconStyle?: IconStyle;
+  // Internal / structural (not shown as user-facing controls)
   spacingDensity?: SpacingDensity;
   headerStyle?: HeaderStyle;
-  fontStyle?: FontStyle;
   socialLayout?: SocialLayout;
   layoutVariant?: LayoutVariant;
 }
@@ -72,14 +81,21 @@ export const THEMES: ThemeConfig[] = [
       "--theme-shadow": "0 1px 6px rgba(0,0,0,0.07)",
       "--theme-header-gradient": "linear-gradient(180deg, #e8eef6 0%, #f0f4f8 100%)",
     },
-    supportedCustomizations: ["accentColor", "buttonStyle", "spacingDensity", "headerStyle"],
+    supportedCustomizations: [
+      "accentColor", "backgroundStyle", "buttonStyle", "fontStyle",
+      "avatarShape", "cardRadius", "sectionDivider", "iconStyle",
+    ],
     defaultCustomizations: {
       accentColor: "#1a56db",
+      backgroundStyle: "flat",
       buttonStyle: "filled",
+      fontStyle: "modern",
+      avatarShape: "circle",
       cardRadius: "soft",
+      sectionDivider: "line",
+      iconStyle: "solid",
       spacingDensity: "compact",
       headerStyle: "left-aligned",
-      fontStyle: "modern",
       socialLayout: "icons",
       layoutVariant: "corporate",
     },
@@ -102,14 +118,21 @@ export const THEMES: ThemeConfig[] = [
       "--theme-shadow": "0 8px 40px rgba(192,132,252,0.18)",
       "--theme-header-gradient": "linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #c026d3 100%)",
     },
-    supportedCustomizations: ["accentColor", "buttonStyle", "cardRadius", "headerStyle", "fontStyle"],
+    supportedCustomizations: [
+      "accentColor", "backgroundStyle", "buttonStyle", "fontStyle",
+      "avatarShape", "cardRadius", "sectionDivider", "iconStyle",
+    ],
     defaultCustomizations: {
       accentColor: "#c084fc",
+      backgroundStyle: "gradient",
       buttonStyle: "pill",
+      fontStyle: "bold",
+      avatarShape: "circle",
       cardRadius: "rounded",
+      sectionDivider: "gradient",
+      iconStyle: "solid",
       spacingDensity: "comfortable",
       headerStyle: "banner",
-      fontStyle: "modern",
       socialLayout: "icons",
       layoutVariant: "personal",
     },
@@ -132,14 +155,21 @@ export const THEMES: ThemeConfig[] = [
       "--theme-shadow": "0 8px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(201,168,76,0.08)",
       "--theme-header-gradient": "linear-gradient(180deg, #1a1506 0%, #0a0a0a 100%)",
     },
-    supportedCustomizations: ["accentColor", "buttonStyle", "cardRadius", "fontStyle"],
+    supportedCustomizations: [
+      "accentColor", "backgroundStyle", "buttonStyle", "fontStyle",
+      "avatarShape", "cardRadius", "sectionDivider", "iconStyle",
+    ],
     defaultCustomizations: {
       accentColor: "#c9a84c",
+      backgroundStyle: "flat",
       buttonStyle: "filled",
+      fontStyle: "elegant",
+      avatarShape: "circle",
       cardRadius: "sharp",
+      sectionDivider: "gradient",
+      iconStyle: "outline",
       spacingDensity: "comfortable",
       headerStyle: "centered",
-      fontStyle: "elegant",
       socialLayout: "icons",
       layoutVariant: "luxury",
     },
@@ -162,14 +192,21 @@ export const THEMES: ThemeConfig[] = [
       "--theme-shadow": "0 8px 48px rgba(0,0,0,0.8)",
       "--theme-header-gradient": "linear-gradient(180deg, #1a1a2e 0%, #0d0d0d 100%)",
     },
-    supportedCustomizations: ["accentColor", "cardRadius", "fontStyle"],
+    supportedCustomizations: [
+      "accentColor", "backgroundStyle", "buttonStyle", "fontStyle",
+      "avatarShape", "cardRadius", "sectionDivider", "iconStyle",
+    ],
     defaultCustomizations: {
       accentColor: "#38bdf8",
+      backgroundStyle: "gradient",
       buttonStyle: "pill",
+      fontStyle: "modern",
+      avatarShape: "squircle",
       cardRadius: "rounded",
+      sectionDivider: "none",
+      iconStyle: "solid",
       spacingDensity: "comfortable",
       headerStyle: "banner",
-      fontStyle: "modern",
       socialLayout: "tiles",
       layoutVariant: "social",
     },
@@ -201,10 +238,15 @@ export function cardRadiusPx(r: CardRadius): string {
   return r === "sharp" ? "4px" : r === "soft" ? "12px" : "24px";
 }
 
+/** Avatar border-radius from shape. */
+export function avatarShapeRadius(s: AvatarShape): string {
+  return s === "square" ? "6px" : s === "squircle" ? "22%" : "50%";
+}
+
 /** Font family from font style. */
 export function fontFamilyFromStyle(f: FontStyle): string {
   if (f === "elegant") return "Georgia, 'Times New Roman', serif";
-  if (f === "bold") return "system-ui, 'Helvetica Neue', sans-serif";
+  if (f === "bold") return "'Helvetica Neue', system-ui, sans-serif";
   return "Inter, system-ui, sans-serif";
 }
 
@@ -213,4 +255,80 @@ export function spacingValues(d: SpacingDensity) {
   if (d === "compact") return { px: 14, sectionGap: 8, bioGap: 6 };
   if (d === "spacious") return { px: 24, sectionGap: 20, bioGap: 16 };
   return { px: 18, sectionGap: 12, bioGap: 10 };
+}
+
+/**
+ * Converts a hex color string to an HSL CSS variable triple (no hsl() wrapper).
+ * e.g. "#1a56db" → "218 73% 47%"
+ * Tailwind uses `hsl(var(--primary) / alpha)` so variables must be triples.
+ */
+export function hexToHslVar(hex: string): string {
+  const clean = hex.replace("#", "");
+  if (clean.length !== 6) throw new Error("Invalid hex");
+  const r = parseInt(clean.slice(0, 2), 16) / 255;
+  const g = parseInt(clean.slice(2, 4), 16) / 255;
+  const b = parseInt(clean.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let s = 0;
+  let h = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
+/**
+ * Builds the complete set of CSS variables to apply to a theme container.
+ * Use this in both the appearance preview wrapper and the public profile page
+ * to guarantee preview == reality.
+ */
+export function buildThemeCssVars(
+  themeId: string | null | undefined,
+  customizations: ThemeCustomizations | Record<string, string> | null | undefined,
+): Record<string, string> {
+  const theme = getTheme(themeId);
+  const c = resolveCustomizations(theme, customizations);
+  const tt = theme.tokens;
+  const finalAccent = c.accentColor || tt["--theme-accent"];
+
+  const vars: Record<string, string> = {
+    // Direct theme tokens
+    "--theme-bg": tt["--theme-bg"],
+    "--theme-surface": tt["--theme-surface"],
+    "--theme-text-primary": tt["--theme-text-primary"],
+    "--theme-text-secondary": tt["--theme-text-secondary"],
+    "--theme-accent": finalAccent,
+    "--theme-border-radius": cardRadiusPx(c.cardRadius),
+    "--theme-font-heading": fontFamilyFromStyle(c.fontStyle),
+    "--theme-font-body": tt["--theme-font-body"],
+    "--theme-shadow": tt["--theme-shadow"],
+    "--theme-header-gradient": tt["--theme-header-gradient"],
+    // Card radius shorthand
+    "--card-radius": cardRadiusPx(c.cardRadius),
+  };
+
+  // Bridge hex tokens → Tailwind HSL variables
+  try {
+    vars["--background"]         = hexToHslVar(tt["--theme-surface"]);
+    vars["--card"]               = hexToHslVar(tt["--theme-surface"]);
+    vars["--card-foreground"]    = hexToHslVar(tt["--theme-text-primary"]);
+    vars["--foreground"]         = hexToHslVar(tt["--theme-text-primary"]);
+    vars["--muted-foreground"]   = hexToHslVar(tt["--theme-text-secondary"]);
+    vars["--primary"]            = hexToHslVar(finalAccent);
+    vars["--primary-foreground"] = "0 0% 100%";
+    vars["--accent"]             = hexToHslVar(finalAccent);
+    vars["--border"]             = hexToHslVar(tt["--theme-text-secondary"]);
+  } catch {
+    // Non-hex token — safe to skip
+  }
+
+  return vars;
 }
