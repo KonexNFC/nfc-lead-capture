@@ -74,46 +74,46 @@ export function LayoutShell({ children }: LayoutShellProps) {
     <div>
       <button
         onClick={() => setSwitcherOpen(!switcherOpen)}
-        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-left hover-elevate transition-colors border border-border/50"
+        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-left transition-all duration-200 border border-white/6 hover:border-white/12 hover:bg-white/4"
         data-testid="button-profile-switcher"
       >
-        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
+        <div className="h-8 w-8 rounded-full bg-blue-600/20 flex items-center justify-center text-blue-400 font-bold shrink-0 text-sm">
           {activeProfile?.name?.charAt(0) || "?"}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium truncate">{activeProfile?.name || "No profile"}</p>
+          <p className="font-semibold truncate text-white">{activeProfile?.name || "No profile"}</p>
           {activeProfile?.title && (
-            <p className="text-xs text-muted-foreground truncate">{activeProfile.title}</p>
+            <p className="text-xs text-white/40 truncate">{activeProfile.title}</p>
           )}
         </div>
-        <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${switcherOpen ? "rotate-180" : ""}`} />
+        <ChevronDown className={`h-4 w-4 text-white/30 shrink-0 transition-transform ${switcherOpen ? "rotate-180" : ""}`} />
       </button>
       {switcherOpen && (
-        <div className="mt-1 rounded-lg border border-border/50 bg-muted/50 overflow-hidden">
+        <div className="mt-1 rounded-xl border border-white/6 overflow-hidden" style={{ background: "#161616" }}>
           {profiles.map((p) => (
             <button
               key={p.id}
               onClick={() => handleSelectProfile(p.id)}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-sm hover-elevate transition-colors"
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-sm transition-all duration-200 hover:bg-white/5"
               data-testid={`menu-profile-${p.id}`}
             >
-              <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0">
+              <div className="h-6 w-6 rounded-full bg-blue-600/20 flex items-center justify-center text-blue-400 text-xs font-bold shrink-0">
                 {p.name.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="truncate">{p.name}</p>
-                {p.title && <p className="text-xs text-muted-foreground truncate">{p.title}</p>}
+                <p className="truncate text-white/80">{p.name}</p>
+                {p.title && <p className="text-xs text-white/35 truncate">{p.title}</p>}
               </div>
-              {p.id === activeProfile?.id && <Check className="h-4 w-4 text-primary shrink-0" />}
+              {p.id === activeProfile?.id && <Check className="h-4 w-4 text-blue-400 shrink-0" />}
             </button>
           ))}
-          <div className="border-t border-border/50">
+          <div className="border-t border-white/6">
             <button
               onClick={handleCreateNew}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-sm hover-elevate transition-colors"
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-sm transition-all duration-200 hover:bg-white/5 text-white/40 hover:text-white/70"
               data-testid="menu-create-profile"
             >
-              <Plus className="h-4 w-4 text-muted-foreground" />
+              <Plus className="h-4 w-4" />
               <span>Create New Profile</span>
             </button>
           </div>
@@ -123,8 +123,8 @@ export function LayoutShell({ children }: LayoutShellProps) {
   );
 
   const NavContent = () => (
-    <div className="flex flex-col h-full">
-      <div className="p-6 border-b border-border/50">
+    <div className="flex flex-col h-full" style={{ background: "#0D0D0D" }}>
+      <div className="p-6 border-b border-white/6">
         <div className="flex items-center gap-2">
           <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto" />
         </div>
@@ -136,37 +136,37 @@ export function LayoutShell({ children }: LayoutShellProps) {
         </div>
       )}
       
-      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+      <div className="flex-1 overflow-y-auto py-5 px-3 space-y-1">
         {navigation.map((item) => {
           const isActive = item.href === '/dashboard' 
             ? location === '/dashboard' 
             : location.startsWith(item.href);
           return (
             <Link key={item.name} href={item.href} className={`
-              flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors
+              flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
               ${isActive 
-                ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20' 
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'}
+                ? 'bg-blue-600 text-white shadow-[0_0_16px_rgba(59,130,246,0.3)]'
+                : 'text-white/50 hover:text-white hover:bg-white/6'}
             `}>
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-4 w-4 shrink-0" />
               {item.name}
             </Link>
           );
         })}
       </div>
 
-      <div className="p-4 border-t border-border/50">
-        <div className="flex items-center gap-3 px-4 py-3 mb-2">
-          <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+      <div className="p-4 border-t border-white/6">
+        <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-xl" style={{ background: "#161616" }}>
+          <div className="h-8 w-8 rounded-full bg-blue-600/20 flex items-center justify-center text-blue-400 font-bold text-sm shrink-0">
             {user?.email?.charAt(0).toUpperCase()}
           </div>
-          <div className="overflow-hidden">
-            <p className="text-sm font-medium truncate">{user?.email}</p>
+          <div className="overflow-hidden flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">{user?.email}</p>
           </div>
         </div>
         <Button 
-          variant="outline" 
-          className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+          variant="ghost"
+          className="w-full justify-start gap-2 text-white/40 hover:text-red-400 hover:bg-red-500/8 transition-all duration-200"
           onClick={() => logout()}
         >
           <LogOut className="h-4 w-4" />
@@ -177,24 +177,24 @@ export function LayoutShell({ children }: LayoutShellProps) {
   );
 
   return (
-    <div className="min-h-screen bg-muted/30 flex">
+    <div className="min-h-screen flex" style={{ background: "#0A0A0A" }}>
       {/* Desktop Sidebar */}
-      <div className="hidden md:block w-64 bg-background border-r border-border shrink-0 fixed h-full z-30">
+      <div className="hidden md:block w-64 shrink-0 fixed h-full z-30 border-r border-white/6" style={{ background: "#0D0D0D" }}>
         <NavContent />
       </div>
 
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-border z-40 flex items-center justify-between px-4">
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 backdrop-blur-xl border-b border-white/6 z-40 flex items-center justify-between px-4" style={{ background: "rgba(13,13,13,0.9)" }}>
         <div className="flex items-center gap-2">
           <img src={konexLogo} alt="KONEX Logo" className="h-6 w-auto" />
         </div>
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-72">
+          <SheetContent side="left" className="p-0 w-72 border-white/6" style={{ background: "#0D0D0D" }}>
             <NavContent />
           </SheetContent>
         </Sheet>
