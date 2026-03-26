@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useActiveProfile } from "@/hooks/use-active-profile";
+import { useActiveOrg } from "@/hooks/use-active-org";
 import { 
   LayoutDashboard, 
   UserCircle, 
@@ -33,7 +34,10 @@ export function LayoutShell({ children }: LayoutShellProps) {
   const [location, setLocation] = useLocation();
   const { logout, user } = useAuth();
   const { profiles, activeProfile, setActiveProfileId } = useActiveProfile();
+  const { orgs } = useActiveOrg();
   const [isOpen, setIsOpen] = useState(false);
+
+  const hasOrg = user?.isAdmin || (orgs && orgs.length > 0);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -43,7 +47,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
     { name: 'Leads', href: '/dashboard/leads', icon: Users },
     { name: 'My Cards', href: '/dashboard/cards', icon: CreditCard },
     { name: 'Appearance', href: '/dashboard/appearance', icon: Palette },
-    { name: 'Organization', href: '/dashboard/organization', icon: Building2 },
+    ...(hasOrg ? [{ name: 'Organization', href: '/dashboard/organization', icon: Building2 }] : []),
     { name: 'Leave a Review', href: '/dashboard/testimonial', icon: MessageSquareQuote },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
     ...(user?.isAdmin ? [
