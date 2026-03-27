@@ -138,7 +138,7 @@ function ContactIconWrap({
     return (
       <div
         className={`${dim} rounded-full flex items-center justify-center transition-all group-hover:opacity-80`}
-        style={{ border: `2px solid ${bg}`, color: bg, backgroundColor: "transparent" }}
+        style={{ border: `2px solid ${accent}`, color: accent, backgroundColor: "transparent" }}
       >
         {children}
       </div>
@@ -148,17 +148,17 @@ function ContactIconWrap({
     return (
       <div
         className={`${dim} rounded-full flex items-center justify-center transition-all group-hover:opacity-80`}
-        style={{ backgroundColor: `${bg}22`, color: bg }}
+        style={{ backgroundColor: `${accent}18`, color: accent }}
       >
         {children}
       </div>
     );
   }
-  // solid — always white icon on brand-colored circle
+  // solid — dark circle with brand-colored icon
   return (
     <div
       className={`${dim} rounded-full flex items-center justify-center transition-all group-hover:opacity-90`}
-      style={{ backgroundColor: bg, color: "#fff" }}
+      style={{ backgroundColor: bg, color: accent }}
     >
       {children}
     </div>
@@ -292,7 +292,7 @@ export function ProfilePreview({
               <div className="flex items-center gap-3 py-2">
                 {links.phone && (
                   <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#22c55e" bg="#1a4731" size="sm">
                       <Phone className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">Call</span>
@@ -300,7 +300,7 @@ export function ProfilePreview({
                 )}
                 {(links.sms || links.phone) && (
                   <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="sm">
                       <MessageSquare className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">Text</span>
@@ -308,7 +308,7 @@ export function ProfilePreview({
                 )}
                 {links.whatsapp && (
                   <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#22c55e" bg="#1a4731" size="sm">
                       <SiWhatsapp className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">WA</span>
@@ -316,7 +316,7 @@ export function ProfilePreview({
                 )}
                 {links.email && (
                   <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="sm">
                       <Mail className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">Email</span>
@@ -425,7 +425,7 @@ export function ProfilePreview({
               <div className="flex items-center justify-center gap-6 mb-7">
                 {links.phone && (
                   <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#22c55e" bg="#1a4731" size="sm">
                       <Phone className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">Call</span>
@@ -433,7 +433,7 @@ export function ProfilePreview({
                 )}
                 {(links.sms || links.phone) && (
                   <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="sm">
                       <MessageSquare className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">Text</span>
@@ -441,7 +441,7 @@ export function ProfilePreview({
                 )}
                 {links.whatsapp && (
                   <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#22c55e" bg="#1a4731" size="sm">
                       <SiWhatsapp className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">WA</span>
@@ -449,7 +449,7 @@ export function ProfilePreview({
                 )}
                 {links.email && (
                   <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="sm">
                       <Mail className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">Email</span>
@@ -552,7 +552,7 @@ export function ProfilePreview({
               <div className="flex items-center justify-center gap-4 mb-5">
                 {links.phone && (
                   <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="lg">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#22c55e" bg="#1a4731" size="lg">
                       <Phone className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Call</span>
@@ -560,7 +560,7 @@ export function ProfilePreview({
                 )}
                 {(links.sms || links.phone) && (
                   <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="lg">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="lg">
                       <MessageSquare className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Text</span>
@@ -568,7 +568,7 @@ export function ProfilePreview({
                 )}
                 {links.whatsapp && (
                   <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="lg">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#22c55e" bg="#1a4731" size="lg">
                       <SiWhatsapp className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">WhatsApp</span>
@@ -576,7 +576,7 @@ export function ProfilePreview({
                 )}
                 {links.email && (
                   <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="lg">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="lg">
                       <Mail className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Email</span>
@@ -726,7 +726,7 @@ export function ProfilePreview({
             <div className="flex items-center justify-center gap-4 mb-5 mt-2">
               {links.phone && (
                 <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="md">
+                  <ContactIconWrap iconStyle={c.iconStyle} accent="#22c55e" bg="#1a4731" size="md">
                     <Phone className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">Call</span>
@@ -734,7 +734,7 @@ export function ProfilePreview({
               )}
               {(links.sms || links.phone) && (
                 <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="md">
+                  <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="md">
                     <MessageSquare className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">Text</span>
@@ -742,7 +742,7 @@ export function ProfilePreview({
               )}
               {links.whatsapp && (
                 <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="md">
+                  <ContactIconWrap iconStyle={c.iconStyle} accent="#22c55e" bg="#1a4731" size="md">
                     <SiWhatsapp className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">WhatsApp</span>
@@ -750,7 +750,7 @@ export function ProfilePreview({
               )}
               {links.email && (
                 <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="md">
+                  <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="md">
                     <Mail className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">Email</span>
