@@ -5,7 +5,6 @@ import {
   Globe,
   Phone,
   MessageSquare,
-  MessageCircle,
 } from "lucide-react";
 import {
   SiLinkedin,
@@ -16,6 +15,8 @@ import {
   SiYoutube,
   SiSnapchat,
   SiGithub,
+  SiWhatsapp,
+  SiTelegram,
 } from "react-icons/si";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -57,17 +58,38 @@ function resolveAvatarSrc(url: string | null | undefined): string | undefined {
   return `/objects/${url}`;
 }
 
-const SOCIAL_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
+const SOCIAL_CONFIG: Record<string, {
+  icon: any;
+  color: string;
+  label: string;
+  gradient?: string;
+  textColor?: string;
+}> = {
   linkedin:  { icon: SiLinkedin,  color: "#0A66C2", label: "LinkedIn"  },
-  x:         { icon: SiX,         color: "#14171A", label: "X"         },
-  twitter:   { icon: SiX,         color: "#14171A", label: "X"         },
-  instagram: { icon: SiInstagram, color: "#E4405F", label: "Instagram" },
+  x:         { icon: SiX,         color: "#000000", label: "X"         },
+  twitter:   { icon: SiX,         color: "#000000", label: "X"         },
+  instagram: {
+    icon: SiInstagram,
+    color: "#E4405F",
+    label: "Instagram",
+    gradient: "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)",
+  },
   facebook:  { icon: SiFacebook,  color: "#1877F2", label: "Facebook"  },
-  tiktok:    { icon: SiTiktok,    color: "#000000", label: "TikTok"    },
+  whatsapp:  { icon: SiWhatsapp,  color: "#25D366", label: "WhatsApp"  },
+  telegram:  { icon: SiTelegram,  color: "#2CA5E0", label: "Telegram"  },
+  tiktok:    { icon: SiTiktok,    color: "#010101", label: "TikTok"    },
   youtube:   { icon: SiYoutube,   color: "#FF0000", label: "YouTube"   },
-  snapchat:  { icon: SiSnapchat,  color: "#FFFC00", label: "Snapchat"  },
+  snapchat:  { icon: SiSnapchat,  color: "#FFFC00", label: "Snapchat", textColor: "#000000" },
   github:    { icon: SiGithub,    color: "#181717", label: "GitHub"    },
   website:   { icon: Globe,       color: "#6366F1", label: "Website"   },
+};
+
+/** Brand colors for each contact action */
+const CONTACT_CONFIG: Record<string, { icon: any; bg: string; label: string }> = {
+  phone:    { icon: Phone,         bg: "#25D366", label: "Call"     },
+  sms:      { icon: MessageSquare, bg: "#007AFF", label: "Text"     },
+  whatsapp: { icon: SiWhatsapp,    bg: "#25D366", label: "WhatsApp" },
+  email:    { icon: Mail,          bg: "#0088CC", label: "Email"    },
 };
 
 // ─── Derived style helpers ─────────────────────────────────────────────────
@@ -116,7 +138,7 @@ function ContactIconWrap({
     return (
       <div
         className={`${dim} rounded-full flex items-center justify-center transition-all group-hover:opacity-80`}
-        style={{ border: `2px solid ${accent}`, color: accent, backgroundColor: "transparent" }}
+        style={{ border: `2px solid ${bg}`, color: bg, backgroundColor: "transparent" }}
       >
         {children}
       </div>
@@ -126,19 +148,46 @@ function ContactIconWrap({
     return (
       <div
         className={`${dim} rounded-full flex items-center justify-center transition-all group-hover:opacity-80`}
-        style={{ backgroundColor: `${accent}15`, color: accent }}
+        style={{ backgroundColor: `${bg}22`, color: bg }}
       >
         {children}
       </div>
     );
   }
-  // solid
+  // solid — always white icon on brand-colored circle
   return (
     <div
       className={`${dim} rounded-full flex items-center justify-center transition-all group-hover:opacity-90`}
-      style={{ backgroundColor: bg, color: accent }}
+      style={{ backgroundColor: bg, color: "#fff" }}
     >
       {children}
+    </div>
+  );
+}
+
+/** Renders a social icon tile with gradient or solid brand background */
+function SocialIconTile({
+  config,
+  borderRadius,
+  size = "md",
+}: {
+  config: { icon: any; color: string; gradient?: string; textColor?: string };
+  borderRadius: string;
+  size?: "sm" | "md" | "lg";
+}) {
+  const Icon = config.icon;
+  const dim = size === "sm" ? "h-10 w-10" : size === "lg" ? "h-14 w-14" : "h-12 w-12";
+  const iconSize = size === "sm" ? "h-4 w-4" : size === "lg" ? "h-6 w-6" : "h-5 w-5";
+  return (
+    <div
+      className={`${dim} flex items-center justify-center group-hover:brightness-110 group-hover:-translate-y-0.5 transition-all`}
+      style={{
+        background: config.gradient || config.color,
+        color: config.textColor || "#fff",
+        borderRadius,
+      }}
+    >
+      <Icon className={iconSize} />
     </div>
   );
 }
@@ -243,7 +292,7 @@ export function ProfilePreview({
               <div className="flex items-center gap-3 py-2">
                 {links.phone && (
                   <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a4731" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="sm">
                       <Phone className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">Call</span>
@@ -251,7 +300,7 @@ export function ProfilePreview({
                 )}
                 {(links.sms || links.phone) && (
                   <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a2d4a" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="sm">
                       <MessageSquare className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">Text</span>
@@ -259,15 +308,15 @@ export function ProfilePreview({
                 )}
                 {links.whatsapp && (
                   <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a4731" size="sm">
-                      <MessageCircle className="h-4 w-4" />
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="sm">
+                      <SiWhatsapp className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">WA</span>
                   </a>
                 )}
                 {links.email && (
                   <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a2d4a" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="sm">
                       <Mail className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">Email</span>
@@ -283,15 +332,9 @@ export function ProfilePreview({
               <div className="grid grid-cols-4 gap-2 py-2">
                 {socialLinks.map(([key, value]) => {
                   const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
-                  const Icon = config.icon;
                   return (
                     <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 group">
-                      <div
-                        className="h-10 w-10 flex items-center justify-center transition-all group-hover:-translate-y-0.5"
-                        style={{ backgroundColor: config.color, color: key === "snapchat" ? "#000" : "#fff", borderRadius: crPx }}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </div>
+                      <SocialIconTile config={config} borderRadius={crPx} size="sm" />
                       <span className="text-[8px] uppercase tracking-wide font-semibold text-muted-foreground">{config.label}</span>
                     </a>
                   );
@@ -382,7 +425,7 @@ export function ProfilePreview({
               <div className="flex items-center justify-center gap-6 mb-7">
                 {links.phone && (
                   <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a4731" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="sm">
                       <Phone className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">Call</span>
@@ -390,7 +433,7 @@ export function ProfilePreview({
                 )}
                 {(links.sms || links.phone) && (
                   <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a2d4a" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="sm">
                       <MessageSquare className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">Text</span>
@@ -398,15 +441,15 @@ export function ProfilePreview({
                 )}
                 {links.whatsapp && (
                   <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a4731" size="sm">
-                      <MessageCircle className="h-4 w-4" />
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="sm">
+                      <SiWhatsapp className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">WA</span>
                   </a>
                 )}
                 {links.email && (
                   <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a2d4a" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="sm">
                       <Mail className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">Email</span>
@@ -422,15 +465,9 @@ export function ProfilePreview({
                 <div className="grid grid-cols-4 gap-2 mb-4 mt-2">
                   {socialLinks.map(([key, value]) => {
                     const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
-                    const Icon = config.icon;
                     return (
                       <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 group">
-                        <div
-                          className="h-10 w-10 flex items-center justify-center transition-all group-hover:opacity-85"
-                          style={{ backgroundColor: config.color, color: key === "snapchat" ? "#000" : "#fff", borderRadius: crPx === "24px" ? "6px" : crPx }}
-                        >
-                          <Icon className="h-4 w-4" />
-                        </div>
+                        <SocialIconTile config={config} borderRadius={crPx === "24px" ? "6px" : crPx} size="sm" />
                         <span className="text-[7px] uppercase tracking-widest text-muted-foreground">{config.label}</span>
                       </a>
                     );
@@ -515,7 +552,7 @@ export function ProfilePreview({
               <div className="flex items-center justify-center gap-4 mb-5">
                 {links.phone && (
                   <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a4731" size="lg">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="lg">
                       <Phone className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Call</span>
@@ -523,7 +560,7 @@ export function ProfilePreview({
                 )}
                 {(links.sms || links.phone) && (
                   <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a2d4a" size="lg">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="lg">
                       <MessageSquare className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Text</span>
@@ -531,15 +568,15 @@ export function ProfilePreview({
                 )}
                 {links.whatsapp && (
                   <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a4731" size="lg">
-                      <MessageCircle className="h-6 w-6" />
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="lg">
+                      <SiWhatsapp className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">WhatsApp</span>
                   </a>
                 )}
                 {links.email && (
                   <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a2d4a" size="lg">
+                    <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="lg">
                       <Mail className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Email</span>
@@ -567,8 +604,11 @@ export function ProfilePreview({
                         style={{ backgroundColor: `${config.color}22`, border: `1px solid ${config.color}30` }}
                       >
                         <div
-                          className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: config.color, color: key === "snapchat" ? "#000" : "#fff" }}
+                          className="h-9 w-9 shrink-0 rounded-xl flex items-center justify-center"
+                          style={{
+                            background: config.gradient || config.color,
+                            color: config.textColor || "#fff",
+                          }}
                         >
                           <Icon className="h-4 w-4" />
                         </div>
@@ -581,15 +621,9 @@ export function ProfilePreview({
                 <div className="grid grid-cols-4 gap-2.5 mb-4 mt-2">
                   {socialLinks.map(([key, value]) => {
                     const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
-                    const Icon = config.icon;
                     return (
                       <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 group">
-                        <div
-                          className="h-14 w-14 rounded-2xl flex items-center justify-center group-hover:brightness-110 group-hover:-translate-y-0.5 transition-all"
-                          style={{ backgroundColor: config.color, color: key === "snapchat" ? "#000" : "#fff" }}
-                        >
-                          <Icon className="h-6 w-6" />
-                        </div>
+                        <SocialIconTile config={config} borderRadius="16px" size="lg" />
                         <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{config.label}</span>
                       </a>
                     );
@@ -692,7 +726,7 @@ export function ProfilePreview({
             <div className="flex items-center justify-center gap-4 mb-5 mt-2">
               {links.phone && (
                 <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a4731" size="md">
+                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="md">
                     <Phone className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">Call</span>
@@ -700,7 +734,7 @@ export function ProfilePreview({
               )}
               {(links.sms || links.phone) && (
                 <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a2d4a" size="md">
+                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="md">
                     <MessageSquare className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">Text</span>
@@ -708,15 +742,15 @@ export function ProfilePreview({
               )}
               {links.whatsapp && (
                 <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a4731" size="md">
-                    <MessageCircle className="h-5 w-5" />
+                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#25D366" size="md">
+                    <SiWhatsapp className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">WhatsApp</span>
                 </a>
               )}
               {links.email && (
                 <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#1a2d4a" size="md">
+                  <ContactIconWrap iconStyle={c.iconStyle} accent={accent} bg="#0088CC" size="md">
                     <Mail className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">Email</span>
@@ -732,15 +766,9 @@ export function ProfilePreview({
             <div className="grid grid-cols-4 gap-2 mb-4 mt-2">
               {socialLinks.map(([key, value]) => {
                 const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
-                const Icon = config.icon;
                 return (
                   <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 group">
-                    <div
-                      className="h-12 w-12 flex items-center justify-center group-hover:-translate-y-0.5 transition-all"
-                      style={{ backgroundColor: config.color, color: key === "snapchat" ? "#000" : "#fff", borderRadius: crPx }}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </div>
+                    <SocialIconTile config={config} borderRadius={crPx} size="md" />
                     <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{config.label}</span>
                   </a>
                 );

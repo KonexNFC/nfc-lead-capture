@@ -69,7 +69,7 @@ export default function EditProfile() {
           snapchat: "",
           tiktok: "",
           youtube: "",
-          github: "",
+          github: "", telegram: "",
         }
     }
   });
@@ -89,7 +89,7 @@ export default function EditProfile() {
         bio: profile.bio || "",
         photoUrl: profile.photoUrl || "",
         slug: profile.slug,
-        links: (profile.links as Record<string, string>) || { phone: "", whatsapp: "", sms: "", email: "", linkedin: "", website: "", x: "", facebook: "", instagram: "", snapchat: "", tiktok: "", youtube: "", github: "" }
+        links: (profile.links as Record<string, string>) || { phone: "", whatsapp: "", sms: "", email: "", linkedin: "", website: "", x: "", facebook: "", instagram: "", snapchat: "", tiktok: "", youtube: "", github: "", telegram: "" }
       });
     }
     if (creatingNew) {
@@ -100,7 +100,7 @@ export default function EditProfile() {
         bio: "",
         photoUrl: "",
         slug: "",
-        links: { phone: "", whatsapp: "", sms: "", email: "", linkedin: "", website: "", x: "", facebook: "", instagram: "", snapchat: "", tiktok: "", youtube: "", github: "" }
+        links: { phone: "", whatsapp: "", sms: "", email: "", linkedin: "", website: "", x: "", facebook: "", instagram: "", snapchat: "", tiktok: "", youtube: "", github: "", telegram: "" }
       });
     }
   }, [profile, form, creatingNew]);
@@ -462,7 +462,7 @@ export default function EditProfile() {
                 <CardTitle>Links & Socials</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {['linkedin', 'website', 'x', 'facebook', 'instagram', 'snapchat', 'tiktok', 'youtube', 'github'].map((key) => (
+                {['linkedin', 'website', 'x', 'facebook', 'instagram', 'tiktok', 'youtube', 'snapchat', 'github', 'telegram'].map((key) => (
                   <FormField
                     key={key}
                     control={form.control}
