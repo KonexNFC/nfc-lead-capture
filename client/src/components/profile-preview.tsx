@@ -329,12 +329,9 @@ export function ProfilePreview({
               <div className="grid grid-cols-4 gap-4 py-2">
                 {socialLinks.map(([key, value]) => {
                   const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
-                  const Icon = config.icon;
                   return (
                     <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-2 group">
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-neutral-900 hover:scale-105 transition-transform">
-                        <Icon className="h-5 w-5" style={{ color: config.color }} />
-                      </div>
+                      <SocialIconTile config={config} borderRadius={crPx} size="sm" />
                       <span className="text-[8px] uppercase tracking-wide font-semibold text-muted-foreground">{config.label}</span>
                     </a>
                   );
@@ -465,12 +462,9 @@ export function ProfilePreview({
                 <div className="grid grid-cols-4 gap-4 mb-4 mt-2">
                   {socialLinks.map(([key, value]) => {
                     const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
-                    const Icon = config.icon;
                     return (
                       <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-2 group">
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-neutral-900 hover:scale-105 transition-transform">
-                          <Icon className="h-4 w-4" style={{ color: config.color }} />
-                        </div>
+                        <SocialIconTile config={config} borderRadius={crPx === "24px" ? "10px" : crPx} size="sm" />
                         <span className="text-[7px] uppercase tracking-widest text-muted-foreground">{config.label}</span>
                       </a>
                     );
@@ -595,12 +589,9 @@ export function ProfilePreview({
               <div className="grid grid-cols-4 gap-4 mb-4 mt-2">
                 {socialLinks.map(([key, value]) => {
                   const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
-                  const Icon = config.icon;
                   return (
                     <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-2 group">
-                      <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-neutral-900 hover:scale-105 transition-transform">
-                        <Icon className="h-5 w-5" style={{ color: config.color }} />
-                      </div>
+                      <SocialIconTile config={config} borderRadius="14px" size="lg" />
                       <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{config.label}</span>
                     </a>
                   );
@@ -742,12 +733,9 @@ export function ProfilePreview({
             <div className="grid grid-cols-4 gap-4 mb-4 mt-2">
               {socialLinks.map(([key, value]) => {
                 const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
-                const Icon = config.icon;
                 return (
                   <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-2 group">
-                    <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-neutral-900 hover:scale-105 transition-transform">
-                      <Icon className="h-5 w-5" style={{ color: config.color }} />
-                    </div>
+                    <SocialIconTile config={config} borderRadius={crPx} size="md" />
                     <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{config.label}</span>
                   </a>
                 );
