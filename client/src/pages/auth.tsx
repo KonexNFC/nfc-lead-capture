@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Link } from "wouter";
+import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
 
 const loginSchema = z.object({
   username: z.string().email("Please enter a valid email"),
@@ -35,16 +36,14 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "#13131A" }}>
       <div className="w-full max-w-md animate-in">
         <div className="text-center mb-8 space-y-2">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
-              <CreditCard className="h-6 w-6" />
-            </div>
+            <img src={konexLogo} alt="KONEX" className="h-14 w-auto rounded-xl shadow-lg" />
           </div>
-          <h1 className="text-3xl font-display font-bold">Welcome to KONEX</h1>
-          <p className="text-muted-foreground">Create your free digital business card.</p>
+          <h1 className="text-3xl font-display font-bold text-white">Welcome to KONEX</h1>
+          <p className="text-white/50">Create your free digital business card.</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

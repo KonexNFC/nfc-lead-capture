@@ -208,7 +208,13 @@ export function ProfilePreview({
 
   const links = (profile.links as Record<string, string>) || {};
   const contactKeys = new Set(["phone", "whatsapp", "sms", "email"]);
-  const socialLinks = Object.entries(links).filter(([key, val]) => !contactKeys.has(key) && val);
+  // Deduplicate twitter/x: if both exist, skip the legacy "twitter" key
+  const hasX = !!(links["x"] && links["x"].trim());
+  const socialLinks = Object.entries(links).filter(([key, val]) => {
+    if (!val || contactKeys.has(key)) return false;
+    if (key === "twitter" && hasX) return false;
+    return true;
+  });
 
   // Resolve the current theme for this profile
   const effectiveThemeId = themeId || branding.selectedThemeId;
