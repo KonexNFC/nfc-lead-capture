@@ -175,7 +175,7 @@ export default function PublicProfile() {
     : null;
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-4 pb-32 md:pb-24" style={brandStyle}>
+    <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-4 pb-10" style={brandStyle}>
       {/* Hero Banner */}
       {heroUrl && (
         <div className="w-full max-w-md rounded-md overflow-hidden mb-4 relative" data-testid="hero-banner">
@@ -290,24 +290,6 @@ export default function PublicProfile() {
           </DrawerContent>
         </Drawer>
       )}
-
-      {/* Sticky Mobile Action Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-safe" style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}>
-        <div
-          className="rounded-2xl shadow-2xl border border-white/10 overflow-hidden"
-          style={{ backgroundColor: theme.tokens["--theme-surface"] || "#111" }}
-        >
-          <button
-            className="w-full h-14 flex items-center justify-center gap-2 text-base font-semibold text-white"
-            style={{ backgroundColor: branding.primaryColor || resolvedCust.accentColor || theme.tokens["--theme-accent"] || "#6366f1" }}
-            onClick={() => { trackEvent(slug, "cta_click"); setIsOpen(true); }}
-            data-testid="button-sticky-cta"
-          >
-            <Share2 className="h-5 w-5" />
-            {ctaLabel}
-          </button>
-        </div>
-      </div>
 
       {/* Footer Branding — desktop only */}
       <div className="fixed bottom-4 right-4 hidden md:flex items-center gap-2 text-xs text-muted-foreground/50">
