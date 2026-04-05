@@ -264,9 +264,8 @@ export function ProfileModulesRenderer({ profile, brandColor }: ProfileModulesRe
   const order = modules.order && modules.order.length > 0 ? modules.order : DEFAULT_MODULE_ORDER;
 
   const orderedModules = order.filter((key) => {
+    if (key === "smart-actions") return false; // Always hidden — contact icons on card replace this
     if (enabled[key] === false) return false;
-    // Smart Actions defaults to OFF — only show if explicitly enabled
-    if (key === "smart-actions" && enabled[key] !== true) return false;
     return true;
   });
 
