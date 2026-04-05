@@ -71,7 +71,7 @@ export default function ModulesPage() {
       setTextOverrides((profile.textOverrides as ProfileTextOverrides) || {});
       setModuleOrder(m.order && m.order.length > 0 ? m.order : DEFAULT_ORDER);
       const defaultEnabled: Record<string, boolean> = {};
-      DEFAULT_ORDER.forEach((k) => { defaultEnabled[k] = true; });
+      DEFAULT_ORDER.forEach((k) => { defaultEnabled[k] = k !== "smart-actions"; });
       setModuleEnabled({ ...defaultEnabled, ...(m.enabled || {}) });
     }
   }, [profile]);

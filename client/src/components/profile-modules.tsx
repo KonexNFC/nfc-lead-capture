@@ -265,6 +265,8 @@ export function ProfileModulesRenderer({ profile, brandColor }: ProfileModulesRe
 
   const orderedModules = order.filter((key) => {
     if (enabled[key] === false) return false;
+    // Smart Actions defaults to OFF — only show if explicitly enabled
+    if (key === "smart-actions" && enabled[key] !== true) return false;
     return true;
   });
 
