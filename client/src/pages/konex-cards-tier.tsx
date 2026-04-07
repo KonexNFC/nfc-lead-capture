@@ -61,15 +61,15 @@ export default function KonexCardsTierPage({ tierId }: { tierId: string }) {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
-              <Link href="/auth?tab=register">
+              <Link href={`/checkout?sku=KONEX-${tierId.toUpperCase()}`}>
                 <Button size="lg" className="h-14 px-8 rounded-full text-lg font-semibold shadow-xl shadow-primary/20" data-testid="button-tier-order">
-                  Order {tier.name}
+                  Buy Now — {tier.price}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="/auth?tab=register">
-                <Button variant="outline" size="lg" className="h-14 px-8 rounded-full text-lg" data-testid="button-tier-waitlist">
-                  Join the waitlist
+              <Link href="/konex-cards">
+                <Button variant="outline" size="lg" className="h-14 px-8 rounded-full text-lg" data-testid="button-tier-compare">
+                  Compare all cards
                 </Button>
               </Link>
             </div>
@@ -135,15 +135,15 @@ export default function KonexCardsTierPage({ tierId }: { tierId: string }) {
               Start making unforgettable first impressions today.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
-              <Link href="/auth?tab=register">
+              <Link href={`/checkout?sku=KONEX-${tierId.toUpperCase()}`}>
                 <Button size="lg" className="h-14 px-10 rounded-full text-lg font-semibold shadow-xl shadow-primary/20" data-testid="button-tier-final-order">
-                  Order {tier.name}
+                  Buy Now — {tier.price}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link href="/konex-cards">
                 <Button variant="outline" size="lg" className="h-14 px-8 rounded-full text-lg" data-testid="button-compare-tiers">
-                  Compare all tiers
+                  Compare all cards
                 </Button>
               </Link>
             </div>

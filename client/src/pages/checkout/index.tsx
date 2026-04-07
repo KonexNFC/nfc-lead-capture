@@ -51,7 +51,10 @@ const PRODUCTS = [
 ];
 
 export default function CheckoutPage() {
-  const [selectedSku, setSelectedSku] = useState<string | null>(null);
+  const preselect = new URLSearchParams(window.location.search).get("sku");
+  const [selectedSku, setSelectedSku] = useState<string | null>(
+    preselect && PRODUCTS.some((p) => p.sku === preselect) ? preselect : null
+  );
   const { toast } = useToast();
 
   const { data: paypalConfig } = useQuery({

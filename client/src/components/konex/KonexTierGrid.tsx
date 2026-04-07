@@ -45,9 +45,14 @@ export default function KonexTierGrid() {
                 ))}
               </ul>
 
-              <a href={`/konex-cards/${tier.id}`} className={`btn ${tier.popular ? 'btn-primary' : 'btn-outline'}`} data-testid={`button-tier-cta-${tier.id}`}>
-                {tier.ctaLabel}
-              </a>
+              <div className="flex flex-col gap-2 mt-2">
+                <a href={`/checkout?sku=KONEX-${tier.id.toUpperCase()}`} className="btn btn-primary" data-testid={`button-tier-buynow-${tier.id}`}>
+                  Buy Now
+                </a>
+                <a href={`/konex-cards/${tier.id}`} className="btn btn-outline" style={{ fontSize: "0.8rem", padding: "0.4rem 1rem" }} data-testid={`button-tier-cta-${tier.id}`}>
+                  Learn more
+                </a>
+              </div>
             </div>
           ))}
         </div>
