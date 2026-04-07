@@ -39,6 +39,10 @@ import OrganizationSettings from "@/pages/dashboard/organization/settings";
 import TapRouter from "@/pages/tap-router";
 import ActivateCard from "@/pages/activate-card";
 import NotFound from "@/pages/not-found";
+import CheckoutPage from "@/pages/checkout/index";
+import CheckoutSuccessPage from "@/pages/checkout/success";
+import CheckoutCancelPage from "@/pages/checkout/cancel";
+import CheckoutActivatePage from "@/pages/checkout/activate";
 
 // Protected Route Wrapper
 function ProtectedRoute({ component: Component, adminOnly }: { component: React.ComponentType; adminOnly?: boolean }) {
@@ -92,6 +96,12 @@ function Router() {
       <Route path="/activate">
         <ActivateCard />
       </Route>
+
+      {/* Checkout Routes */}
+      <Route path="/checkout" component={CheckoutPage} />
+      <Route path="/checkout/success" component={CheckoutSuccessPage} />
+      <Route path="/checkout/cancel" component={CheckoutCancelPage} />
+      <Route path="/checkout/activate" component={CheckoutActivatePage} />
       
       {/* Protected Routes */}
       <Route path="/dashboard">

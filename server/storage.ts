@@ -4,6 +4,7 @@ import {
   cards, cardTapEvents, cardAssignmentsHistory,
   organizations, organizationMembers, organizationInvitations, organizationCards,
   profileEvents,
+  orders, checkoutActivationTokens, webhookEvents,
   type User, type InsertUser,
   type Profile, type InsertProfile, type UpdateProfileRequest,
   type Lead, type InsertLead,
@@ -15,7 +16,10 @@ import {
   type Organization, type InsertOrganization,
   type OrganizationMember, type InsertOrganizationMember,
   type OrganizationInvitation, type InsertOrganizationInvitation,
-  type OrganizationCard, type InsertOrganizationCard
+  type OrganizationCard, type InsertOrganizationCard,
+  type Order, type InsertOrder,
+  type CheckoutActivationToken, type InsertCheckoutActivationToken,
+  type WebhookEvent, type InsertWebhookEvent,
 } from "@shared/schema";
 import { eq, desc, sql, count, gte, and, like, inArray } from "drizzle-orm";
 import session from "express-session";
@@ -139,6 +143,22 @@ export interface IStorage {
     topCard: { cardCode: string; taps: number } | null;
     topMember: { name: string; email: string; taps: number } | null;
   }>;
+
+  // Orders / Checkout
+  createOrder(data: InsertOrder): Promise<Order>;
+  getOrderByPaypalId(paypalOrderId: string): Promise<Order | undefined>;
+  getOrderById(id: number): Promise<Order | undefined>;
+  updateOrder(id: number, updates: Partial<Order>): Promise<Order>;
+  listOrders(limit?: number): Promise<Order[]>;
+
+  // Activation Tokens
+  createActivationToken(data: InsertCheckoutActivationToken): Promise<CheckoutActivationToken>;
+  getActivationTokenByToken(token: string): Promise<CheckoutActivationToken | undefined>;
+  markActivationTokenConsumed(id: number): Promise<void>;
+
+  // Webhook Events
+  createWebhookEvent(data: InsertWebhookEvent): Promise<WebhookEvent>;
+  getWebhookEventByPaypalId(paypalEventId: string): Promise<WebhookEvent | undefined>;
 
   // Profile Events (conversion analytics)
   createProfileEvent(event: { profileId: number; eventType: string; metadata?: Record<string, string> }): Promise<void>;
@@ -967,7 +987,6 @@ export class DatabaseStorage implements IStorage {
     `, [profileIds]);
 
     if (rows.rows.length === 0) {
-      // Fall back to lead sources for context
       const leadRows = await pool.query<{ source: string; cnt: string }>(`
         SELECT COALESCE(source, 'direct') AS source, count(*) AS cnt
         FROM leads WHERE profile_id = ANY($1) GROUP BY 1 ORDER BY 2 DESC
@@ -976,6 +995,61 @@ export class DatabaseStorage implements IStorage {
     }
 
     return rows.rows.map(r => ({ source: r.source, count: Number(r.cnt) }));
+  }
+
+  // Orders
+  async createOrder(data: InsertOrder): Promise<Order> {
+    const [order] = await db.insert(orders).values(data).returning();
+    return order;
+  }
+
+  async getOrderByPaypalId(paypalOrderId: string): Promise<Order | undefined> {
+    const [order] = await db.select().from(orders).where(eq(orders.paypalOrderId, paypalOrderId));
+    return order;
+  }
+
+  async getOrderById(id: number): Promise<Order | undefined> {
+    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    return order;
+  }
+
+  async updateOrder(id: number, updates: Partial<Order>): Promise<Order> {
+    const [order] = await db
+      .update(orders)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(orders.id, id))
+      .returning();
+    return order;
+  }
+
+  async listOrders(limit = 100): Promise<Order[]> {
+    return db.select().from(orders).orderBy(desc(orders.createdAt)).limit(limit);
+  }
+
+  // Activation Tokens
+  async createActivationToken(data: InsertCheckoutActivationToken): Promise<CheckoutActivationToken> {
+    const [token] = await db.insert(checkoutActivationTokens).values(data).returning();
+    return token;
+  }
+
+  async getActivationTokenByToken(token: string): Promise<CheckoutActivationToken | undefined> {
+    const [row] = await db.select().from(checkoutActivationTokens).where(eq(checkoutActivationTokens.token, token));
+    return row;
+  }
+
+  async markActivationTokenConsumed(id: number): Promise<void> {
+    await db.update(checkoutActivationTokens).set({ consumedAt: new Date() }).where(eq(checkoutActivationTokens.id, id));
+  }
+
+  // Webhook Events
+  async createWebhookEvent(data: InsertWebhookEvent): Promise<WebhookEvent> {
+    const [event] = await db.insert(webhookEvents).values(data).returning();
+    return event;
+  }
+
+  async getWebhookEventByPaypalId(paypalEventId: string): Promise<WebhookEvent | undefined> {
+    const [event] = await db.select().from(webhookEvents).where(eq(webhookEvents.paypalEventId, paypalEventId));
+    return event;
   }
 }
 

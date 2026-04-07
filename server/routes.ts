@@ -7,6 +7,14 @@ import { z } from "zod";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { sendLeadNotificationEmail, sendOrganizationInviteEmail } from "./email";
+import {
+  SKU_CATALOG,
+  createPayPalOrder,
+  capturePayPalOrder,
+  verifyWebhookSignature,
+  isPayPalConfigured,
+  getPayPalClientId,
+} from "./paypal";
 
 async function seedDatabase() {
   const existingUser = await storage.getUserByEmail("demo@konex.app");
@@ -1521,6 +1529,346 @@ export async function registerRoutes(
     const orgId = parseInt(req.params.id);
     const analytics = await storage.getOrganizationAnalytics(orgId);
     res.json(analytics);
+  });
+
+  // ─── PAYPAL & CHECKOUT ROUTES ───────────────────────────────────────────────
+
+  // Helper: generate unique card code for a tier
+  async function generateCardCode(tier: string): Promise<string> {
+    const prefix =
+      tier === "basic" ? "B" : tier === "premium" ? "P" : tier === "elite" ? "E" : "C";
+    const rows = await storage.listAllCards({ productTier: tier });
+    const max = rows.reduce((acc, c) => {
+      const parts = c.cardCode.split("-");
+      const num = parseInt(parts[parts.length - 1] || "0", 10);
+      return num > acc ? num : acc;
+    }, 0);
+    const next = String(max + 1).padStart(5, "0");
+    return `KONEX-${prefix}-${next}`;
+  }
+
+  // Public: PayPal client config for frontend
+  app.get("/api/config/paypal", (_req, res) => {
+    res.json({
+      clientId: getPayPalClientId() || null,
+      env: process.env.PAYPAL_ENV || "sandbox",
+      configured: isPayPalConfigured(),
+    });
+  });
+
+  // Public: Create PayPal order
+  app.post("/api/paypal/create-order", async (req, res) => {
+    if (!isPayPalConfigured()) {
+      return res.status(503).json({ message: "Payment system not configured" });
+    }
+
+    const schema = z.object({ sku: z.string() });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "SKU is required" });
+    }
+
+    const { sku } = parsed.data;
+    const item = SKU_CATALOG[sku];
+    if (!item) {
+      return res.status(400).json({ message: "Invalid product SKU" });
+    }
+
+    try {
+      const appBase =
+        process.env.APP_BASE_URL ||
+        (process.env.NODE_ENV === "production"
+          ? "https://konexnfc.com"
+          : `http://localhost:5000`);
+
+      const returnUrl = `${appBase}/checkout/success`;
+      const cancelUrl = `${appBase}/checkout/cancel`;
+
+      const { orderId: paypalOrderId, approveUrl } = await createPayPalOrder(
+        sku,
+        returnUrl,
+        cancelUrl,
+      );
+
+      // Persist draft order
+      const order = await storage.createOrder({
+        paypalOrderId,
+        status: "created",
+        amount: item.amount,
+        currency: item.currency,
+        sku,
+        productType: item.productType,
+        userId: req.isAuthenticated() ? req.user!.id : null,
+      });
+
+      res.json({ paypalOrderId, approveUrl, orderId: order.id });
+    } catch (err: any) {
+      console.error("[paypal] create-order error:", err.message);
+      res.status(500).json({ message: "Failed to create payment order" });
+    }
+  });
+
+  // Public: Capture PayPal order after approval
+  app.post("/api/paypal/capture-order", async (req, res) => {
+    if (!isPayPalConfigured()) {
+      return res.status(503).json({ message: "Payment system not configured" });
+    }
+
+    const schema = z.object({ paypalOrderId: z.string() });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "paypalOrderId is required" });
+    }
+
+    const { paypalOrderId } = parsed.data;
+
+    // Idempotency: if already captured, return existing token
+    const existingOrder = await storage.getOrderByPaypalId(paypalOrderId);
+    if (!existingOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    if (existingOrder.status === "captured" || existingOrder.status === "activation_pending") {
+      // Return existing activation token
+      const rows = await storage.listOrders(1);
+      // Re-issue token lookup
+      const existingToken = await storage
+        .getActivationTokenByToken(existingOrder.id.toString())
+        .catch(() => undefined);
+      return res.json({ success: true, orderId: existingOrder.id, alreadyCaptured: true });
+    }
+    if (existingOrder.status === "activated") {
+      return res.status(409).json({ message: "Order already activated" });
+    }
+
+    try {
+      const { captureId, email, name } = await capturePayPalOrder(paypalOrderId);
+
+      const updatedOrder = await storage.updateOrder(existingOrder.id, {
+        status: "activation_pending",
+        paypalCaptureId: captureId,
+        customerEmail: email,
+        customerName: name,
+      });
+
+      // Generate secure activation token (7-day expiry)
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      await storage.createActivationToken({
+        orderId: updatedOrder.id,
+        token: rawToken,
+        expiresAt,
+      });
+
+      res.json({ success: true, activationToken: rawToken, orderId: updatedOrder.id });
+    } catch (err: any) {
+      console.error("[paypal] capture-order error:", err.message);
+      await storage.updateOrder(existingOrder.id, { status: "failed" }).catch(() => {});
+      res.status(500).json({ message: "Payment capture failed" });
+    }
+  });
+
+  // Public: PayPal Webhook (raw body required for signature verification)
+  app.post("/api/paypal/webhook", async (req, res) => {
+    const rawBody = (req as any).rawBody?.toString() || JSON.stringify(req.body);
+    const webhookId = process.env.PAYPAL_WEBHOOK_ID || "";
+    const paypalEventId = req.headers["paypal-transmission-id"] as string;
+
+    if (!paypalEventId) {
+      return res.status(400).json({ message: "Missing PayPal headers" });
+    }
+
+    // Idempotency check
+    const existing = await storage.getWebhookEventByPaypalId(paypalEventId);
+    if (existing) {
+      return res.status(200).json({ message: "Already processed" });
+    }
+
+    // Verify signature if webhook ID is configured
+    if (webhookId && isPayPalConfigured()) {
+      const valid = await verifyWebhookSignature(
+        req.headers as Record<string, string>,
+        rawBody,
+        webhookId,
+      );
+      if (!valid) {
+        console.warn("[paypal] webhook signature verification failed");
+        return res.status(401).json({ message: "Invalid webhook signature" });
+      }
+    }
+
+    const event = req.body as { event_type: string; resource?: any; id?: string };
+
+    // Store event for replay safety
+    await storage.createWebhookEvent({
+      paypalEventId,
+      eventType: event.event_type || "unknown",
+      payloadJson: req.body,
+    });
+
+    // Process known event types
+    try {
+      if (event.event_type === "PAYMENT.CAPTURE.COMPLETED") {
+        const captureId = event.resource?.id;
+        if (captureId) {
+          const orders = await storage.listOrders(500);
+          const order = orders.find((o) => o.paypalCaptureId === captureId);
+          if (order && order.status !== "activated") {
+            await storage.updateOrder(order.id, { status: "activation_pending" });
+          }
+        }
+      }
+
+      if (event.event_type === "PAYMENT.CAPTURE.REFUNDED") {
+        const captureId = event.resource?.id;
+        if (captureId) {
+          const orders = await storage.listOrders(500);
+          const order = orders.find((o) => o.paypalCaptureId === captureId);
+          if (order) {
+            await storage.updateOrder(order.id, { status: "refunded" });
+          }
+        }
+      }
+    } catch (err: any) {
+      console.error("[paypal] webhook processing error:", err.message);
+    }
+
+    res.status(200).json({ received: true });
+  });
+
+  // Public: Validate activation token info
+  app.get("/api/checkout/token-info", async (req, res) => {
+    const token = req.query.token as string;
+    if (!token) return res.status(400).json({ message: "Token required" });
+
+    const tokenRecord = await storage.getActivationTokenByToken(token);
+    if (!tokenRecord) return res.status(404).json({ message: "Token not found" });
+    if (tokenRecord.consumedAt) return res.status(410).json({ message: "Token already used" });
+    if (new Date() > tokenRecord.expiresAt) return res.status(410).json({ message: "Token expired" });
+
+    const order = await storage.getOrderById(tokenRecord.orderId);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    const item = SKU_CATALOG[order.sku];
+    res.json({
+      valid: true,
+      sku: order.sku,
+      productName: item?.name || order.sku,
+      productType: order.productType,
+      tier: item?.tier || null,
+      customerEmail: order.customerEmail,
+      customerName: order.customerName,
+    });
+  });
+
+  // Public: Complete activation
+  app.post("/api/checkout/activate", async (req, res) => {
+    const schema = z.object({
+      token: z.string(),
+      displayName: z.string().min(1).max(100),
+      title: z.string().max(100).optional(),
+      company: z.string().max(100).optional(),
+      phone: z.string().max(30).optional(),
+      email: z.string().email().optional().or(z.literal("")),
+      website: z.string().url().optional().or(z.literal("")),
+      bio: z.string().max(500).optional(),
+      slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/),
+      password: z.string().min(8).optional(),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
+    }
+
+    const { token, displayName, title, company, phone, email, website, bio, slug, password } = parsed.data;
+
+    const tokenRecord = await storage.getActivationTokenByToken(token);
+    if (!tokenRecord) return res.status(404).json({ message: "Token not found" });
+    if (tokenRecord.consumedAt) return res.status(410).json({ message: "Token already used" });
+    if (new Date() > tokenRecord.expiresAt) return res.status(410).json({ message: "Token expired" });
+
+    const order = await storage.getOrderById(tokenRecord.orderId);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    // Check slug availability
+    const existingSlug = await storage.getProfileBySlug(slug);
+    if (existingSlug) return res.status(409).json({ message: "That URL is already taken. Please choose another." });
+
+    try {
+      // Create or find user
+      let user;
+      const contactEmail = email || order.customerEmail;
+
+      if (contactEmail) {
+        user = await storage.getUserByEmail(contactEmail);
+      }
+
+      if (!user) {
+        if (!contactEmail) {
+          return res.status(400).json({ message: "Email is required to create your account" });
+        }
+        const hashedPw = await hashPassword(password || crypto.randomBytes(16).toString("hex"));
+        user = await storage.createUser({
+          email: contactEmail,
+          password: hashedPw,
+        });
+      }
+
+      // Create profile
+      const profile = await storage.createProfile({
+        userId: user.id,
+        name: displayName,
+        title: title || null,
+        company: company || null,
+        bio: bio || null,
+        slug,
+        links: {
+          phone: phone || undefined,
+          email: contactEmail || undefined,
+          website: website || undefined,
+        },
+        theme: "dark",
+      });
+
+      // Auto-generate NFC card for physical products
+      if (order.productType === "physical_card") {
+        const item = SKU_CATALOG[order.sku];
+        const tier = item?.tier || "basic";
+        const cardCode = await generateCardCode(tier);
+        await storage.createCard({
+          cardCode,
+          ownerId: user.id,
+          profileId: profile.id,
+          productTier: tier,
+          status: "active",
+          activatedAt: new Date(),
+        });
+      }
+
+      // Consume token + mark order activated
+      await storage.markActivationTokenConsumed(tokenRecord.id);
+      await storage.updateOrder(order.id, {
+        status: "activated",
+        userId: user.id,
+      });
+
+      res.json({
+        success: true,
+        profileSlug: profile.slug,
+        email: user.email,
+        message: "Profile activated successfully",
+      });
+    } catch (err: any) {
+      console.error("[checkout] activate error:", err.message);
+      res.status(500).json({ message: "Activation failed. Please contact support." });
+    }
+  });
+
+  // Admin: list orders
+  app.get("/api/admin/orders", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) return res.sendStatus(403);
+    const orderList = await storage.listOrders(200);
+    res.json(orderList);
   });
 
   return httpServer;

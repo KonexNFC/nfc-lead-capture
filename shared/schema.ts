@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, uniqueIndex, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -303,6 +303,60 @@ export const organizationCardsRelations = relations(organizationCards, ({ one })
   card: one(cards, { fields: [organizationCards.cardId], references: [cards.id] }),
   assignedUser: one(users, { fields: [organizationCards.assignedUserId], references: [users.id] }),
 }));
+
+// === CHECKOUT / PAYMENTS ===
+
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id"),
+  paypalOrderId: text("paypal_order_id").notNull().unique(),
+  paypalCaptureId: text("paypal_capture_id"),
+  status: text("status").notNull().default("draft"),
+  amount: text("amount").notNull(),
+  currency: text("currency").notNull().default("GBP"),
+  sku: text("sku").notNull(),
+  productType: text("product_type").notNull(),
+  customerEmail: text("customer_email"),
+  customerName: text("customer_name"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const checkoutActivationTokens = pgTable("checkout_activation_tokens", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull(),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  consumedAt: timestamp("consumed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const webhookEvents = pgTable("webhook_events", {
+  id: serial("id").primaryKey(),
+  paypalEventId: text("paypal_event_id").notNull(),
+  eventType: text("event_type").notNull(),
+  payloadJson: jsonb("payload_json"),
+  processedAt: timestamp("processed_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  uniqueIndex("webhook_events_paypal_event_id_unique").on(table.paypalEventId),
+]);
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  user: one(users, { fields: [orders.userId], references: [users.id] }),
+  activationTokens: many(checkoutActivationTokens),
+}));
+
+export const checkoutActivationTokensRelations = relations(checkoutActivationTokens, ({ one }) => ({
+  order: one(orders, { fields: [checkoutActivationTokens.orderId], references: [orders.id] }),
+}));
+
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = typeof orders.$inferInsert;
+export type CheckoutActivationToken = typeof checkoutActivationTokens.$inferSelect;
+export type InsertCheckoutActivationToken = typeof checkoutActivationTokens.$inferInsert;
+export type WebhookEvent = typeof webhookEvents.$inferSelect;
+export type InsertWebhookEvent = typeof webhookEvents.$inferInsert;
 
 // Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, isAdmin: true });

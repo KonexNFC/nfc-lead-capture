@@ -1,0 +1,104 @@
+Build a production-ready Konex NFC checkout and activation system using:
+- Frontend: React / Next.js style app router UI
+- Backend: Node.js + Express style API routes
+- Database: PostgreSQL with Prisma ORM
+- Payments: PayPal Checkout using JavaScript SDK + Orders API
+- Auth: email login or magic-link-ready account model
+- Email: transactional email stub with provider abstraction
+- Environment-based config for sandbox/live
+
+Business context:
+Konex NFC sells:
+1. Digital Profile Only
+2. Basic NFC Card
+3. Premium NFC Card
+
+Core flow:
+1. User lands on product page and selects a SKU
+2. User clicks PayPal Checkout
+3. Frontend requests POST /api/paypal/create-order
+4. Backend creates local order and PayPal order using server-side pricing
+5. After approval, frontend calls POST /api/paypal/capture-order
+6. Backend captures payment using PayPal Orders API
+7. On successful capture, backend creates:
+   - order record
+   - profile shell
+   - activation token
+   - card record if SKU includes physical card
+8. User is redirected to /activate?token=...
+9. User completes activation form
+10. Public Konex profile is published
+11. Confirmation email is sent
+
+Technical requirements:
+- Use strict server-side price lookup by SKU
+- Never trust frontend pricing
+- Build idempotent order capture handling
+- Build webhook endpoint POST /api/paypal/webhook
+- Store webhook events for replay safety
+- Verify PayPal webhook signatures
+- Support sandbox and live credentials
+- Add success page and cancel page
+- Build admin-safe order statuses:
+  draft, created, approved, captured, activation_pending, activated, failed, refunded
+- Build card statuses:
+  unassigned, assigned, activation_pending, active, suspended
+
+Database models:
+users, orders, cards, profiles, activation_tokens, webhook_events
+
+Fields:
+users: id, email, full_name, password_hash, created_at
+orders: id, user_id nullable, paypal_order_id, paypal_capture_id nullable, status, amount, currency, sku, product_type, created_at
+cards: id, order_id, card_uid nullable, sku, status, shipped_at nullable, activated_at nullable
+profiles: id, user_id nullable, order_id, public_slug, display_name, title, company, phone, email, website, bio, avatar_url, theme, is_live
+activation_tokens: id, order_id, profile_id, token, expires_at, consumed_at nullable
+webhook_events: id, paypal_event_id unique, event_type, payload_json, processed_at
+
+Frontend pages:
+- /products/konex-nfc
+- /checkout/success
+- /checkout/cancel
+- /activate
+- /dashboard/profile
+
+Activation form fields:
+display_name, title, company, phone, email, website, bio, avatar upload placeholder, theme
+
+Public profile:
+- clean mobile-first card view
+- tap to call
+- tap to email
+- save contact button placeholder
+- social links section
+- QR code placeholder
+- theme support with at least: minimal, corporate, personal brand
+
+Security:
+- validate all API payloads
+- use zod or equivalent schema validation
+- sanitize profile fields
+- generate cryptographically secure activation tokens
+- expire activation tokens after 7 days
+- prevent token reuse
+- prevent duplicate webhook processing
+- ensure capture endpoint cannot fulfill the same order twice
+
+Environment variables:
+PAYPAL_CLIENT_ID
+PAYPAL_CLIENT_SECRET
+PAYPAL_ENV=sandbox|live
+PAYPAL_WEBHOOK_ID
+APP_BASE_URL
+DATABASE_URL
+
+Deliverables:
+1. Working codebase structure
+2. Prisma schema
+3. PayPal integration service
+4. Order service
+5. Webhook verification and processing logic
+6. Activation page and API
+7. Seeded product catalog
+8. README with sandbox test steps
+9. Clean UI with premium black/dark aesthetic aligned to Konex branding
