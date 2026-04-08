@@ -1,0 +1,86 @@
+Add a new “Refund & Return Policy” page to the KONEX eSIM website and wire it into the footer and checkout flow.
+
+OBJECTIVE
+Create a clean, professional Refund & Return Policy page for a digital eSIM business. This is for KONEX eSIM, not KONEX NFC. The policy must reflect that eSIM plans are digital, prepaid, and generally non-refundable after activation or use.
+
+IMPLEMENTATION REQUIREMENTS
+
+1. CREATE A NEW PAGE
+- Add a new route/page:
+  /refund-policy
+- Page title:
+  Refund & Return Policy | KONEX eSIM
+- Use the existing site layout, header, footer, typography, spacing, and responsive styling
+- Make the page look premium, minimal, and trustworthy
+
+2. ADD FOOTER LINK
+- Add “Refund & Return Policy” to the footer legal/navigation links
+- Place it alongside Terms of Service and Privacy Policy if those already exist
+
+3. ADD CHECKOUT ACKNOWLEDGEMENT
+- On the checkout page, add a short notice near the final payment CTA:
+  “By completing your purchase, you agree to our Refund & Return Policy.”
+- Make “Refund & Return Policy” clickable and link it to /refund-policy
+- Keep styling subtle, clean, and conversion-friendly
+
+4. PAGE CONTENT
+Use the following exact structure and wording, but format it beautifully with proper section spacing, headings, and readable body text:
+
+Refund & Return Policy
+
+Overview
+KONEX eSIM provides digital, prepaid eSIM data plans delivered electronically upon successful purchase. Because our products are digital services that are fulfilled instantly, refund eligibility is limited.
+
+Non-Refundable Situations
+Refunds will not be provided in the following cases:
+- The eSIM has been activated, installed, or scanned
+- Any data usage has occurred, whether partial or full
+- The customer selected the wrong destination, duration, or plan
+- The customer’s device is not eSIM-compatible
+- The purchase was made by mistake or the customer changed their mind after delivery
+
+Eligible Refund Situations
+A refund may be considered only if:
+- The eSIM has not been activated, installed, or used
+- The QR code or activation details were not successfully delivered
+- There is a verified technical issue that prevents activation or normal use
+- The service delivered was materially different from what was purchased
+
+Technical Support Before Refund
+If a customer experiences an activation or connectivity issue, KONEX eSIM support will first investigate and attempt to resolve the issue. Customers should contact support as soon as possible with their order details and device information. If the issue cannot be resolved and the service was not successfully delivered, a partial or full refund may be issued at our discretion.
+
+Refund Request Window
+All refund requests must be submitted within 7 days of purchase. Requests made after this period may not be eligible for review.
+
+How Refunds Are Processed
+Approved refunds will be issued to the original payment method only. Refund processing times may vary depending on the payment provider and bank, but typically take 5 to 10 business days.
+
+Fraud, Abuse, and Misuse
+KONEX eSIM reserves the right to refuse refunds where there is evidence of misuse, repeated abuse of the refund process, or fraudulent activity.
+
+Contact
+For support or refund enquiries, contact:
+support@konexesim.com
+
+5. ADD SMALL TRUST UI ENHANCEMENTS
+- Add a small intro block near the top explaining that KONEX eSIM sells digital prepaid travel connectivity
+- Add a “Need help?” support card or callout near the bottom with the support email
+- Ensure mobile responsiveness is polished
+
+6. SEO + META
+- Add proper page metadata:
+  title: Refund & Return Policy | KONEX eSIM
+  meta description: Learn about KONEX eSIM’s refund and return policy for digital prepaid eSIM data plans.
+
+7. CODE QUALITY
+- Follow the existing app architecture and routing pattern already used in this project
+- Reuse existing components where possible
+- Do not break current navigation or checkout logic
+- Keep implementation production-ready and clean
+
+8. FINAL CHECK
+After implementation, confirm:
+- /refund-policy loads correctly
+- footer link works
+- checkout acknowledgement appears and links correctly
+- styling matches the rest of the site

@@ -181,15 +181,18 @@ export class DatabaseStorage implements IStorage {
       tableName: "session",
     });
     // Create session table using inline SQL so the build bundle needs no external SQL file
-    pool.query(`
+    db.execute(sql`
       CREATE TABLE IF NOT EXISTS "session" (
         "sid" varchar NOT NULL COLLATE "default",
         "sess" json NOT NULL,
         "expire" timestamp(6) NOT NULL,
         CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE
-      ) WITH (OIDS=FALSE);
-      CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
-    `).catch((err: Error) => console.error("[session] table init error:", err.message));
+      ) WITH (OIDS=FALSE)
+    `)
+    .then(() => db.execute(sql`
+      CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")
+    `))
+    .catch((err: Error) => console.error("[session] table init error:", err.message));
   }
 
   // User
