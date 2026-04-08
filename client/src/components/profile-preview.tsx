@@ -369,6 +369,13 @@ export function ProfilePreview({
   // LUXURY — cinematic, premium, dramatic spacing
   // ─────────────────────────────────────────────────────────────────────────
   if (variant === "luxury") {
+    const luxuryBannerBg =
+      c.backgroundStyle === "gradient"
+        ? `linear-gradient(135deg, ${accent}55 0%, ${accent}20 40%, ${theme.tokens["--theme-bg"]} 100%)`
+        : c.backgroundStyle === "flat"
+        ? theme.tokens["--theme-bg"]
+        : theme.tokens["--theme-header-gradient"];
+
     return (
       <div className="w-full max-w-sm mx-auto">
         <Card
@@ -380,7 +387,10 @@ export function ProfilePreview({
             {coverSrc && (
               <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
             )}
-            <div className="absolute inset-0" style={{ background: theme.tokens["--theme-header-gradient"] }} />
+            <div className="absolute inset-0" style={{ background: luxuryBannerBg }} />
+            {c.backgroundStyle === "pattern" && (
+              <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
+            )}
             <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/70" />
             {/* Avatar framed with accent gradient ring */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
@@ -502,6 +512,13 @@ export function ProfilePreview({
   // ─────────────────────────────────────────────────────────────────────────
   if (variant === "social") {
     const tileLayout = c.socialLayout === "tiles";
+    const socialBannerBg =
+      c.backgroundStyle === "gradient"
+        ? `linear-gradient(135deg, ${accent}50 0%, ${accent}18 50%, ${theme.tokens["--theme-bg"]} 100%)`
+        : c.backgroundStyle === "flat"
+        ? theme.tokens["--theme-bg"]
+        : theme.tokens["--theme-header-gradient"];
+
     return (
       <div className="w-full max-w-sm mx-auto">
         <Card
@@ -510,11 +527,16 @@ export function ProfilePreview({
         >
           {/* Banner */}
           <div className="relative">
-            <div className="w-full h-32">
+            <div className="w-full h-32 relative">
               {coverSrc ? (
                 <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
               ) : (
-                <div className="absolute inset-0" style={{ background: theme.tokens["--theme-header-gradient"] }} />
+                <>
+                  <div className="absolute inset-0" style={{ background: socialBannerBg }} />
+                  {c.backgroundStyle === "pattern" && (
+                    <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
+                  )}
+                </>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
             </div>
