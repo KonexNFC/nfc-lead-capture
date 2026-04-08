@@ -183,14 +183,27 @@ export default function PublicProfile() {
     : null;
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col items-center p-4 pt-4 pb-10" style={brandStyle}>
-      {/* Hero Banner */}
+    <div
+      className="min-h-screen relative flex flex-col"
+      style={{
+        ...brandStyle,
+        ...(heroUrl ? {
+          backgroundImage: `url(${heroUrl})`,
+          backgroundSize: "cover",
+          backgroundPosition: "top center",
+          backgroundRepeat: "no-repeat",
+          backgroundAttachment: "scroll",
+        } : {}),
+      }}
+      data-testid="hero-banner"
+    >
+      {/* Dark overlay for readability when hero image is used as background */}
       {heroUrl && (
-        <div className="w-full max-w-md rounded-md overflow-hidden mb-4 relative" data-testid="hero-banner">
-          <img src={heroUrl} alt="Hero" className="w-full h-40 object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        </div>
+        <div className="absolute inset-0 bg-black/55 pointer-events-none" />
       )}
+
+      {/* All page content sits above the overlay */}
+      <div className="relative z-10 flex flex-col items-center p-4 pt-4 pb-10 w-full">
 
       {/* Logo or KONEX Branding */}
       <a href="/" className="flex items-center gap-2 mb-2" data-testid="konex-branding-header">
@@ -232,7 +245,6 @@ export default function PublicProfile() {
         />
       </div>
 
-
       {/* Modules */}
       <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
 
@@ -255,6 +267,8 @@ export default function PublicProfile() {
           </Button>
         </a>
       </div>
+
+      </div>{/* end relative z-10 content wrapper */}
 
       {/* Lead Capture Dialog/Drawer */}
       {lockedIsDesktop ? (
