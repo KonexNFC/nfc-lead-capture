@@ -6,7 +6,15 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import crypto from "crypto";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
-import { sendLeadNotificationEmail, sendOrganizationInviteEmail } from "./email";
+import {
+  sendLeadNotificationEmail,
+  sendOrganizationInviteEmail,
+  sendActivationEmail,
+  sendWelcomeEmail,
+  sendAdminOrderNotification,
+  sendShippedEmail,
+  sendAdminDisputeAlert,
+} from "./email";
 import {
   SKU_CATALOG,
   createPayPalOrder,
@@ -1533,6 +1541,20 @@ export async function registerRoutes(
 
   // ─── PAYPAL & CHECKOUT ROUTES ───────────────────────────────────────────────
 
+  // Simple in-memory rate limiter (per IP, resets on server restart)
+  const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+  function checkRateLimit(key: string, maxRequests: number, windowMs: number): boolean {
+    const now = Date.now();
+    const entry = rateLimitMap.get(key);
+    if (!entry || now > entry.resetAt) {
+      rateLimitMap.set(key, { count: 1, resetAt: now + windowMs });
+      return true;
+    }
+    if (entry.count >= maxRequests) return false;
+    entry.count++;
+    return true;
+  }
+
   // Helper: generate unique card code for a tier
   async function generateCardCode(tier: string): Promise<string> {
     const prefix =
@@ -1558,6 +1580,11 @@ export async function registerRoutes(
 
   // Public: Create PayPal order
   app.post("/api/paypal/create-order", async (req, res) => {
+    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "unknown";
+    if (!checkRateLimit(`create-order:${ip}`, 5, 60_000)) {
+      return res.status(429).json({ message: "Too many requests. Please wait a moment and try again." });
+    }
+
     if (!isPayPalConfigured()) {
       return res.status(503).json({ message: "Payment system not configured" });
     }
@@ -1659,6 +1686,18 @@ export async function registerRoutes(
         expiresAt,
       });
 
+      // Send activation email (best-effort, non-blocking)
+      const item = SKU_CATALOG[existingOrder.sku];
+      if (updatedOrder.customerEmail) {
+        sendActivationEmail(
+          updatedOrder.customerEmail,
+          updatedOrder.customerName,
+          rawToken,
+          item?.name || existingOrder.sku,
+        ).catch((e) => console.error("[email] activation send failed:", e));
+      }
+
+      console.log(`[checkout] Order #${updatedOrder.id} captured; activation token issued`);
       res.json({ success: true, activationToken: rawToken, orderId: updatedOrder.id });
     } catch (err: any) {
       console.error("[paypal] capture-order error:", err.message);
@@ -1707,13 +1746,15 @@ export async function registerRoutes(
 
     // Process known event types
     try {
+      const allOrders = await storage.listOrders(500);
+
       if (event.event_type === "PAYMENT.CAPTURE.COMPLETED") {
         const captureId = event.resource?.id;
         if (captureId) {
-          const orders = await storage.listOrders(500);
-          const order = orders.find((o) => o.paypalCaptureId === captureId);
-          if (order && order.status !== "activated") {
+          const order = allOrders.find((o) => o.paypalCaptureId === captureId);
+          if (order && !["activated", "shipped"].includes(order.status)) {
             await storage.updateOrder(order.id, { status: "activation_pending" });
+            console.log(`[webhook] CAPTURE.COMPLETED: order #${order.id} → activation_pending`);
           }
         }
       }
@@ -1721,10 +1762,49 @@ export async function registerRoutes(
       if (event.event_type === "PAYMENT.CAPTURE.REFUNDED") {
         const captureId = event.resource?.id;
         if (captureId) {
-          const orders = await storage.listOrders(500);
-          const order = orders.find((o) => o.paypalCaptureId === captureId);
+          const order = allOrders.find((o) => o.paypalCaptureId === captureId);
           if (order) {
-            await storage.updateOrder(order.id, { status: "refunded" });
+            await storage.updateOrder(order.id, { status: "refunded", refundedAt: new Date() });
+            console.log(`[webhook] CAPTURE.REFUNDED: order #${order.id} → refunded`);
+          }
+        }
+      }
+
+      if (
+        event.event_type === "PAYMENT.CAPTURE.DENIED" ||
+        event.event_type === "CHECKOUT.PAYMENT-APPROVAL.REVERSED"
+      ) {
+        const paypalOrderId =
+          event.resource?.supplementary_data?.related_ids?.order_id ||
+          event.resource?.id;
+        if (paypalOrderId) {
+          const order = allOrders.find(
+            (o) => o.paypalOrderId === paypalOrderId || o.paypalCaptureId === paypalOrderId,
+          );
+          if (order && !["activated", "shipped"].includes(order.status)) {
+            await storage.updateOrder(order.id, { status: "failed" });
+            console.log(`[webhook] ${event.event_type}: order #${order.id} → failed`);
+          }
+        }
+      }
+
+      if (event.event_type === "CUSTOMER.DISPUTE.CREATED") {
+        const disputedCaptureId = event.resource?.disputed_transactions?.[0]?.seller_transaction_id;
+        if (disputedCaptureId) {
+          const order = allOrders.find((o) => o.paypalCaptureId === disputedCaptureId);
+          if (order) {
+            await storage.updateOrder(order.id, { status: "disputed", disputedAt: new Date() });
+            console.warn(`[webhook] DISPUTE.CREATED: order #${order.id} → disputed`);
+
+            const adminEmail = process.env.ADMIN_EMAIL || "info@konexnfc.com";
+            const reason = event.resource?.reason || undefined;
+            sendAdminDisputeAlert({
+              adminEmail,
+              orderId: order.id,
+              customerEmail: order.customerEmail || "unknown",
+              amount: order.amount,
+              reason,
+            }).catch((e) => console.error("[email] dispute alert failed:", e));
           }
         }
       }
@@ -1762,6 +1842,11 @@ export async function registerRoutes(
 
   // Public: Complete activation
   app.post("/api/checkout/activate", async (req, res) => {
+    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "unknown";
+    if (!checkRateLimit(`activate:${ip}`, 3, 60_000)) {
+      return res.status(429).json({ message: "Too many attempts. Please wait a minute and try again." });
+    }
+
     const schema = z.object({
       token: z.string(),
       displayName: z.string().min(1).max(100),
@@ -1773,6 +1858,7 @@ export async function registerRoutes(
       bio: z.string().max(500).optional(),
       slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/),
       password: z.string().min(8).optional(),
+      shippingAddress: z.string().max(400).optional(),
     });
 
     const parsed = schema.safeParse(req.body);
@@ -1780,7 +1866,7 @@ export async function registerRoutes(
       return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid input" });
     }
 
-    const { token, displayName, title, company, phone, email, website, bio, slug, password } = parsed.data;
+    const { token, displayName, title, company, phone, email, website, bio, slug, password, shippingAddress } = parsed.data;
 
     const tokenRecord = await storage.getActivationTokenByToken(token);
     if (!tokenRecord) return res.status(404).json({ message: "Token not found" });
@@ -1845,13 +1931,40 @@ export async function registerRoutes(
         });
       }
 
-      // Consume token + mark order activated
+      // Consume token + mark order activated (save shipping address if provided)
       await storage.markActivationTokenConsumed(tokenRecord.id);
       await storage.updateOrder(order.id, {
         status: "activated",
         userId: user.id,
+        ...(shippingAddress ? { shippingAddress } : {}),
       });
 
+      // Fire post-activation emails (non-blocking)
+      const orderItem = SKU_CATALOG[order.sku];
+      const recipientEmail = contactEmail!;
+
+      sendWelcomeEmail(
+        recipientEmail,
+        displayName,
+        profile.slug,
+        order.productType,
+      ).catch((e) => console.error("[email] welcome send failed:", e));
+
+      if (order.productType === "physical_card") {
+        const adminEmail = process.env.ADMIN_EMAIL || "info@konexnfc.com";
+        sendAdminOrderNotification({
+          adminEmail,
+          orderId: order.id,
+          productName: orderItem?.name || order.sku,
+          customerName: displayName,
+          customerEmail: recipientEmail,
+          sku: order.sku,
+          amount: order.amount,
+          shippingAddress: shippingAddress,
+        }).catch((e) => console.error("[email] admin notification failed:", e));
+      }
+
+      console.log(`[checkout] Order #${order.id} fully activated for ${recipientEmail}`);
       res.json({
         success: true,
         profileSlug: profile.slug,
@@ -1869,6 +1982,84 @@ export async function registerRoutes(
     if (!req.isAuthenticated() || !req.user?.isAdmin) return res.sendStatus(403);
     const orderList = await storage.listOrders(200);
     res.json(orderList);
+  });
+
+  // Admin: mark order as shipped
+  app.post("/api/admin/orders/ship", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.isAdmin) return res.sendStatus(403);
+
+    const schema = z.object({
+      orderId: z.number().int().positive(),
+      trackingInfo: z.string().max(200).optional(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
+
+    const { orderId, trackingInfo } = parsed.data;
+    const order = await storage.getOrderById(orderId);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+    if (order.productType !== "physical_card") {
+      return res.status(400).json({ message: "Only physical card orders can be shipped" });
+    }
+
+    const item = SKU_CATALOG[order.sku];
+    await storage.updateOrder(orderId, {
+      status: "shipped",
+      shippedAt: new Date(),
+    });
+
+    if (order.customerEmail) {
+      sendShippedEmail(
+        order.customerEmail,
+        order.customerName || "Customer",
+        item?.name || order.sku,
+        trackingInfo,
+      ).catch((e) => console.error("[email] shipped notification failed:", e));
+    }
+
+    console.log(`[admin] Order #${orderId} marked as shipped by admin ${req.user.id}`);
+    res.json({ success: true });
+  });
+
+  // Public: download vCard for a profile
+  app.get("/api/public/vcard/:slug", async (req, res) => {
+    const { slug } = req.params;
+    const profile = await storage.getProfileBySlug(slug);
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+
+    const links = (profile.links as Record<string, string | undefined>) || {};
+    const name = profile.name || "";
+    const nameParts = name.trim().split(/\s+/);
+    const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+    const firstName = nameParts.slice(0, nameParts.length > 1 ? -1 : 1).join(" ");
+
+    const lines: string[] = [
+      "BEGIN:VCARD",
+      "VERSION:3.0",
+      `FN:${name}`,
+      `N:${lastName};${firstName};;;`,
+    ];
+
+    if (profile.title || profile.company) {
+      if (profile.title) lines.push(`TITLE:${profile.title}`);
+      if (profile.company) lines.push(`ORG:${profile.company}`);
+    }
+    if (links.phone) lines.push(`TEL;TYPE=CELL:${links.phone}`);
+    if (links.email) lines.push(`EMAIL:${links.email}`);
+    if (links.website) lines.push(`URL:${links.website}`);
+    if (links.linkedin) lines.push(`URL;TYPE=LinkedIn:${links.linkedin}`);
+    if (profile.bio) lines.push(`NOTE:${profile.bio.replace(/\n/g, "\\n")}`);
+    if (profile.photoUrl) lines.push(`PHOTO;VALUE=URI:${profile.photoUrl}`);
+
+    const appBase = process.env.APP_BASE_URL || "https://konexnfc.com";
+    lines.push(`URL;TYPE=Profile:${appBase}/u/${slug}`);
+    lines.push("END:VCARD");
+
+    const vcf = lines.join("\r\n");
+    const filename = `${slug}.vcf`;
+    res.setHeader("Content-Type", "text/vcard; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.send(vcf);
   });
 
   return httpServer;

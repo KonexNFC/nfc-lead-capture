@@ -318,6 +318,10 @@ export const orders = pgTable("orders", {
   productType: text("product_type").notNull(),
   customerEmail: text("customer_email"),
   customerName: text("customer_name"),
+  shippingAddress: text("shipping_address"),
+  shippedAt: timestamp("shipped_at"),
+  disputedAt: timestamp("disputed_at"),
+  refundedAt: timestamp("refunded_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

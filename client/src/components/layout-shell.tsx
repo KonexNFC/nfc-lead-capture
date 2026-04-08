@@ -19,7 +19,8 @@ import {
   CreditCard,
   Building2,
   Palette,
-  BarChart2
+  BarChart2,
+  Package
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
     ...(user?.isAdmin ? [
       { name: 'Admin Panel', href: '/dashboard/admin', icon: Shield },
       { name: 'Card Inventory', href: '/dashboard/admin/cards', icon: CreditCard },
+      { name: 'Orders', href: '/dashboard/admin/orders', icon: Package },
     ] : []),
   ];
 

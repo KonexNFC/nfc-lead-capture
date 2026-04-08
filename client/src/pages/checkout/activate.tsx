@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Loader2, CheckCircle2, User, Briefcase, Phone, Mail, Globe, FileText, Link as LinkIcon, Lock } from "lucide-react";
+import { Loader2, CheckCircle2, User, Briefcase, Phone, Mail, Globe, FileText, Link as LinkIcon, Lock, MapPin } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -28,6 +28,7 @@ const activateSchema = z.object({
     .max(50, "Max 50 characters")
     .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers and hyphens"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  shippingAddress: z.string().max(400).optional(),
 });
 
 type ActivateForm = z.infer<typeof activateSchema>;
@@ -66,6 +67,7 @@ export default function CheckoutActivatePage() {
       bio: "",
       slug: "",
       password: "",
+      shippingAddress: "",
     },
   });
 
@@ -322,6 +324,31 @@ export default function CheckoutActivatePage() {
                   <FormMessage />
                 </FormItem>
               )} />
+
+              {/* Shipping address — shown only for physical card orders */}
+              {info?.productType === "physical_card" && (
+                <FormField control={form.control} name="shippingAddress" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm" style={{ color: "#d1d5db" }}>
+                      <MapPin size={13} className="inline mr-1" /> Shipping Address *
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder={"12 Example Street\nLondon\nEC1A 1BB\nUnited Kingdom"}
+                        rows={4}
+                        data-testid="input-shippingAddress"
+                        className="bg-transparent border rounded-lg text-white placeholder:text-gray-600 resize-none"
+                        style={{ borderColor: "rgba(255,255,255,0.12)" }}
+                      />
+                    </FormControl>
+                    <FormDescription style={{ color: "#4b5563", fontSize: "0.75rem" }}>
+                      We'll ship your NFC card to this address
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              )}
 
               <Button
                 type="submit"

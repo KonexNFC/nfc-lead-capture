@@ -32,6 +32,7 @@ import AppearancePage from "@/pages/dashboard/appearance";
 import AnalyticsPage from "@/pages/dashboard/analytics";
 import AdminTestimonials from "@/pages/dashboard/admin/testimonials";
 import AdminCards from "@/pages/dashboard/admin/cards";
+import AdminOrders from "@/pages/dashboard/admin/orders";
 import OrganizationDashboard from "@/pages/dashboard/organization/index";
 import OrganizationMembers from "@/pages/dashboard/organization/members";
 import OrganizationCards from "@/pages/dashboard/organization/cards";
@@ -171,6 +172,9 @@ function Router() {
       </Route>
       <Route path="/dashboard/admin/cards">
         <ProtectedRoute component={AdminCards} adminOnly />
+      </Route>
+      <Route path="/dashboard/admin/orders">
+        <ProtectedRoute component={AdminOrders} adminOnly />
       </Route>
 
       {/* 404 */}
