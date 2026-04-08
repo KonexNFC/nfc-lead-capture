@@ -236,21 +236,6 @@ export default function PublicProfile() {
       {/* Modules */}
       <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
 
-      {/* Save Contact (vCard download) */}
-      <div className="w-full max-w-md mt-4 px-2">
-        <a
-          href={`/api/public/vcard/${slug}`}
-          download={`${profile.name || slug}.vcf`}
-          onClick={() => trackEvent(slug, "save_contact")}
-          className="flex items-center justify-center gap-2 w-full rounded-xl min-h-[44px] py-2 px-4 text-sm font-semibold border transition-all"
-          style={{ borderColor: "rgba(59,130,246,0.4)", color: "#60a5fa", background: "rgba(59,130,246,0.06)" }}
-          data-testid="button-save-contact"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Save Contact
-        </a>
-      </div>
-
       {/* Order Konex Card CTA */}
       <div className="w-full max-w-md mt-4 rounded-2xl border border-border/40 bg-card px-6 py-5 text-center space-y-3" data-testid="section-order-konex">
         <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">Upgrade your networking</p>
