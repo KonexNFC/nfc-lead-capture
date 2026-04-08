@@ -183,39 +183,21 @@ export default function PublicProfile() {
     : null;
 
   return (
-    <div
-      className="min-h-screen relative flex flex-col"
-      style={{
-        ...brandStyle,
-        ...(heroUrl ? {
-          backgroundImage: `url(${heroUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "top center",
-          backgroundRepeat: "no-repeat",
-          backgroundAttachment: "scroll",
-        } : {}),
-      }}
-      data-testid="hero-banner"
-    >
-      {/* Dark overlay for readability when hero image is used as background */}
-      {heroUrl && (
-        <div className="absolute inset-0 bg-black/55 pointer-events-none" />
-      )}
-
-      {/* All page content sits above the overlay */}
-      <div className="relative z-10 flex flex-col items-center p-4 pt-4 pb-10 w-full">
+    <div className="min-h-screen flex flex-col items-center pb-10" style={brandStyle}>
 
       {/* Logo or KONEX Branding */}
-      <a href="/" className="flex items-center gap-2 mb-2" data-testid="konex-branding-header">
-        {logoUrl ? (
-          <img src={logoUrl} alt="Logo" className="h-10 md:h-14 w-auto" />
-        ) : (
-          <img src={konexLogo} alt="KONEX" className="h-10 md:h-14 w-auto" />
-        )}
-      </a>
+      <div className="w-full flex justify-center pt-4 pb-2 px-4">
+        <a href="/" className="flex items-center gap-2" data-testid="konex-branding-header">
+          {logoUrl ? (
+            <img src={logoUrl} alt="Logo" className="h-10 md:h-14 w-auto" />
+          ) : (
+            <img src={konexLogo} alt="KONEX" className="h-10 md:h-14 w-auto" />
+          )}
+        </a>
+      </div>
 
-      {/* Hero Section */}
-      <div className="text-center mb-3">
+      {/* Subtitle */}
+      <div className="text-center mb-3 px-4">
         {textOverrides.headline && (
           <h1 className="text-xl font-bold mb-1" data-testid="text-hero-headline">{textOverrides.headline}</h1>
         )}
@@ -225,7 +207,7 @@ export default function PublicProfile() {
       </div>
 
       {/* Profile Card — wrapped for link-click event delegation */}
-      <div className="w-full" onClick={handleProfileAreaClick}>
+      <div className="w-full px-4" onClick={handleProfileAreaClick}>
         <ProfilePreview
           profile={profile}
           layoutVariant={resolvedCust.layoutVariant}
@@ -246,10 +228,12 @@ export default function PublicProfile() {
       </div>
 
       {/* Modules */}
-      <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
+      <div className="w-full px-4">
+        <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
+      </div>
 
       {/* Order Konex Card CTA */}
-      <div className="w-full max-w-md mt-4 rounded-2xl border border-border/40 bg-card px-6 py-5 text-center space-y-3" data-testid="section-order-konex">
+      <div className="w-full max-w-md mt-4 px-4 rounded-2xl border border-border/40 bg-card px-6 py-5 text-center space-y-3 mx-4" data-testid="section-order-konex">
         <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">Upgrade your networking</p>
         <p className="text-sm font-medium">Get your own Konex NFC card</p>
         <a
@@ -267,8 +251,6 @@ export default function PublicProfile() {
           </Button>
         </a>
       </div>
-
-      </div>{/* end relative z-10 content wrapper */}
 
       {/* Lead Capture Dialog/Drawer */}
       {lockedIsDesktop ? (

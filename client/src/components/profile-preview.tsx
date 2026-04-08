@@ -525,49 +525,85 @@ export function ProfilePreview({
           className={`relative overflow-hidden bg-background shadow-2xl min-h-[600px] flex flex-col border-border/30 ${mock ? "scale-90 opacity-90" : ""}`}
           style={{ borderRadius: crPx }}
         >
-          {/* Banner */}
-          <div className="relative">
-            <div className="w-full h-32 relative">
-              {coverSrc ? (
-                <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
-              ) : (
-                <>
-                  <div className="absolute inset-0" style={{ background: socialBannerBg }} />
-                  {c.backgroundStyle === "pattern" && (
-                    <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
-                  )}
-                </>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-            </div>
-            <div className="flex flex-col items-center -mt-14 relative z-10 px-6">
-              <div className="p-1 bg-background shadow-lg mb-3" style={{ borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
-                <Avatar
-                  className="h-24 w-24"
-                  style={{ borderRadius: avatarRadius, overflow: "hidden", border: `2px solid ${accent}30` }}
+          {/* Banner — tall cover image with identity overlaid, or short gradient without */}
+          {coverSrc ? (
+            <div className="relative w-full overflow-hidden" style={{ height: 300 }}>
+              <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover object-top" />
+              {/* Gradient: light at top, dark at bottom for identity readability */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/80" />
+              {/* Avatar + identity pinned to the bottom of the banner */}
+              <div className="absolute bottom-5 left-0 right-0 flex flex-col items-center z-10 px-6">
+                <div
+                  className="shadow-xl mb-3"
+                  style={{
+                    padding: 3,
+                    background: `rgba(255,255,255,0.15)`,
+                    backdropFilter: "blur(4px)",
+                    borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius,
+                  }}
                 >
-                  <AvatarImage src={resolveAvatarSrc(profile.photoUrl)} alt={profile.name} className="object-cover" style={{ borderRadius: avatarRadius }} />
-                  <AvatarFallback className="text-2xl font-bold" style={{ borderRadius: avatarRadius, backgroundColor: `${accent}22`, color: accent }}>
-                    {profile.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              <div className="text-center space-y-0.5 mb-4">
-                <h2 className="text-xl font-bold text-foreground" style={{ fontFamily: headingFont }}>{profile.name}</h2>
-                {profile.title && (
-                  <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs">
-                    <Briefcase className="h-3 w-3" />
-                    <span>{profile.title}</span>
-                  </div>
-                )}
-                {profile.company && (
-                  <p className="text-sm font-semibold" style={{ color: accent }}>{profile.company}</p>
-                )}
+                  <Avatar
+                    className="h-20 w-20"
+                    style={{ borderRadius: avatarRadius, overflow: "hidden", border: `2px solid rgba(255,255,255,0.3)` }}
+                  >
+                    <AvatarImage src={resolveAvatarSrc(profile.photoUrl)} alt={profile.name} className="object-cover" style={{ borderRadius: avatarRadius }} />
+                    <AvatarFallback className="text-2xl font-bold" style={{ borderRadius: avatarRadius, backgroundColor: `${accent}55`, color: "#fff" }}>
+                      {profile.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <div className="text-center space-y-0.5">
+                  <h2 className="text-xl font-bold text-white drop-shadow" style={{ fontFamily: headingFont }}>{profile.name}</h2>
+                  {profile.title && (
+                    <div className="flex items-center justify-center gap-1 text-white/75 text-xs">
+                      <Briefcase className="h-3 w-3" />
+                      <span>{profile.title}</span>
+                    </div>
+                  )}
+                  {profile.company && (
+                    <p className="text-sm font-semibold drop-shadow" style={{ color: accent }}>{profile.company}</p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="relative">
+              <div className="w-full h-32 relative">
+                <div className="absolute inset-0" style={{ background: socialBannerBg }} />
+                {c.backgroundStyle === "pattern" && (
+                  <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+              </div>
+              <div className="flex flex-col items-center -mt-14 relative z-10 px-6">
+                <div className="p-1 bg-background shadow-lg mb-3" style={{ borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
+                  <Avatar
+                    className="h-24 w-24"
+                    style={{ borderRadius: avatarRadius, overflow: "hidden", border: `2px solid ${accent}30` }}
+                  >
+                    <AvatarImage src={resolveAvatarSrc(profile.photoUrl)} alt={profile.name} className="object-cover" style={{ borderRadius: avatarRadius }} />
+                    <AvatarFallback className="text-2xl font-bold" style={{ borderRadius: avatarRadius, backgroundColor: `${accent}22`, color: accent }}>
+                      {profile.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <div className="text-center space-y-0.5 mb-4">
+                  <h2 className="text-xl font-bold text-foreground" style={{ fontFamily: headingFont }}>{profile.name}</h2>
+                  {profile.title && (
+                    <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs">
+                      <Briefcase className="h-3 w-3" />
+                      <span>{profile.title}</span>
+                    </div>
+                  )}
+                  {profile.company && (
+                    <p className="text-sm font-semibold" style={{ color: accent }}>{profile.company}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
-          <div className="px-5 flex-1 flex flex-col overflow-y-auto scrollbar-hide">
+          <div className={`px-5 flex-1 flex flex-col overflow-y-auto scrollbar-hide ${coverSrc ? "pt-5" : ""}`}>
             {profile.bio && (
               <p className="text-sm text-muted-foreground text-center leading-relaxed mb-5">{profile.bio}</p>
             )}
