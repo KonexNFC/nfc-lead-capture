@@ -2,7 +2,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
-import { pool } from "./db";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 
 const app = express();
 const httpServer = createServer(app);
@@ -71,7 +72,7 @@ app.use((req, res, next) => {
 (async () => {
   // ── Startup migration: set Social Hub as default for all unthemed profiles ──
   try {
-    const result = await pool.query(`
+    const result = await db.execute(sql`
       UPDATE profiles
       SET branding = jsonb_set(
         COALESCE(branding::jsonb, '{}'::jsonb),
