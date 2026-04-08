@@ -513,7 +513,9 @@ export async function registerRoutes(
   // Purge stale entries every 5 minutes
   setInterval(() => {
     const now = Date.now();
-    for (const [k, v] of eventRateLimits) if (v.resetAt < now) eventRateLimits.delete(k);
+    Array.from(eventRateLimits.entries()).forEach(([k, v]) => {
+      if (v.resetAt < now) eventRateLimits.delete(k);
+    });
   }, 300_000);
 
   app.post("/api/public/track", eventRateLimit, async (req, res) => {

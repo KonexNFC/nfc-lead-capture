@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import type { Card as CardType } from "@shared/schema";
+import type { Card as CardType, Lead } from "@shared/schema";
 
 export default function Dashboard() {
   const { activeProfile: profile, isLoading: profileLoading } = useActiveProfile();
@@ -242,7 +242,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {recentLeads.map((lead) => (
+              {recentLeads.map((lead: Lead) => (
                 <div key={lead.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">

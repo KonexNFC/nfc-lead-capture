@@ -6,6 +6,9 @@ declare global {
       id: number;
       email: string;
       password: string;
+      resetToken: string | null;
+      resetTokenExpiry: Date | null;
+      isAdmin: boolean | null;
       createdAt: Date | null;
     }
   }
