@@ -1,0 +1,1008 @@
+# Konex NFC PayPal Scaffold (Replit)
+
+## 1) `prisma/schema.prisma`
+
+```prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  draft
+  created
+  approved
+  captured
+  activation_pending
+  activated
+  failed
+  refunded
+}
+
+enum CardStatus {
+  unassigned
+  assigned
+  activation_pending
+  active
+  suspended
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  fullName     String?
+  passwordHash String?
+  createdAt    DateTime  @default(now())
+  profiles     Profile[]
+  orders       Order[]
+}
+
+model Order {
+  id              String           @id @default(cuid())
+  userId          String?
+  paypalOrderId   String           @unique
+  paypalCaptureId String?
+  status          OrderStatus      @default(created)
+  amount          Decimal          @db.Decimal(10, 2)
+  currency        String
+  sku             String
+  productType     String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  user            User?            @relation(fields: [userId], references: [id])
+  card            Card?
+  profile         Profile?
+  activationToken ActivationToken?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Card {
+  id          String     @id @default(cuid())
+  orderId     String     @unique
+  cardUid     String?
+  sku         String
+  status      CardStatus @default(assigned)
+  shippedAt   DateTime?
+  activatedAt DateTime?
+  order       Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String?
+  orderId     String   @unique
+  publicSlug  String   @unique
+  displayName String?
+  title       String?
+  company     String?
+  phone       String?
+  email       String?
+  website     String?
+  bio         String?
+  avatarUrl   String?
+  theme       String   @default("minimal")
+  isLive      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User?    @relation(fields: [userId], references: [id])
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  token       ActivationToken?
+}
+
+model ActivationToken {
+  id         String    @id @default(cuid())
+  orderId     String   @unique
+  profileId   String   @unique
+  token       String   @unique
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime @default(now())
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+}
+
+model WebhookEvent {
+  id            String   @id @default(cuid())
+  paypalEventId String   @unique
+  eventType     String
+  payloadJson   Json
+  processedAt   DateTime @default(now())
+}
+```
+
+## 2) `src/lib/prisma.ts`
+
+```ts
+import { PrismaClient } from '@prisma/client';
+
+declare global {
+  // eslint-disable-next-line no-var
+  var prisma: PrismaClient | undefined;
+}
+
+export const prisma = global.prisma || new PrismaClient();
+if (process.env.NODE_ENV !== 'production') global.prisma = prisma;
+```
+
+## 3) `src/lib/catalog.ts`
+
+```ts
+export const PRODUCT_CATALOG = {
+  KONEX_PROFILE_ONLY: {
+    sku: 'KONEX_PROFILE_ONLY',
+    name: 'Konex Digital Profile',
+    value: '9.99',
+    currency: 'GBP',
+    productType: 'digital_profile',
+  },
+  KONEX_BASIC_CARD: {
+    sku: 'KONEX_BASIC_CARD',
+    name: 'Konex Basic NFC Card',
+    value: '24.99',
+    currency: 'GBP',
+    productType: 'physical_card',
+  },
+  KONEX_PREMIUM_CARD: {
+    sku: 'KONEX_PREMIUM_CARD',
+    name: 'Konex Premium NFC Card',
+    value: '49.99',
+    currency: 'GBP',
+    productType: 'physical_card',
+  },
+} as const;
+
+export type ProductSku = keyof typeof PRODUCT_CATALOG;
+```
+
+## 4) `src/lib/env.ts`
+
+```ts
+const required = [
+  'DATABASE_URL',
+  'PAYPAL_CLIENT_ID',
+  'PAYPAL_CLIENT_SECRET',
+  'PAYPAL_ENV',
+  'PAYPAL_WEBHOOK_ID',
+  'APP_BASE_URL',
+] as const;
+
+for (const key of required) {
+  if (!process.env[key]) {
+    throw new Error(`Missing environment variable: ${key}`);
+  }
+}
+
+export const env = {
+  DATABASE_URL: process.env.DATABASE_URL!,
+  PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID!,
+  PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET!,
+  PAYPAL_ENV: process.env.PAYPAL_ENV! as 'sandbox' | 'live',
+  PAYPAL_WEBHOOK_ID: process.env.PAYPAL_WEBHOOK_ID!,
+  APP_BASE_URL: process.env.APP_BASE_URL!,
+};
+```
+
+## 5) `src/lib/paypal.ts`
+
+```ts
+import { env } from './env';
+
+const baseUrl = env.PAYPAL_ENV === 'live'
+  ? 'https://api-m.paypal.com'
+  : 'https://api-m.sandbox.paypal.com';
+
+async function getAccessToken(): Promise<string> {
+  const auth = Buffer.from(`${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_CLIENT_SECRET}`).toString('base64');
+
+  const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${auth}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'grant_type=client_credentials',
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`PayPal auth failed: ${text}`);
+  }
+
+  const data = await res.json();
+  return data.access_token;
+}
+
+export async function createPaypalOrder(input: {
+  value: string;
+  currency: string;
+  description: string;
+  customId: string;
+}) {
+  const accessToken = await getAccessToken();
+
+  const res = await fetch(`${baseUrl}/v2/checkout/orders`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify({
+      intent: 'CAPTURE',
+      purchase_units: [
+        {
+          custom_id: input.customId,
+          description: input.description,
+          amount: {
+            currency_code: input.currency,
+            value: input.value,
+          },
+        },
+      ],
+      application_context: {
+        return_url: `${env.APP_BASE_URL}/checkout/success`,
+        cancel_url: `${env.APP_BASE_URL}/checkout/cancel`,
+        brand_name: 'Konex NFC',
+        shipping_preference: 'NO_SHIPPING',
+        user_action: 'PAY_NOW',
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`PayPal create order failed: ${text}`);
+  }
+
+  return res.json();
+}
+
+export async function capturePaypalOrder(orderId: string) {
+  const accessToken = await getAccessToken();
+
+  const res = await fetch(`${baseUrl}/v2/checkout/orders/${orderId}/capture`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`PayPal capture failed: ${text}`);
+  }
+
+  return res.json();
+}
+
+export async function verifyPaypalWebhook(args: {
+  transmissionId: string;
+  transmissionTime: string;
+  certUrl: string;
+  authAlgo: string;
+  transmissionSig: string;
+  webhookEvent: unknown;
+}) {
+  const accessToken = await getAccessToken();
+
+  const res = await fetch(`${baseUrl}/v1/notifications/verify-webhook-signature`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      auth_algo: args.authAlgo,
+      cert_url: args.certUrl,
+      transmission_id: args.transmissionId,
+      transmission_sig: args.transmissionSig,
+      transmission_time: args.transmissionTime,
+      webhook_id: env.PAYPAL_WEBHOOK_ID,
+      webhook_event: args.webhookEvent,
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`PayPal webhook verify failed: ${text}`);
+  }
+
+  const data = await res.json();
+  return data.verification_status === 'SUCCESS';
+}
+```
+
+## 6) `src/lib/token.ts`
+
+```ts
+import crypto from 'crypto';
+
+export function generateActivationToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+```
+
+## 7) `src/lib/validators.ts`
+
+```ts
+import { z } from 'zod';
+import { PRODUCT_CATALOG } from './catalog';
+
+export const createOrderSchema = z.object({
+  sku: z.enum([
+    PRODUCT_CATALOG.KONEX_PROFILE_ONLY.sku,
+    PRODUCT_CATALOG.KONEX_BASIC_CARD.sku,
+    PRODUCT_CATALOG.KONEX_PREMIUM_CARD.sku,
+  ]),
+});
+
+export const captureOrderSchema = z.object({
+  orderID: z.string().min(3),
+});
+
+export const activationSchema = z.object({
+  token: z.string().min(20),
+  displayName: z.string().min(2).max(80),
+  title: z.string().max(80).optional().or(z.literal('')),
+  company: z.string().max(80).optional().or(z.literal('')),
+  phone: z.string().max(30).optional().or(z.literal('')),
+  email: z.string().email(),
+  website: z.string().url().optional().or(z.literal('')),
+  bio: z.string().max(300).optional().or(z.literal('')),
+  avatarUrl: z.string().url().optional().or(z.literal('')),
+  theme: z.enum(['minimal', 'corporate', 'personal-brand']),
+});
+```
+
+## 8) `src/app/api/paypal/create-order/route.ts`
+
+```ts
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { PRODUCT_CATALOG } from '@/lib/catalog';
+import { createOrderSchema } from '@/lib/validators';
+import { createPaypalOrder } from '@/lib/paypal';
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { sku } = createOrderSchema.parse(body);
+    const product = PRODUCT_CATALOG[sku];
+
+    const localDraft = await prisma.order.create({
+      data: {
+        paypalOrderId: `draft_${crypto.randomUUID()}`,
+        status: 'draft',
+        amount: product.value,
+        currency: product.currency,
+        sku: product.sku,
+        productType: product.productType,
+      },
+    });
+
+    const paypalOrder = await createPaypalOrder({
+      value: product.value,
+      currency: product.currency,
+      description: product.name,
+      customId: localDraft.id,
+    });
+
+    await prisma.order.update({
+      where: { id: localDraft.id },
+      data: {
+        paypalOrderId: paypalOrder.id,
+        status: 'created',
+      },
+    });
+
+    return NextResponse.json({ paypalOrderId: paypalOrder.id });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Unable to create order' }, { status: 400 });
+  }
+}
+```
+
+## 9) `src/app/api/paypal/capture-order/route.ts`
+
+```ts
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { captureOrderSchema } from '@/lib/validators';
+import { capturePaypalOrder } from '@/lib/paypal';
+import { generateActivationToken } from '@/lib/token';
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { orderID } = captureOrderSchema.parse(body);
+
+    const order = await prisma.order.findUnique({
+      where: { paypalOrderId: orderID },
+      include: { activationToken: true, profile: true, card: true },
+    });
+
+    if (!order) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+
+    if (['captured', 'activation_pending', 'activated'].includes(order.status)) {
+      return NextResponse.json({
+        ok: true,
+        activationToken: order.activationToken?.token ?? null,
+      });
+    }
+
+    const capture = await capturePaypalOrder(orderID);
+    const captureInfo = capture?.purchase_units?.[0]?.payments?.captures?.[0];
+
+    if (!captureInfo || captureInfo.status !== 'COMPLETED') {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { status: 'failed' },
+      });
+      return NextResponse.json({ error: 'Capture not completed' }, { status: 400 });
+    }
+
+    const activationToken = generateActivationToken();
+
+    const result = await prisma.$transaction(async (tx) => {
+      const profile = await tx.profile.create({
+        data: {
+          orderId: order.id,
+          publicSlug: `konex-${crypto.randomUUID().slice(0, 8)}`,
+          theme: 'minimal',
+          isLive: false,
+        },
+      });
+
+      const token = await tx.activationToken.create({
+        data: {
+          orderId: order.id,
+          profileId: profile.id,
+          token: activationToken,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      if (order.productType === 'physical_card') {
+        await tx.card.create({
+          data: {
+            orderId: order.id,
+            sku: order.sku,
+            status: 'activation_pending',
+          },
+        });
+      }
+
+      await tx.order.update({
+        where: { id: order.id },
+        data: {
+          paypalCaptureId: captureInfo.id,
+          status: 'activation_pending',
+        },
+      });
+
+      return { token };
+    });
+
+    return NextResponse.json({ ok: true, activationToken: result.token.token });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Unable to capture order' }, { status: 400 });
+  }
+}
+```
+
+## 10) `src/app/api/activation/consume/route.ts`
+
+```ts
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { activationSchema } from '@/lib/validators';
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const parsed = activationSchema.parse(body);
+
+    const tokenRecord = await prisma.activationToken.findUnique({
+      where: { token: parsed.token },
+      include: {
+        order: true,
+        profile: true,
+      },
+    });
+
+    if (!tokenRecord) {
+      return NextResponse.json({ error: 'Invalid activation token' }, { status: 404 });
+    }
+
+    if (tokenRecord.consumedAt) {
+      return NextResponse.json({ error: 'Token already used' }, { status: 409 });
+    }
+
+    if (tokenRecord.expiresAt < new Date()) {
+      return NextResponse.json({ error: 'Token expired' }, { status: 410 });
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const profile = await tx.profile.update({
+        where: { id: tokenRecord.profileId },
+        data: {
+          displayName: parsed.displayName,
+          title: parsed.title || null,
+          company: parsed.company || null,
+          phone: parsed.phone || null,
+          email: parsed.email,
+          website: parsed.website || null,
+          bio: parsed.bio || null,
+          avatarUrl: parsed.avatarUrl || null,
+          theme: parsed.theme,
+          isLive: true,
+        },
+      });
+
+      await tx.activationToken.update({
+        where: { id: tokenRecord.id },
+        data: { consumedAt: new Date() },
+      });
+
+      await tx.order.update({
+        where: { id: tokenRecord.orderId },
+        data: { status: 'activated' },
+      });
+
+      await tx.card.updateMany({
+        where: { orderId: tokenRecord.orderId },
+        data: {
+          status: 'active',
+          activatedAt: new Date(),
+        },
+      });
+
+      return profile;
+    });
+
+    return NextResponse.json({ ok: true, slug: result.publicSlug });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Activation failed' }, { status: 400 });
+  }
+}
+```
+
+## 11) `src/app/api/paypal/webhook/route.ts`
+
+```ts
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { verifyPaypalWebhook } from '@/lib/paypal';
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+
+    const isValid = await verifyPaypalWebhook({
+      transmissionId: req.headers.get('paypal-transmission-id') || '',
+      transmissionTime: req.headers.get('paypal-transmission-time') || '',
+      certUrl: req.headers.get('paypal-cert-url') || '',
+      authAlgo: req.headers.get('paypal-auth-algo') || '',
+      transmissionSig: req.headers.get('paypal-transmission-sig') || '',
+      webhookEvent: body,
+    });
+
+    if (!isValid) {
+      return NextResponse.json({ error: 'Invalid webhook' }, { status: 400 });
+    }
+
+    const existing = await prisma.webhookEvent.findUnique({
+      where: { paypalEventId: body.id },
+    });
+
+    if (existing) {
+      return NextResponse.json({ ok: true, duplicate: true });
+    }
+
+    await prisma.webhookEvent.create({
+      data: {
+        paypalEventId: body.id,
+        eventType: body.event_type,
+        payloadJson: body,
+      },
+    });
+
+    if (body.event_type === 'PAYMENT.CAPTURE.COMPLETED') {
+      const captureId = body.resource?.id;
+      if (captureId) {
+        await prisma.order.updateMany({
+          where: {
+            paypalCaptureId: captureId,
+            status: { in: ['captured', 'activation_pending'] },
+          },
+          data: { status: 'activation_pending' },
+        });
+      }
+    }
+
+    if (
+      body.event_type === 'PAYMENT.CAPTURE.DENIED' ||
+      body.event_type === 'CHECKOUT.PAYMENT-APPROVAL.REVERSED'
+    ) {
+      const reversedOrderId = body.resource?.supplementary_data?.related_ids?.order_id;
+      if (reversedOrderId) {
+        await prisma.order.updateMany({
+          where: { paypalOrderId: reversedOrderId },
+          data: { status: 'failed' },
+        });
+      }
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Webhook handling failed' }, { status: 400 });
+  }
+}
+```
+
+## 12) `src/app/activate/page.tsx`
+
+```tsx
+'use client';
+
+import { useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+export default function ActivatePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = useMemo(() => searchParams.get('token') || '', [searchParams]);
+
+  const [form, setForm] = useState({
+    displayName: '',
+    title: '',
+    company: '',
+    phone: '',
+    email: '',
+    website: '',
+    bio: '',
+    avatarUrl: '',
+    theme: 'minimal',
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const res = await fetch('/api/activation/consume', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, ...form }),
+    });
+
+    const data = await res.json();
+    setLoading(false);
+
+    if (!res.ok) {
+      setError(data.error || 'Activation failed');
+      return;
+    }
+
+    router.push(`/p/${data.slug}`);
+  }
+
+  return (
+    <main className="min-h-screen bg-black text-white px-6 py-10">
+      <div className="mx-auto max-w-2xl rounded-3xl border border-white/10 bg-white/5 p-8">
+        <h1 className="text-3xl font-semibold">Activate your Konex NFC</h1>
+        <p className="mt-2 text-white/70">Complete your profile to go live.</p>
+
+        <form onSubmit={onSubmit} className="mt-8 grid gap-4">
+          {[
+            ['displayName', 'Display name'],
+            ['title', 'Title'],
+            ['company', 'Company'],
+            ['phone', 'Phone'],
+            ['email', 'Email'],
+            ['website', 'Website'],
+            ['avatarUrl', 'Avatar URL'],
+          ].map(([key, label]) => (
+            <input
+              key={key}
+              className="rounded-xl bg-white/10 px-4 py-3 outline-none"
+              placeholder={label}
+              value={(form as any)[key]}
+              onChange={(e) => setForm((s) => ({ ...s, [key]: e.target.value }))}
+            />
+          ))}
+
+          <textarea
+            className="rounded-xl bg-white/10 px-4 py-3 outline-none min-h-[120px]"
+            placeholder="Bio"
+            value={form.bio}
+            onChange={(e) => setForm((s) => ({ ...s, bio: e.target.value }))}
+          />
+
+          <select
+            className="rounded-xl bg-white/10 px-4 py-3 outline-none"
+            value={form.theme}
+            onChange={(e) => setForm((s) => ({ ...s, theme: e.target.value }))}
+          >
+            <option value="minimal">Minimal</option>
+            <option value="corporate">Corporate</option>
+            <option value="personal-brand">Personal Brand</option>
+          </select>
+
+          {error ? <p className="text-red-400">{error}</p> : null}
+
+          <button
+            type="submit"
+            disabled={loading || !token}
+            className="rounded-xl bg-white text-black px-5 py-3 font-medium disabled:opacity-50"
+          >
+            {loading ? 'Activating...' : 'Activate Profile'}
+          </button>
+        </form>
+      </div>
+    </main>
+  );
+}
+```
+
+## 13) `src/components/PayPalButton.tsx`
+
+```tsx
+'use client';
+
+import { useEffect, useRef } from 'react';
+
+declare global {
+  interface Window {
+    paypal: any;
+  }
+}
+
+export function PayPalButton({ sku }: { sku: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!window.paypal || !ref.current) return;
+
+    ref.current.innerHTML = '';
+
+    window.paypal.Buttons({
+      async createOrder() {
+        const res = await fetch('/api/paypal/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sku }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Create order failed');
+        return data.paypalOrderId;
+      },
+      async onApprove(data: { orderID: string }) {
+        const res = await fetch('/api/paypal/capture-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderID: data.orderID }),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Capture failed');
+        window.location.href = `/activate?token=${result.activationToken}`;
+      },
+      onCancel() {
+        window.location.href = '/checkout/cancel';
+      },
+      onError(err: unknown) {
+        console.error(err);
+        alert('Payment failed. Please try again.');
+      },
+    }).render(ref.current);
+  }, [sku]);
+
+  return <div ref={ref} />;
+}
+```
+
+## 14) `src/app/products/konex-nfc/page.tsx`
+
+```tsx
+import Script from 'next/script';
+import { PayPalButton } from '@/components/PayPalButton';
+
+export default function KonexNfcPage() {
+  return (
+    <main className="min-h-screen bg-black text-white px-6 py-10">
+      <Script
+        src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=GBP&components=buttons`}
+        strategy="afterInteractive"
+      />
+
+      <div className="mx-auto max-w-5xl">
+        <h1 className="text-5xl font-semibold">Konex NFC</h1>
+        <p className="mt-3 max-w-2xl text-white/70">
+          Premium digital business card system with instant profile activation.
+        </p>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          {[
+            {
+              title: 'Digital Profile',
+              price: '£9.99',
+              sku: 'KONEX_PROFILE_ONLY',
+            },
+            {
+              title: 'Basic NFC Card',
+              price: '£24.99',
+              sku: 'KONEX_BASIC_CARD',
+            },
+            {
+              title: 'Premium NFC Card',
+              price: '£49.99',
+              sku: 'KONEX_PREMIUM_CARD',
+            },
+          ].map((item) => (
+            <div key={item.sku} className="rounded-3xl border border-white/10 bg-white/5 p-6">
+              <h2 className="text-2xl font-medium">{item.title}</h2>
+              <p className="mt-2 text-3xl">{item.price}</p>
+              <div className="mt-6">
+                <PayPalButton sku={item.sku} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
+```
+
+## 15) `src/app/checkout/success/page.tsx`
+
+```tsx
+export default function CheckoutSuccessPage() {
+  return (
+    <main className="min-h-screen bg-black text-white grid place-items-center p-8">
+      <div className="max-w-xl text-center">
+        <h1 className="text-4xl font-semibold">Payment approved</h1>
+        <p className="mt-3 text-white/70">Your order is being prepared for activation.</p>
+      </div>
+    </main>
+  );
+}
+```
+
+## 16) `src/app/checkout/cancel/page.tsx`
+
+```tsx
+export default function CheckoutCancelPage() {
+  return (
+    <main className="min-h-screen bg-black text-white grid place-items-center p-8">
+      <div className="max-w-xl text-center">
+        <h1 className="text-4xl font-semibold">Checkout cancelled</h1>
+        <p className="mt-3 text-white/70">No payment was completed.</p>
+      </div>
+    </main>
+  );
+}
+```
+
+## 17) `src/app/p/[slug]/page.tsx`
+
+```tsx
+import { prisma } from '@/lib/prisma';
+import { notFound } from 'next/navigation';
+
+export default async function PublicProfilePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+
+  const profile = await prisma.profile.findUnique({
+    where: { publicSlug: slug },
+  });
+
+  if (!profile || !profile.isLive) notFound();
+
+  return (
+    <main className="min-h-screen bg-black text-white px-6 py-10">
+      <div className="mx-auto max-w-md rounded-3xl border border-white/10 bg-white/5 p-8">
+        <h1 className="text-3xl font-semibold">{profile.displayName}</h1>
+        {profile.title ? <p className="mt-2 text-white/70">{profile.title}</p> : null}
+        {profile.company ? <p className="text-white/50">{profile.company}</p> : null}
+        {profile.bio ? <p className="mt-6 text-white/80">{profile.bio}</p> : null}
+
+        <div className="mt-6 grid gap-3">
+          {profile.phone ? <a href={`tel:${profile.phone}`} className="rounded-xl bg-white text-black px-4 py-3">Call</a> : null}
+          {profile.email ? <a href={`mailto:${profile.email}`} className="rounded-xl border border-white/20 px-4 py-3">Email</a> : null}
+          {profile.website ? <a href={profile.website} className="rounded-xl border border-white/20 px-4 py-3">Website</a> : null}
+        </div>
+      </div>
+    </main>
+  );
+}
+```
+
+## 18) `.env.example`
+
+```env
+DATABASE_URL=
+PAYPAL_CLIENT_ID=
+PAYPAL_CLIENT_SECRET=
+PAYPAL_ENV=sandbox
+PAYPAL_WEBHOOK_ID=
+APP_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=
+```
+
+## 19) `package.json` essentials
+
+```json
+{
+  "name": "konex-nfc",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@prisma/client": "latest",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "prisma": "latest",
+    "typescript": "latest"
+  }
+}
+```
+
+## 20) Replit implementation notes
+
+```txt
+1. Create a Next.js app.
+2. Add PostgreSQL and set DATABASE_URL.
+3. Run: npm install
+4. Run: npx prisma generate
+5. Run: npx prisma migrate dev --name init
+6. Add PayPal sandbox credentials.
+7. In PayPal developer dashboard, register webhook URL:
+   https://your-domain/api/paypal/webhook
+8. Subscribe to:
+   - PAYMENT.CAPTURE.COMPLETED
+   - PAYMENT.CAPTURE.DENIED
+   - CHECKOUT.PAYMENT-APPROVAL.REVERSED
+9. Test product page:
+   /products/konex-nfc
+```
+
+## 21) Critical fixes before production
+
+```txt
+- Add email delivery after activation token creation
+- Add authenticated dashboard and account linking
+- Add shipping workflow for physical NFC cards
+- Add vCard download / save contact generation
+- Add sanitisation and rate limiting
+- Add admin reconciliation view
+- Add logging/observability
+- Add graceful refund + dispute workflows
+```

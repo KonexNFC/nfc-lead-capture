@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { Link } from "wouter";
-import { Loader2, CheckCircle, ShoppingCart, ChevronRight, Star, Shield, Zap } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation, Link } from "wouter";
+import { CheckCircle, ShoppingCart, Star, Shield, Zap, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import KonexNav from "@/components/konex/KonexNav";
 import KonexFooter from "@/components/konex/KonexFooter";
+import { PayPalButton } from "@/components/PayPalButton";
 
 const PRODUCTS = [
   {
@@ -53,32 +53,29 @@ const PRODUCTS = [
 export default function CheckoutPage() {
   const preselect = new URLSearchParams(window.location.search).get("sku");
   const [selectedSku, setSelectedSku] = useState<string | null>(
-    preselect && PRODUCTS.some((p) => p.sku === preselect) ? preselect : null
+    preselect && PRODUCTS.some((p) => p.sku === preselect) ? preselect : null,
   );
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const { data: paypalConfig } = useQuery({
     queryKey: ["/api/config/paypal"],
   });
 
-  const createOrderMutation = useMutation({
-    mutationFn: async (sku: string) => {
-      const res = await apiRequest("POST", "/api/paypal/create-order", { sku });
-      return res.json();
-    },
-    onSuccess: (data: { approveUrl: string }) => {
-      window.location.href = data.approveUrl;
-    },
-    onError: () => {
-      toast({
-        title: "Could not start checkout",
-        description: "Please try again or contact support.",
-        variant: "destructive",
-      });
-    },
-  });
+  const config = paypalConfig as any;
+  const configured: boolean = config?.configured ?? false;
+  const clientId: string = config?.clientId ?? "";
 
-  const configured = (paypalConfig as any)?.configured;
+  function handlePayPalSuccess(activationToken: string) {
+    setLocation(`/checkout/activate?token=${activationToken}`);
+  }
+
+  function handlePayPalCancel() {
+    toast({
+      title: "Payment cancelled",
+      description: "No charge was made. Choose a product and try again whenever you're ready.",
+    });
+  }
 
   return (
     <div className="min-h-screen" style={{ background: "#13131A", color: "#fff" }}>
@@ -87,8 +84,14 @@ export default function CheckoutPage() {
       <main className="max-w-5xl mx-auto px-4 py-16">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-4"
-            style={{ background: "rgba(59,130,246,0.15)", color: "#60a5fa", border: "1px solid rgba(59,130,246,0.3)" }}>
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-4"
+            style={{
+              background: "rgba(59,130,246,0.15)",
+              color: "#60a5fa",
+              border: "1px solid rgba(59,130,246,0.3)",
+            }}
+          >
             <ShoppingCart size={12} /> Secure Checkout
           </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-3">Choose your KONEX</h1>
@@ -110,8 +113,8 @@ export default function CheckoutPage() {
                   border: isSelected
                     ? "2px solid #3B82F6"
                     : p.highlight
-                    ? "2px solid rgba(59,130,246,0.4)"
-                    : "2px solid rgba(255,255,255,0.06)",
+                      ? "2px solid rgba(59,130,246,0.4)"
+                      : "2px solid rgba(255,255,255,0.06)",
                   boxShadow: isSelected ? "0 0 0 3px rgba(59,130,246,0.15)" : undefined,
                 }}
               >
@@ -127,8 +130,12 @@ export default function CheckoutPage() {
 
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="text-lg font-bold" data-testid={`text-product-name-${p.sku}`}>{p.name}</h3>
-                    <p className="text-sm mt-1" style={{ color: "#9ca3af" }}>{p.description}</p>
+                    <h3 className="text-lg font-bold" data-testid={`text-product-name-${p.sku}`}>
+                      {p.name}
+                    </h3>
+                    <p className="text-sm mt-1" style={{ color: "#9ca3af" }}>
+                      {p.description}
+                    </p>
                   </div>
                   <div
                     className="ml-4 shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center"
@@ -151,8 +158,12 @@ export default function CheckoutPage() {
                 </ul>
 
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold" data-testid={`text-price-${p.sku}`}>{p.price}</span>
-                  <span className="text-sm" style={{ color: "#6b7280" }}>{p.priceNote}</span>
+                  <span className="text-2xl font-bold" data-testid={`text-price-${p.sku}`}>
+                    {p.price}
+                  </span>
+                  <span className="text-sm" style={{ color: "#6b7280" }}>
+                    {p.priceNote}
+                  </span>
                 </div>
               </div>
             );
@@ -161,49 +172,61 @@ export default function CheckoutPage() {
 
         {/* Trust badges */}
         <div className="flex flex-wrap justify-center gap-6 mb-10 text-sm" style={{ color: "#6b7280" }}>
-          <span className="flex items-center gap-2"><Shield size={14} style={{ color: "#3B82F6" }} /> Secure PayPal Checkout</span>
-          <span className="flex items-center gap-2"><Star size={14} style={{ color: "#f59e0b" }} /> 5-Star Rated</span>
-          <span className="flex items-center gap-2"><Zap size={14} style={{ color: "#a78bfa" }} /> Instant Digital Delivery</span>
+          <span className="flex items-center gap-2">
+            <Shield size={14} style={{ color: "#3B82F6" }} /> Secure PayPal Checkout
+          </span>
+          <span className="flex items-center gap-2">
+            <Star size={14} style={{ color: "#f59e0b" }} /> 5-Star Rated
+          </span>
+          <span className="flex items-center gap-2">
+            <Zap size={14} style={{ color: "#a78bfa" }} /> Instant Digital Delivery
+          </span>
         </div>
 
-        {/* CTA */}
-        {configured === false ? (
-          <div className="text-center py-6 rounded-xl" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)" }}>
-            <p style={{ color: "#fca5a5" }}>Payment system is not yet configured. Please contact us to complete your order.</p>
+        {/* Payment area */}
+        {!configured ? (
+          <div
+            className="text-center py-6 rounded-xl"
+            style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)" }}
+          >
+            <p style={{ color: "#fca5a5" }}>
+              Payment system is not yet configured. Please contact us to complete your order.
+            </p>
+          </div>
+        ) : !selectedSku ? (
+          <div className="text-center py-8">
+            <p className="text-base mb-4" style={{ color: "#6b7280" }}>
+              Select a product above to pay with PayPal
+            </p>
+            <ArrowRight size={20} className="mx-auto" style={{ color: "#374151" }} />
           </div>
         ) : (
-          <div className="flex justify-center">
-            <button
-              data-testid="button-checkout"
-              disabled={!selectedSku || createOrderMutation.isPending}
-              onClick={() => selectedSku && createOrderMutation.mutate(selectedSku)}
-              className="flex items-center gap-3 px-8 py-4 rounded-xl text-base font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                background: selectedSku ? "#3B82F6" : "#374151",
-                color: "#fff",
-                minWidth: 280,
-                justifyContent: "center",
-              }}
-            >
-              {createOrderMutation.isPending ? (
-                <><Loader2 size={18} className="animate-spin" /> Redirecting to PayPal…</>
-              ) : (
-                <><span>Pay with PayPal</span> <ChevronRight size={16} /></>
-              )}
-            </button>
+          <div className="max-w-sm mx-auto">
+            <p className="text-center text-sm mb-4" style={{ color: "#9ca3af" }}>
+              Paying for:{" "}
+              <strong style={{ color: "#fff" }}>
+                {PRODUCTS.find((p) => p.sku === selectedSku)?.name}
+              </strong>
+            </p>
+            <PayPalButton
+              sku={selectedSku}
+              clientId={clientId}
+              onSuccess={handlePayPalSuccess}
+              onCancel={handlePayPalCancel}
+            />
           </div>
         )}
 
-        {!selectedSku && (
-          <p className="text-center text-sm mt-3" style={{ color: "#6b7280" }}>
-            Select a product above to continue
-          </p>
-        )}
-
-        <p className="text-center text-xs mt-6" style={{ color: "#4b5563" }}>
+        <p className="text-center text-xs mt-8" style={{ color: "#4b5563" }}>
           By purchasing you agree to our{" "}
-          <Link href="/terms" className="underline">Terms</Link> and{" "}
-          <Link href="/privacy" className="underline">Privacy Policy</Link>.
+          <Link href="/terms" className="underline">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="underline">
+            Privacy Policy
+          </Link>
+          .
         </p>
       </main>
 
