@@ -217,7 +217,22 @@ export default function CheckoutPage() {
           </div>
         )}
 
-        <p className="text-center text-xs mt-8" style={{ color: "#4b5563" }}>
+        {/* Refund policy acknowledgement */}
+        {selectedSku && (
+          <p
+            className="text-center text-xs mt-4"
+            style={{ color: "#6b7280" }}
+            data-testid="text-refund-acknowledgement"
+          >
+            By completing your purchase, you agree to our{" "}
+            <Link href="/refund-policy" className="underline hover:text-white transition-colors" data-testid="link-refund-policy">
+              Refund &amp; Return Policy
+            </Link>
+            .
+          </p>
+        )}
+
+        <p className="text-center text-xs mt-3" style={{ color: "#4b5563" }}>
           By purchasing you agree to our{" "}
           <Link href="/terms" className="underline">
             Terms

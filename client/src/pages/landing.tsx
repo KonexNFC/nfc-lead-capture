@@ -704,7 +704,12 @@ export default function LandingPage() {
       </section>
 
       <footer className="py-6 border-t border-white/6 text-center text-white/30 text-sm" style={{ background: "#13131A" }}>
-        <p>&copy; {new Date().getFullYear()} KONEX. All rights reserved.</p>
+        <p className="mb-2">&copy; {new Date().getFullYear()} KONEX. All rights reserved.</p>
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs" style={{ color: "#374151" }}>
+          <Link href="/terms" className="hover:text-white/50 transition-colors" data-testid="link-landing-footer-terms">Terms of Service</Link>
+          <Link href="/privacy" className="hover:text-white/50 transition-colors" data-testid="link-landing-footer-privacy">Privacy Policy</Link>
+          <Link href="/refund-policy" className="hover:text-white/50 transition-colors" data-testid="link-landing-footer-refund">Refund &amp; Return Policy</Link>
+        </div>
       </footer>
     </div>
   );
