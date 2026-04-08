@@ -48,7 +48,10 @@ integrations = ["javascript_object_storage:2.0.0", "sendgrid:1.0.0"]
 [userenv]
 
 [userenv.shared]
-PAYPAL_ENV = "sandbox"
 
 [userenv.production]
 APP_BASE_URL = "https://konexnfc.com"
+PAYPAL_ENV = "live"
+
+[userenv.development]
+PAYPAL_ENV = "sandbox"
