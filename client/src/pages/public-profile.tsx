@@ -55,7 +55,15 @@ export default function PublicProfile() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState<{ whatsapp?: string } | null>(null);
   const isDesktop = useMediaQuery("(min-width: 768px)");
-  
+  // Lock the desktop/mobile layout at the moment the dialog opens so that
+  // virtual keyboard resize events cannot switch between Dialog and Drawer
+  // mid-interaction (which would destroy and remount the form).
+  const [lockedIsDesktop, setLockedIsDesktop] = useState(false);
+
+  const handleOpen = () => {
+    setLockedIsDesktop(isDesktop);
+    setIsOpen(true);
+  };
 
   const handleClose = () => {
     setIsOpen(false);
@@ -214,7 +222,7 @@ export default function PublicProfile() {
             <button
               className="w-full rounded-xl min-h-[48px] py-2 px-3 text-sm font-semibold shadow-lg flex items-center justify-center gap-1.5 leading-tight text-white"
               style={{ backgroundColor: branding.primaryColor || 'hsl(var(--primary))' }}
-              onClick={() => { trackEvent(slug, "cta_click"); setIsOpen(true); }}
+              onClick={() => { trackEvent(slug, "cta_click"); handleOpen(); }}
               data-testid="button-exchange-contact"
             >
               <Share2 className="h-4 w-4 shrink-0" />
@@ -264,8 +272,8 @@ export default function PublicProfile() {
       </div>
 
       {/* Lead Capture Dialog/Drawer */}
-      {isDesktop ? (
-        <Dialog open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : handleClose()}>
+      {lockedIsDesktop ? (
+        <Dialog open={isOpen} onOpenChange={(open) => open ? handleOpen() : handleClose()}>
           <DialogContent className="max-w-md sm:max-w-lg">
             <DialogHeader>
               <DialogTitle data-testid="text-form-title">
@@ -284,7 +292,7 @@ export default function PublicProfile() {
           </DialogContent>
         </Dialog>
       ) : (
-        <Drawer open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : handleClose()}>
+        <Drawer open={isOpen} onOpenChange={(open) => open ? handleOpen() : handleClose()}>
           <DrawerContent>
             <DrawerHeader>
               <DrawerTitle data-testid="text-form-title">
