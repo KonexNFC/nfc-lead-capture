@@ -127,9 +127,9 @@ export function LayoutShell({ children }: LayoutShellProps) {
   const NavContent = () => (
     <div className="flex flex-col h-full" style={{ background: "#181820" }}>
       <div className="p-6 border-b border-white/6">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 w-fit">
           <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto" />
-        </div>
+        </Link>
       </div>
 
       {profiles.length > 0 && (
@@ -187,9 +187,9 @@ export function LayoutShell({ children }: LayoutShellProps) {
 
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 backdrop-blur-xl border-b border-white/6 z-40 flex items-center justify-between px-4" style={{ background: "rgba(19,19,26,0.9)" }}>
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <img src={konexLogo} alt="KONEX Logo" className="h-6 w-auto" />
-        </div>
+        </Link>
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
