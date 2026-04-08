@@ -1,0 +1,156 @@
+2026-04-08 17:55:41.29
+9b68c40d
+User
+internalPosition: undefined,
+2026-04-08 17:55:41.29
+9b68c40d
+User
+column: undefined,
+2026-04-08 17:55:41.29
+9b68c40d
+User
+where: undefined,
+2026-04-08 17:55:41.29
+9b68c40d
+User
+dataType: undefined,
+2026-04-08 17:55:41.29
+9b68c40d
+User
+line: undefined,
+2026-04-08 17:55:41.29
+9b68c40d
+User
+Internal Server Error: error: The endpoint has been disabled. Enable it using the API and retry.
+2026-04-08 17:55:41.29
+9b68c40d
+User
+code: 'XX000',
+2026-04-08 17:55:41.29
+9b68c40d
+User
+at async n._asyncQuery (/home/runner/workspace/dist/index.cjs:71:59551) {
+2026-04-08 17:55:41.29
+9b68c40d
+User
+hint: undefined,
+2026-04-08 17:55:41.29
+9b68c40d
+User
+at /home/runner/workspace/dist/index.cjs:65:14989
+2026-04-08 17:55:41.29
+9b68c40d
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-04-08 17:55:41.29
+9b68c40d
+User
+length: 87,
+2026-04-08 17:55:41.29
+9b68c40d
+User
+severity: 'ERROR',
+2026-04-08 17:55:41.29
+9b68c40d
+User
+position: undefined,
+2026-04-08 17:55:41.29
+9b68c40d
+User
+routine: undefined
+2026-04-08 17:55:41.29
+9b68c40d
+User
+internalQuery: undefined,
+2026-04-08 17:55:41.29
+9b68c40d
+User
+file: undefined,
+2026-04-08 17:55:41.29
+9b68c40d
+User
+schema: undefined,
+2026-04-08 17:55:41.29
+9b68c40d
+User
+detail: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+internalPosition: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+routine: undefined
+2026-04-08 17:57:31.93
+9b68c40d
+User
+schema: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+constraint: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+dataType: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+file: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+table: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+internalQuery: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+Failed to prune sessions: error: The endpoint has been disabled. Enable it using the API and retry.
+2026-04-08 17:57:31.93
+9b68c40d
+User
+line: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+column: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+where: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+length: 87,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+}
+2026-04-08 17:57:31.93
+9b68c40d
+User
+code: 'XX000',
+2026-04-08 17:57:31.93
+9b68c40d
+User
+position: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+hint: undefined,
+2026-04-08 17:57:31.93
+9b68c40d
+User
+at async n._asyncQuery (/home/runner/workspace/dist/index.cjs:71:59551) {
+2026-04-08 17:57:31.93
+9b68c40d
+User
+severity: 'ERROR',
+2026-04-08 17:57:31.93
+9b68c40d
+User
+detail: undefined,
