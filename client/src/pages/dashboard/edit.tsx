@@ -181,34 +181,6 @@ export default function EditProfile() {
               {creatingNew ? "Set up a new digital business card." : "Customize how you appear to others."}
             </p>
           </div>
-          {!creatingNew && profile && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" className="text-destructive" data-testid="button-delete-profile">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Profile
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete this profile?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete "{profile.name}" and all its collected leads. This cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteProfile}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    data-testid="button-confirm-delete-profile"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
         </div>
 
         <Form {...form}>
@@ -483,6 +455,48 @@ export default function EditProfile() {
                 ))}
               </CardContent>
             </Card>
+
+            {!creatingNew && profile && (
+              <Card className="border-destructive/30 bg-destructive/5">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                    <CardTitle className="text-sm font-semibold text-destructive">Danger Zone</CardTitle>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Permanently delete this profile and all its collected leads. This cannot be undone.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground" data-testid="button-delete-profile">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Profile
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this profile?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete "{profile.name}" and all its collected leads. This cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteProfile}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          data-testid="button-confirm-delete-profile"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </CardContent>
+              </Card>
+            )}
 
             <div className="flex justify-end sticky bottom-4 z-10">
               <Button type="submit" size="lg" className="shadow-xl" disabled={createProfile.isPending || updateProfile.isPending} data-testid="button-save-profile">
