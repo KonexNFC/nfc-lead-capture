@@ -46,6 +46,7 @@ import CheckoutCancelPage from "@/pages/checkout/cancel";
 import CheckoutActivatePage from "@/pages/checkout/activate";
 import RefundPolicyPage from "@/pages/refund-policy";
 import PrivacyPolicyPage from "@/pages/privacy-policy";
+import TermsPage from "@/pages/terms";
 
 // Protected Route Wrapper
 function ProtectedRoute({ component: Component, adminOnly }: { component: React.ComponentType; adminOnly?: boolean }) {
@@ -101,6 +102,7 @@ function Router() {
       </Route>
       <Route path="/refund-policy" component={RefundPolicyPage} />
       <Route path="/privacy" component={PrivacyPolicyPage} />
+      <Route path="/terms" component={TermsPage} />
 
       {/* Checkout Routes */}
       <Route path="/checkout" component={CheckoutPage} />
