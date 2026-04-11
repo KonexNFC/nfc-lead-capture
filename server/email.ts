@@ -324,6 +324,47 @@ export async function sendShippedEmail(
   }
 }
 
+// ─── Refund confirmation (sent to customer when PayPal refund is processed) ───
+
+export async function sendRefundEmail(
+  toEmail: string,
+  customerName: string,
+  productName: string,
+  amount: string,
+  currency: string = "GBP",
+): Promise<void> {
+  const name = customerName || "there";
+  try {
+    const { client, fromEmail } = await getSendGridClient();
+    await client.send({
+      to: toEmail,
+      from: { email: fromEmail, name: "KONEX" },
+      subject: `Your KONEX refund has been processed`,
+      text: `Hi ${name},\n\nYour refund of ${currency} ${amount} for "${productName}" has been processed. Please allow 3–5 business days for funds to appear in your account.\n\nIf you have any questions, please contact us.`,
+      html: emailWrapper(`
+        <div style="background:#f9fafb;border-radius:12px;padding:32px;border:1px solid #e5e7eb;">
+          <h2 style="font-size:20px;font-weight:600;color:#111;margin:0 0 12px;">Refund processed</h2>
+          <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 20px;">
+            Hi ${name}, your refund for <strong>${productName}</strong> has been processed.
+          </p>
+          <div style="background:#fff;border-radius:8px;padding:16px;border:1px solid #e5e7eb;margin-bottom:20px;">
+            <table style="border-collapse:collapse;width:100%;">
+              <tr><td style="padding:4px 12px 4px 0;color:#888;font-size:14px;">Amount</td><td style="padding:4px 0;font-size:14px;color:#333;font-weight:600;">${currency} ${amount}</td></tr>
+              <tr><td style="padding:4px 12px 4px 0;color:#888;font-size:14px;">Product</td><td style="padding:4px 0;font-size:14px;color:#333;">${productName}</td></tr>
+            </table>
+          </div>
+          <p style="font-size:13px;color:#888;">
+            Please allow 3–5 business days for the funds to appear in your account. If you have any questions, simply reply to this email.
+          </p>
+        </div>
+      `),
+    });
+    console.log(`[EMAIL] Refund confirmation sent to ${toEmail}`);
+  } catch (err) {
+    console.error(`[EMAIL ERROR] Refund confirmation to ${toEmail}:`, err);
+  }
+}
+
 // ─── Admin dispute alert ───────────────────────────────────────────────────────
 
 export async function sendAdminDisputeAlert(params: {

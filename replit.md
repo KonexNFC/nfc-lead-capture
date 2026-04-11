@@ -87,6 +87,15 @@ Utilizes Google Cloud Storage (via Replit Object Storage) with a presigned URL p
 ### Contact Card & vCard
 Visitors who submit a lead form are presented with an iOS-style contact card, including profile owner's details, quick action buttons (message, call, WhatsApp, email), social links, and a "Save Contact" button to download a vCard (.vcf) file.
 
+### Dashboard Enhancements
+- **Profile Completion Score**: A stat card on the dashboard calculates and displays a profile completeness percentage (0–100%) based on 7 weighted fields: photo (20), title (15), company (10), bio (15), contact link (20), social link (10), appearance customised (10). Includes a progress bar and link to remaining steps.
+- **Onboarding Checklist**: A dismissible card shown on the dashboard guiding new users through setup steps. Dismissal is stored in localStorage per profile (`konex-onboarding-dismissed-{profileId}`). Shows completion progress bar and individual step status with links to relevant pages.
+- **Dark/Light Mode Toggle**: A theme toggle button in the dashboard sidebar switches between dark and light mode. Preference stored in localStorage (`konex-dashboard-theme`). The main content area uses `data-theme="light"` CSS attribute scoping so only the dashboard content changes; the sidebar always stays dark. Light mode CSS variables defined in `[data-theme="light"]` selector in `index.css`. Theme state managed via `client/src/hooks/use-theme.tsx` (`ThemeProvider` + `useTheme`).
+
+### Email Notifications
+- **Refund Confirmation**: `sendRefundEmail()` in `server/email.ts` sends a customer confirmation email when a PayPal refund is processed (triggered by `PAYMENT.CAPTURE.REFUNDED` webhook event). Includes refund amount, product name, and 3–5 business day disclaimer.
+- **Shipped Notification**: Already implemented — sends customer email when admin marks order as shipped via the admin orders page.
+
 ## External Dependencies
 
 - **Database**: PostgreSQL (via `DATABASE_URL`).

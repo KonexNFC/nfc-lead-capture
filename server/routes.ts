@@ -13,6 +13,7 @@ import {
   sendWelcomeEmail,
   sendAdminOrderNotification,
   sendShippedEmail,
+  sendRefundEmail,
   sendAdminDisputeAlert,
 } from "./email";
 import {
@@ -1768,6 +1769,15 @@ export async function registerRoutes(
           if (order) {
             await storage.updateOrder(order.id, { status: "refunded", refundedAt: new Date() });
             console.log(`[webhook] CAPTURE.REFUNDED: order #${order.id} → refunded`);
+            if (order.customerEmail) {
+              sendRefundEmail(
+                order.customerEmail,
+                order.customerName || "",
+                order.productType,
+                order.amount,
+                order.currency,
+              ).catch((e) => console.error("[email] refund notification failed:", e));
+            }
           }
         }
       }

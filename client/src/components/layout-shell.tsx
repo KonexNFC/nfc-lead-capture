@@ -20,23 +20,27 @@ import {
   Building2,
   Palette,
   BarChart2,
-  Package
+  Package,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
+import { ThemeProvider, useTheme } from "@/hooks/use-theme";
 
 interface LayoutShellProps {
   children: React.ReactNode;
 }
 
-export function LayoutShell({ children }: LayoutShellProps) {
+function LayoutShellInner({ children }: LayoutShellProps) {
   const [location, setLocation] = useLocation();
   const { logout, user } = useAuth();
   const { profiles, activeProfile, setActiveProfileId } = useActiveProfile();
   const { orgs } = useActiveOrg();
   const [isOpen, setIsOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const hasOrg = user?.isAdmin || (orgs && orgs.length > 0);
 
@@ -157,8 +161,25 @@ export function LayoutShell({ children }: LayoutShellProps) {
         })}
       </div>
 
-      <div className="p-4 border-t border-white/6">
-        <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-xl" style={{ background: "#22222E" }}>
+      <div className="p-4 border-t border-white/6 space-y-2">
+        <button
+          onClick={toggleTheme}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-white/50 hover:text-white hover:bg-white/6"
+          data-testid="button-theme-toggle"
+        >
+          {theme === "dark" ? (
+            <>
+              <Sun className="h-4 w-4 shrink-0" />
+              <span>Light Mode</span>
+            </>
+          ) : (
+            <>
+              <Moon className="h-4 w-4 shrink-0" />
+              <span>Dark Mode</span>
+            </>
+          )}
+        </button>
+        <div className="flex items-center gap-3 px-3 py-3 rounded-xl" style={{ background: "#22222E" }}>
           <div className="h-8 w-8 rounded-full bg-blue-600/20 flex items-center justify-center text-blue-400 font-bold text-sm shrink-0">
             {user?.email?.charAt(0).toUpperCase()}
           </div>
@@ -177,6 +198,8 @@ export function LayoutShell({ children }: LayoutShellProps) {
       </div>
     </div>
   );
+
+  const mainBg = theme === "light" ? "hsl(220 20% 97%)" : "#13131A";
 
   return (
     <div className="min-h-screen flex" style={{ background: "#13131A" }}>
@@ -203,11 +226,25 @@ export function LayoutShell({ children }: LayoutShellProps) {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-64 pt-16 md:pt-0 min-h-screen">
-        <div className="max-w-7xl mx-auto p-4 md:p-8 lg:p-12 animate-in">
+      <main
+        className="flex-1 md:ml-64 pt-16 md:pt-0 min-h-screen transition-colors duration-300"
+        style={{ background: mainBg }}
+      >
+        <div
+          data-theme={theme}
+          className="max-w-7xl mx-auto p-4 md:p-8 lg:p-12 animate-in"
+        >
           {children}
         </div>
       </main>
     </div>
+  );
+}
+
+export function LayoutShell({ children }: LayoutShellProps) {
+  return (
+    <ThemeProvider>
+      <LayoutShellInner>{children}</LayoutShellInner>
+    </ThemeProvider>
   );
 }
