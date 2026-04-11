@@ -95,7 +95,7 @@ export default function WhatIsNfcPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer" data-testid="link-logo-home">
-              <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto" style={{ mixBlendMode: "screen" }} />
+              <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto" style={{ filter: "invert(1)", mixBlendMode: "screen" }} />
             </div>
           </Link>
           <div className="flex items-center gap-4">

@@ -34,7 +34,7 @@ export default function KonexNav({ variant = "overview" }: KonexNavProps) {
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto cursor-pointer" style={{ mixBlendMode: "screen" }} data-testid="link-logo" />
+            <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto cursor-pointer" style={{ filter: "invert(1)", mixBlendMode: "screen" }} data-testid="link-logo" />
           </Link>
           <div className="hidden md:flex items-center gap-1 ml-4">
             {variant === "overview" ? (

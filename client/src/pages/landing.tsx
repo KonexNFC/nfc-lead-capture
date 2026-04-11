@@ -162,7 +162,7 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto" style={{ mixBlendMode: "screen" }} />
+            <img src={konexLogo} alt="KONEX Logo" className="h-8 w-auto" style={{ filter: "invert(1)", mixBlendMode: "screen" }} />
             <div className="hidden md:flex items-center gap-1 ml-4">
               <Link href="/konex-cards">
                 <Button variant="ghost" size="sm" className="text-white/60 hover:text-white" data-testid="nav-konex-cards">
