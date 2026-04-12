@@ -40,7 +40,7 @@ export default function AuthPage() {
       <div className="w-full max-w-md animate-in">
         <div className="text-center mb-8 space-y-2">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <img src={konexLogo} alt="KONEX" className="h-14 w-auto" style={{ mixBlendMode: "screen" }} />
+            <img src={konexLogo} alt="KONEX" className="h-24 w-auto" style={{ mixBlendMode: "screen" }} />
           </div>
           <h1 className="text-3xl font-display font-bold text-white">Welcome to KONEX</h1>
           <p className="text-white/50">Create your free digital business card.</p>

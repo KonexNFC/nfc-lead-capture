@@ -191,7 +191,7 @@ export default function PublicProfile() {
           {logoUrl ? (
             <img src={logoUrl} alt="Logo" className="h-10 md:h-14 w-auto" />
           ) : (
-            <img src={konexLogo} alt="KONEX" className="h-10 md:h-14 w-auto" style={{ mixBlendMode: "screen" }} />
+            <img src={konexLogo} alt="KONEX" className="h-16 md:h-20 w-auto" style={{ mixBlendMode: "screen" }} />
           )}
         </a>
       </div>
@@ -297,7 +297,7 @@ export default function PublicProfile() {
 
       {/* Footer Branding — desktop only */}
       <div className="fixed bottom-4 right-4 hidden md:flex items-center gap-2 text-xs text-muted-foreground/50">
-        <img src={konexLogo} alt="KONEX" className="h-4 w-auto opacity-50" style={{ mixBlendMode: "screen" }} />
+        <img src={konexLogo} alt="KONEX" className="h-8 w-auto opacity-50" style={{ mixBlendMode: "screen" }} />
         <span>Powered by KONEX</span>
       </div>
     </div>
