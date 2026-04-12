@@ -1,4 +1,4 @@
-import konexLogo from "@assets/IMG_9139_1775995278347.png";
+import konexLogo from "@assets/IMG_9139_1775997952970.png";
 
 // PNG is 1536×1024. Content measured from pixel analysis:
 //   Logo mark spans: top=374, bottom=584, left=314, right=1142
