@@ -7,8 +7,8 @@ import konexLogo from "@assets/IMG_9139_1775997952970.png";
 const PNG_W = 1536, PNG_H = 1024;
 const CROP_TOP = 350;
 const CROP_H = 240;
-const CROP_LEFT = 280;
-const CROP_W = 862; // 280 → 1142
+const CROP_LEFT = 160;
+const CROP_W = 982; // 160 → 1142
 
 interface KonexLogoProps {
   height?: number;

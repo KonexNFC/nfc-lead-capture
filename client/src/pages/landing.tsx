@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Nfc, Users, BarChart2, Smartphone, Share2, ShieldCheck, Building2,
   ChevronRight, Star, Quote, Menu, ArrowRight, TrendingUp, Zap,
-  UserCheck, Target, Globe, Layers, CheckCircle2
+  UserCheck, Target, Globe, Layers, CheckCircle2, UserPlus
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -214,16 +214,8 @@ export default function LandingPage() {
                 </Link>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link href="/auth" className="hidden md:inline-flex">
+            <Link href="/auth">
               <Button variant="ghost" className="text-white/70 hover:text-white font-medium" data-testid="button-login">Log in</Button>
-            </Link>
-            <Link href="/auth?tab=register">
-              <Button
-                className="font-semibold shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)]"
-                data-testid="button-get-started"
-              >
-                Get Started Free
-              </Button>
             </Link>
           </div>
         </div>
@@ -283,6 +275,20 @@ export default function LandingPage() {
                   >
                     See a Live Profile
                     <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="flex items-center justify-center md:justify-start">
+                <Link href="/auth?tab=register">
+                  <Button
+                    variant="ghost"
+                    className="group h-11 px-5 rounded-full text-base font-semibold text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 border border-blue-500/25 hover:border-blue-400/50 transition-all duration-200"
+                    data-testid="button-signup-free"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Sign Up for a Free Profile
+                    <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" />
                   </Button>
                 </Link>
               </div>
