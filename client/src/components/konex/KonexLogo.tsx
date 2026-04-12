@@ -1,11 +1,14 @@
 import konexLogo from "@assets/IMG_9139_1775995278347.png";
 
-// PNG is 1536×1024. Exact content bounds from pixel analysis:
-//   top=374px (36.5%), bottom=584px, left=314px (20.4%), right=1142px
-//   Content: 828×210px — aspect ratio 3.94:1
+// PNG is 1536×1024. Content measured from pixel analysis:
+//   Logo mark spans: top=374, bottom=584, left=314, right=1142
+//   We use left=160 (generous buffer left of K icon) so K is never clipped
+//   Content height = 210px, content width from 160→1142 = 982px
 const PNG_W = 1536, PNG_H = 1024;
-const CONTENT_TOP = 374, CONTENT_LEFT = 314;
-const CONTENT_H = 210, CONTENT_W = 828;
+const CROP_TOP = 350;
+const CROP_H = 240;
+const CROP_LEFT = 160;
+const CROP_W = 982;
 
 interface KonexLogoProps {
   height?: number;
@@ -13,44 +16,38 @@ interface KonexLogoProps {
 }
 
 export function KonexLogo({ height = 32, className = "" }: KonexLogoProps) {
-  const scale = height / CONTENT_H;
-  const imgH = PNG_H * scale;
-  const imgW = PNG_W * scale;
-  const containerW = CONTENT_W * scale;
-  const mTop = -(CONTENT_TOP * scale);
-  const mLeft = -(CONTENT_LEFT * scale);
+  const scale = height / CROP_H;
+  const imgH = Math.round(PNG_H * scale);
+  const imgW = Math.round(PNG_W * scale);
+  const containerW = Math.round(CROP_W * scale);
+  const mTop = Math.round(-(CROP_TOP * scale));
+  const mLeft = Math.round(-(CROP_LEFT * scale));
 
   return (
     <div
       className={className}
       style={{
-        display: "inline-block",
+        height,
+        width: containerW,
+        overflow: "hidden",
         flexShrink: 0,
-        mixBlendMode: "screen",
+        display: "inline-block",
+        lineHeight: 0,
       }}
     >
-      <div
+      <img
+        src={konexLogo}
+        alt="KONEX"
         style={{
-          height,
-          width: containerW,
-          overflow: "hidden",
-          background: "#000",
-          isolation: "isolate",
-          lineHeight: 0,
+          height: imgH,
+          width: imgW,
+          marginTop: mTop,
+          marginLeft: mLeft,
+          display: "block",
+          mixBlendMode: "screen",
+          flexShrink: 0,
         }}
-      >
-        <img
-          src={konexLogo}
-          alt="KONEX"
-          style={{
-            height: imgH,
-            width: imgW,
-            marginTop: mTop,
-            marginLeft: mLeft,
-            display: "block",
-          }}
-        />
-      </div>
+      />
     </div>
   );
 }
