@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Testimonial } from "@shared/schema";
 import { KonexLogo } from "@/components/konex/KonexLogo";
-import cardBasic from "@assets/IMG_7774_1771669634221.png";
-import cardPremium from "@assets/IMG_7776_1771669634221.png";
-import cardElite from "@assets/IMG_7775_1771669634221.png";
+import cardBasic from "@assets/Konex_Basic_Card_1776031961806.png";
+import cardPremium from "@assets/Konex_Premium_Card_1776031961806.png";
+import cardElite from "@assets/Konex_Elite_Card_1776031961806.png";
 import cardInHand from "@assets/IMG_7743_1771669634221.jpeg";
 import cardThreeTiers from "@assets/41A7CAD6-1759-450E-83FE-47CF37A2B9D8_1771669634221.png";
 import forestBg from "@assets/IMG_8384_1773318780793.jpeg";
@@ -532,9 +532,9 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
               {[
-                { img: cardBasic, name: "Basic", price: "£19.99", desc: "Matte finish. Clean & professional.", href: "/konex-cards/basic" },
-                { img: cardPremium, name: "Premium", price: "£49.99", desc: "Brushed metal. Stand out.", href: "/konex-cards/premium" },
-                { img: cardElite, name: "Elite", price: "£79.99", desc: "Luxury finish. Executive grade.", href: "/konex-cards/elite" },
+                { img: cardBasic, name: "Basic", price: "£19.99", desc: "Matte black. Clean & professional.", href: "/konex-cards/basic" },
+                { img: cardPremium, name: "Premium", price: "£49.99", desc: "Brushed metal — Silver, Black or Copper.", href: "/konex-cards/premium" },
+                { img: cardElite, name: "Elite", price: "£79.99", desc: "Carbon, Gold or Carbon-Gold edition.", href: "/konex-cards/elite" },
               ].map((card, i) => (
                 <Link key={i} href={card.href}>
                   <div

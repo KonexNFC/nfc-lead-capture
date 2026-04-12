@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { tierDetails } from "@/components/konex/konex-data";
 
 export default function KonexCardsTierPage({ tierId }: { tierId: string }) {
   const tier = tierDetails[tierId];
+  const [variantIdx, setVariantIdx] = useState(0);
 
   if (!tier) {
     return (
@@ -21,6 +23,9 @@ export default function KonexCardsTierPage({ tierId }: { tierId: string }) {
       </div>
     );
   }
+
+  const activeVariant = tier.variants[variantIdx] ?? tier.variants[0];
+  const activeSku = activeVariant?.sku ?? `KONEX-${tierId.toUpperCase()}`;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -39,12 +44,42 @@ export default function KonexCardsTierPage({ tierId }: { tierId: string }) {
             </Link>
 
             <img
-              src={tier.image}
-              alt={tier.name}
-              className="w-full max-w-md mx-auto rounded-2xl shadow-2xl"
+              src={activeVariant.image}
+              alt={`${tier.name} — ${activeVariant.label}`}
+              className="w-full max-w-md mx-auto rounded-2xl shadow-2xl transition-opacity duration-200"
               style={{ boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }}
               data-testid="img-tier-hero-card"
             />
+
+            {tier.variants.length > 1 && (
+              <div className="flex items-center justify-center gap-3">
+                {tier.variants.map((v, i) => (
+                  <button
+                    key={v.sku}
+                    onClick={() => setVariantIdx(i)}
+                    data-testid={`variant-btn-${i}`}
+                    className="flex flex-col items-center gap-1.5 group"
+                  >
+                    <span
+                      style={{
+                        display: "block",
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        background: v.swatch,
+                        border: i === variantIdx ? "2px solid hsl(var(--primary))" : "2px solid transparent",
+                        outline: i === variantIdx ? "2px solid hsl(var(--primary) / 0.4)" : "2px solid hsl(var(--border))",
+                        transition: "all 0.15s",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <span className={`text-xs font-medium transition-colors ${i === variantIdx ? "text-foreground" : "text-muted-foreground"}`}>
+                      {v.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
 
             <h1 className="text-5xl md:text-6xl font-display font-bold tracking-tight" data-testid="text-tier-hero-name">
               {tier.name}
@@ -61,7 +96,7 @@ export default function KonexCardsTierPage({ tierId }: { tierId: string }) {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
-              <Link href={`/checkout?sku=KONEX-${tierId.toUpperCase()}`}>
+              <Link href={`/checkout?sku=${activeSku}`}>
                 <Button size="lg" className="h-14 px-8 rounded-full text-lg font-semibold shadow-xl shadow-primary/20" data-testid="button-tier-order">
                   Buy Now — {tier.price}
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -135,7 +170,7 @@ export default function KonexCardsTierPage({ tierId }: { tierId: string }) {
               Start making unforgettable first impressions today.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
-              <Link href={`/checkout?sku=KONEX-${tierId.toUpperCase()}`}>
+              <Link href={`/checkout?sku=${activeSku}`}>
                 <Button size="lg" className="h-14 px-10 rounded-full text-lg font-semibold shadow-xl shadow-primary/20" data-testid="button-tier-final-order">
                   Buy Now — {tier.price}
                   <ArrowRight className="ml-2 h-5 w-5" />
