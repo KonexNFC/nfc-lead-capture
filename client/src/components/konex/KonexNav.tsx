@@ -18,7 +18,7 @@ import {
   ChevronRight,
   ArrowLeft,
 } from "lucide-react";
-import konexLogo from "@assets/IMG_9139_1775995278347.png";
+import { KonexLogo } from "@/components/konex/KonexLogo";
 
 interface KonexNavProps {
   variant?: "overview" | "tier";
@@ -33,8 +33,8 @@ export default function KonexNav({ variant = "overview" }: KonexNavProps) {
     <nav className="w-full border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/">
-            <img src={konexLogo} alt="KONEX Logo" className="h-16 w-auto cursor-pointer" style={{ mixBlendMode: "screen" }} data-testid="link-logo" />
+          <Link href="/" data-testid="link-logo">
+            <KonexLogo height={36} className="cursor-pointer" />
           </Link>
           <div className="hidden md:flex items-center gap-1 ml-4">
             {variant === "overview" ? (

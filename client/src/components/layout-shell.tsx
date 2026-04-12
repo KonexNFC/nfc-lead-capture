@@ -27,7 +27,7 @@ import {
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import konexLogo from "@assets/IMG_9139_1775995278347.png";
+import { KonexLogo } from "@/components/konex/KonexLogo";
 import { ThemeProvider, useTheme } from "@/hooks/use-theme";
 
 interface LayoutShellProps {
@@ -132,7 +132,7 @@ function LayoutShellInner({ children }: LayoutShellProps) {
     <div className="flex flex-col h-full" style={{ background: "#181820" }}>
       <div className="p-6 border-b border-white/6">
         <Link href="/" className="flex items-center gap-2 w-fit">
-          <img src={konexLogo} alt="KONEX Logo" className="h-16 w-auto" style={{ mixBlendMode: "screen" }} />
+          <KonexLogo height={36} />
         </Link>
       </div>
 
@@ -211,7 +211,7 @@ function LayoutShellInner({ children }: LayoutShellProps) {
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 backdrop-blur-xl border-b border-white/6 z-40 flex items-center justify-between px-4" style={{ background: "rgba(19,19,26,0.9)" }}>
         <Link href="/" className="flex items-center gap-2">
-          <img src={konexLogo} alt="KONEX Logo" className="h-12 w-auto" style={{ mixBlendMode: "screen" }} />
+          <KonexLogo height={28} />
         </Link>
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>

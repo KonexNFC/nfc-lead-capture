@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Smartphone, CreditCard, Trees, Recycle, Tag, Users, ShoppingCart, Building2, CalendarCheck, Nfc } from "lucide-react";
-import konexLogo from "@assets/IMG_9139_1775995278347.png";
+import { KonexLogo } from "@/components/konex/KonexLogo";
 
 const materials = [
   {
@@ -95,7 +95,7 @@ export default function WhatIsNfcPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer" data-testid="link-logo-home">
-              <img src={konexLogo} alt="KONEX Logo" className="h-16 w-auto" style={{ mixBlendMode: "screen" }} />
+              <KonexLogo height={36} />
             </div>
           </Link>
           <div className="flex items-center gap-4">

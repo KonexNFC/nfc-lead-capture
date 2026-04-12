@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SiFacebook } from "react-icons/si";
 import { z } from "zod";
 import { ProfileModulesRenderer } from "@/components/profile-modules";
-import konexLogo from "@assets/IMG_9139_1775995278347.png";
+import { KonexLogo } from "@/components/konex/KonexLogo";
 import { socialHandleToUrl } from "@/lib/social-utils";
 import { getTheme, resolveCustomizations, buildThemeCssVars, fontFamilyFromStyle, type ThemeCustomizations } from "@/lib/themes";
 import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/schema";
@@ -191,7 +191,7 @@ export default function PublicProfile() {
           {logoUrl ? (
             <img src={logoUrl} alt="Logo" className="h-10 md:h-14 w-auto" />
           ) : (
-            <img src={konexLogo} alt="KONEX" className="h-16 md:h-20 w-auto" style={{ mixBlendMode: "screen" }} />
+            <KonexLogo height={40} />
           )}
         </a>
       </div>
@@ -297,7 +297,7 @@ export default function PublicProfile() {
 
       {/* Footer Branding — desktop only */}
       <div className="fixed bottom-4 right-4 hidden md:flex items-center gap-2 text-xs text-muted-foreground/50">
-        <img src={konexLogo} alt="KONEX" className="h-8 w-auto opacity-50" style={{ mixBlendMode: "screen" }} />
+        <KonexLogo height={18} className="opacity-50" />
         <span>Powered by KONEX</span>
       </div>
     </div>

@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { Link } from "wouter";
-import konexLogo from "@assets/IMG_9139_1775995278347.png";
+import { KonexLogo } from "@/components/konex/KonexLogo";
 
 const loginSchema = z.object({
   username: z.string().email("Please enter a valid email"),
@@ -40,7 +40,7 @@ export default function AuthPage() {
       <div className="w-full max-w-md animate-in">
         <div className="text-center mb-8 space-y-2">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <img src={konexLogo} alt="KONEX" className="h-24 w-auto" style={{ mixBlendMode: "screen" }} />
+            <KonexLogo height={52} />
           </div>
           <h1 className="text-3xl font-display font-bold text-white">Welcome to KONEX</h1>
           <p className="text-white/50">Create your free digital business card.</p>

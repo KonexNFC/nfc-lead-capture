@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Testimonial } from "@shared/schema";
-import konexLogo from "@assets/IMG_9139_1775995278347.png";
+import { KonexLogo } from "@/components/konex/KonexLogo";
 import cardBasic from "@assets/IMG_7774_1771669634221.png";
 import cardPremium from "@assets/IMG_7776_1771669634221.png";
 import cardElite from "@assets/IMG_7775_1771669634221.png";
@@ -157,12 +157,12 @@ export default function LandingPage() {
         className={`w-full fixed top-0 z-50 transition-all duration-300 ease-in-out border-b ${
           scrolled
             ? "bg-[#13131A]/96 backdrop-blur-xl border-white/8 shadow-[0_1px_20px_rgba(0,0,0,0.6)]"
-            : "bg-transparent border-transparent"
+            : "bg-[#0a0a10]/60 border-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={konexLogo} alt="KONEX Logo" className="h-16 w-auto" style={{ mixBlendMode: "screen" }} />
+            <KonexLogo height={36} />
             <div className="hidden md:flex items-center gap-1 ml-4">
               <Link href="/konex-cards">
                 <Button variant="ghost" size="sm" className="text-white/60 hover:text-white" data-testid="nav-konex-cards">
