@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SiFacebook } from "react-icons/si";
 import { z } from "zod";
 import { ProfileModulesRenderer } from "@/components/profile-modules";
-import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_1770323201397.jpeg";
+import konexLogo from "@assets/IMG_9139_1775995278347.png";
 import { socialHandleToUrl } from "@/lib/social-utils";
 import { getTheme, resolveCustomizations, buildThemeCssVars, fontFamilyFromStyle, type ThemeCustomizations } from "@/lib/themes";
 import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/schema";
