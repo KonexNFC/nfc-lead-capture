@@ -208,9 +208,13 @@ export default function LandingPage() {
                     <Nfc className="h-4 w-4 mr-2" /> What is NFC? <ChevronRight className="h-4 w-4 ml-auto" />
                   </DropdownMenuItem>
                 </Link>
+                <DropdownMenuSeparator />
+                <Link href="/auth">
+                  <DropdownMenuItem data-testid="menu-login">Log in</DropdownMenuItem>
+                </Link>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link href="/auth">
+            <Link href="/auth" className="hidden md:inline-flex">
               <Button variant="ghost" className="text-white/70 hover:text-white font-medium" data-testid="button-login">Log in</Button>
             </Link>
             <Link href="/auth?tab=register">

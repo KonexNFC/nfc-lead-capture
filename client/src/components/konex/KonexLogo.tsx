@@ -2,13 +2,13 @@ import konexLogo from "@assets/IMG_9139_1775997952970.png";
 
 // PNG is 1536×1024. Content measured from pixel analysis:
 //   Logo mark spans: top=374, bottom=584, left=314, right=1142
-//   We use left=160 (generous buffer left of K icon) so K is never clipped
-//   Content height = 210px, content width from 160→1142 = 982px
+//   Small left buffer (280→314 = 34px) so K icon is never clipped
+//   but container stays tight so nav buttons aren't pushed off screen
 const PNG_W = 1536, PNG_H = 1024;
 const CROP_TOP = 350;
 const CROP_H = 240;
-const CROP_LEFT = 160;
-const CROP_W = 982;
+const CROP_LEFT = 280;
+const CROP_W = 862; // 280 → 1142
 
 interface KonexLogoProps {
   height?: number;
