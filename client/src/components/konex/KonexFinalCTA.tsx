@@ -1,4 +1,4 @@
-import cardLifestyle from "@assets/Konex_Elite_Cards_1776209758731.png";
+import cardLifestyle from "@assets/Konex_Elite_Cards_Design_1776210329429.png";
 
 export default function KonexFinalCTA() {
   return (
