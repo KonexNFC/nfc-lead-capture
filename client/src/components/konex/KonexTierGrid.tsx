@@ -15,7 +15,7 @@ export default function KonexTierGrid() {
   });
 
   return (
-    <section className="konex-tiers" id="pricing">
+    <section className="konex-tiers" id="tiers">
       <div className="container">
         <div className="tiers-header">
           <h2 data-testid="text-tiers-heading">Choose your KONEX card</h2>

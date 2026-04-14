@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,8 +25,14 @@ interface KonexNavProps {
 }
 
 export default function KonexNav({ variant = "overview" }: KonexNavProps) {
+  const [location, setLocation] = useLocation();
+
   const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    if (location === "/konex-cards") {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      setLocation(`/konex-cards#${id}`);
+    }
   };
 
   return (

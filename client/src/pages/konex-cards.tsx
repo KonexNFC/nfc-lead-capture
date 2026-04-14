@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import KonexNav from "@/components/konex/KonexNav";
 import KonexHero from "@/components/konex/KonexHero";
 import KonexTierGrid from "@/components/konex/KonexTierGrid";
@@ -7,6 +8,15 @@ import KonexFinalCTA from "@/components/konex/KonexFinalCTA";
 import KonexFooter from "@/components/konex/KonexFooter";
 
 export default function KonexCardsPage() {
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (hash) {
+      setTimeout(() => {
+        document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
+      }, 150);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <KonexNav variant="overview" />
