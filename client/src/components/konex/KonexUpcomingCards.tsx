@@ -16,16 +16,16 @@ interface UpcomingCard {
 
 function BambooVisual() {
   return (
-    <div style={{ height: 160, background: "#f8f8f8", display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 20px" }}>
-      <img src={ecoBambooImg} alt="Eco Bamboo Card" style={{ maxHeight: 140, width: "100%", objectFit: "contain" }} />
+    <div style={{ height: 180, background: "#f8f8f8", overflow: "hidden" }}>
+      <img src={ecoBambooImg} alt="Eco Bamboo Card" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }} />
     </div>
   );
 }
 
 function RecycledSteelVisual() {
   return (
-    <div style={{ height: 160, background: "#f8f8f8", display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 20px" }}>
-      <img src={recycledSteelImg} alt="Recycled Steel Card" style={{ maxHeight: 140, width: "100%", objectFit: "contain" }} />
+    <div style={{ height: 180, background: "#f8f8f8", overflow: "hidden" }}>
+      <img src={recycledSteelImg} alt="Recycled Steel Card" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }} />
     </div>
   );
 }
