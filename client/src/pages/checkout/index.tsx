@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import {
   CheckCircle, ShoppingCart, Star, Shield, Zap, ArrowRight,
-  Smartphone, Leaf, Cpu, PenLine, Bell,
+  Smartphone, Cpu, PenLine, Bell,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import KonexNav from "@/components/konex/KonexNav";
@@ -16,6 +16,8 @@ import cardPremiumCopper from "@assets/Konex_Premium_Card_Cooper_1776031961807.p
 import cardEliteCarbon   from "@assets/Konex_Elite_Card_1776031961806.png";
 import cardEliteGold     from "@assets/Konex_Elite_Gold_Card_1776031961805.png";
 import cardEliteCarbonGold from "@assets/ChatGPT_Image_Apr_12,_2026,_11_10_59_PM_1776031961801.png";
+import cardEcoBamboo     from "@assets/Konex_Eco_Bamboo_1776450550750.png";
+import cardRecycledSteel from "@assets/Konex_Recycled_Steel_1776450550748.png";
 
 interface ProductVariant { label: string; image: string; swatch: string; sku: string }
 interface Product {
@@ -146,48 +148,16 @@ const COMING_SOON: Product[] = [
 function ComingSoonCardVisual({ product }: { product: Product }) {
   if (product.sku === "KONEX-ECO-BAMBOO") {
     return (
-      <div style={{
-        width: "100%", height: 160,
-        background: "linear-gradient(135deg, #3d2b1f 0%, #5a3e28 40%, #7a5c35 70%, #4a3520 100%)",
-        display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", inset: 0, opacity: 0.15,
-          backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(255,255,255,0.1) 4px, rgba(255,255,255,0.1) 5px)",
-        }} />
-        <div style={{ textAlign: "center", zIndex: 1 }}>
-          <Leaf size={36} style={{ color: "#a8c87a", marginBottom: 8 }} />
-          <div style={{ color: "#c8a97a", fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase" }}>Eco Bamboo</div>
-        </div>
-        <div style={{
-          position: "absolute", bottom: 12, right: 16, fontSize: 9, color: "rgba(200,169,122,0.6)",
-          fontWeight: 600, letterSpacing: 1, textTransform: "uppercase",
-        }}>konexnfc.com</div>
+      <div style={{ width: "100%", height: 160, background: "#f8f8f8", display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 20px" }}>
+        <img src={cardEcoBamboo} alt="Eco Bamboo Card" style={{ maxHeight: 140, width: "100%", objectFit: "contain" }} />
       </div>
     );
   }
 
   if (product.sku === "KONEX-ECO-STEEL") {
     return (
-      <div style={{
-        width: "100%", height: 160,
-        background: "linear-gradient(135deg, #2a3340 0%, #3d4f5e 30%, #5a6e7a 60%, #3a4a55 100%)",
-        display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", inset: 0, opacity: 0.12,
-          backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.15) 3px, rgba(255,255,255,0.15) 4px)",
-        }} />
-        <div style={{ textAlign: "center", zIndex: 1 }}>
-          <div style={{ width: 36, height: 36, margin: "0 auto 8px", borderRadius: 4, background: "linear-gradient(135deg, #8aa0b0, #b8cad4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Shield size={20} style={{ color: "#2a3340" }} />
-          </div>
-          <div style={{ color: "#a0c0d0", fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase" }}>Recycled Steel</div>
-        </div>
-        <div style={{
-          position: "absolute", bottom: 12, right: 16, fontSize: 9, color: "rgba(160,192,208,0.6)",
-          fontWeight: 600, letterSpacing: 1, textTransform: "uppercase",
-        }}>konexnfc.com</div>
+      <div style={{ width: "100%", height: 160, background: "#f8f8f8", display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 20px" }}>
+        <img src={cardRecycledSteel} alt="Recycled Steel Card" style={{ maxHeight: 140, width: "100%", objectFit: "contain" }} />
       </div>
     );
   }

@@ -1,4 +1,6 @@
-import { Leaf, Cpu, Recycle } from "lucide-react";
+import { Cpu } from "lucide-react";
+import ecoBambooImg     from "@assets/Konex_Eco_Bamboo_1776450550750.png";
+import recycledSteelImg from "@assets/Konex_Recycled_Steel_1776450550748.png";
 
 interface UpcomingCard {
   id: string;
@@ -14,40 +16,16 @@ interface UpcomingCard {
 
 function BambooVisual() {
   return (
-    <div style={{
-      height: 160, borderRadius: "0.75rem", overflow: "hidden",
-      background: "linear-gradient(135deg, #3d2b1f 0%, #5a3e28 40%, #7a5c35 70%, #4a3520 100%)",
-      display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
-    }}>
-      <div style={{
-        position: "absolute", inset: 0, opacity: 0.1,
-        backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 5px, rgba(255,255,255,0.12) 5px, rgba(255,255,255,0.12) 6px)",
-      }} />
-      <div style={{ textAlign: "center", zIndex: 1 }}>
-        <Leaf size={32} style={{ color: "#a8c87a", margin: "0 auto 6px" }} />
-        <div style={{ color: "#c8a97a", fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase" }}>Eco Bamboo</div>
-        <div style={{ color: "rgba(200,169,122,0.5)", fontSize: 9, marginTop: 3 }}>konexnfc.com</div>
-      </div>
+    <div style={{ height: 160, background: "#f8f8f8", display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 20px" }}>
+      <img src={ecoBambooImg} alt="Eco Bamboo Card" style={{ maxHeight: 140, width: "100%", objectFit: "contain" }} />
     </div>
   );
 }
 
 function RecycledSteelVisual() {
   return (
-    <div style={{
-      height: 160, borderRadius: "0.75rem", overflow: "hidden",
-      background: "linear-gradient(135deg, #2a3340 0%, #3d4f5e 30%, #5a6e7a 60%, #3a4a55 100%)",
-      display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
-    }}>
-      <div style={{
-        position: "absolute", inset: 0, opacity: 0.1,
-        backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(255,255,255,0.12) 4px, rgba(255,255,255,0.12) 5px)",
-      }} />
-      <div style={{ textAlign: "center", zIndex: 1 }}>
-        <Recycle size={32} style={{ color: "#88c0d0", margin: "0 auto 6px" }} />
-        <div style={{ color: "#a0c0d0", fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase" }}>Recycled Steel</div>
-        <div style={{ color: "rgba(160,192,208,0.5)", fontSize: 9, marginTop: 3 }}>konexnfc.com</div>
-      </div>
+    <div style={{ height: 160, background: "#f8f8f8", display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 20px" }}>
+      <img src={recycledSteelImg} alt="Recycled Steel Card" style={{ maxHeight: 140, width: "100%", objectFit: "contain" }} />
     </div>
   );
 }

@@ -51,3 +51,7 @@ PAYPAL_ENV = "live"
 
 [userenv.development]
 PAYPAL_ENV = "sandbox"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
