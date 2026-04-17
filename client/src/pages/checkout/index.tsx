@@ -30,6 +30,7 @@ interface Product {
   image: string | null;
   comingSoon?: boolean;
   comingSoonLabel?: string;
+  preOrder?: boolean;
   variants?: ProductVariant[];
   allowEngraving?: boolean;
 }
@@ -63,13 +64,14 @@ const PRODUCTS: Product[] = [
     sku: "KONEX-PREMIUM",
     name: "Premium NFC Card",
     price: "£49.99",
-    priceNote: "One-time",
+    priceNote: "Pre-order",
     description: "Brushed metal finish with laser engraving — make a lasting impression.",
     features: ["Brushed metal finish", "Laser-engraved logo", "Advanced analytics", "Priority support"],
     highlight: true,
     badge: "Most Popular",
     image: cardPremiumSilver,
     allowEngraving: true,
+    preOrder: true,
     variants: [
       { label: "Silver",  image: cardPremiumSilver, swatch: "#C0C0C0", sku: "KONEX-PREMIUM" },
       { label: "Black",   image: cardPremiumBlack,  swatch: "#1a1a1a", sku: "KONEX-PREMIUM-BLACK" },
@@ -80,13 +82,14 @@ const PRODUCTS: Product[] = [
     sku: "KONEX-ELITE",
     name: "Elite NFC Card",
     price: "£79.99",
-    priceNote: "One-time",
+    priceNote: "Pre-order",
     description: "Luxury materials, white-glove onboarding, and exclusive executive features.",
     features: ["Luxury materials", "Custom domain", "White-glove setup", "Dedicated manager"],
     highlight: false,
     badge: "Premium",
     image: cardEliteCarbon,
     allowEngraving: true,
+    preOrder: true,
     variants: [
       { label: "Carbon",      image: cardEliteCarbon,     swatch: "#2a2a2a", sku: "KONEX-ELITE" },
       { label: "Gold",        image: cardEliteGold,       swatch: "#D4AF37", sku: "KONEX-ELITE-GOLD" },
@@ -339,6 +342,7 @@ export default function CheckoutPage() {
   const engravingText = [engravingName.trim(), engravingTitle.trim()].filter(Boolean).join(" | ");
 
   const isComingSoon = selectedProduct?.comingSoon === true;
+  const isPreOrder = selectedProduct?.preOrder === true;
 
   return (
     <div className="min-h-screen" style={{ background: "#13131A", color: "#fff" }}>
@@ -451,9 +455,20 @@ export default function CheckoutPage() {
                       </li>
                     ))}
                   </ul>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold" data-testid={`text-price-${p.sku}`}>{p.price}</span>
-                    <span className="text-sm" style={{ color: "#6b7280" }}>{p.priceNote}</span>
+                  <div className="flex items-center flex-wrap gap-2">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-bold" data-testid={`text-price-${p.sku}`}>{p.price}</span>
+                      <span className="text-sm" style={{ color: "#6b7280" }}>{p.priceNote}</span>
+                    </div>
+                    {p.preOrder && (
+                      <span
+                        className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                        style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}
+                        data-testid={`badge-preorder-${p.sku}`}
+                      >
+                        Pre-order
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -615,6 +630,18 @@ export default function CheckoutPage() {
             <p className="text-center text-sm mb-4" style={{ color: "#9ca3af" }}>
               Paying for: <strong style={{ color: "#fff" }}>{selectedProduct?.name}</strong>
             </p>
+            {isPreOrder && (
+              <div
+                className="mb-4 px-4 py-3 rounded-xl text-sm flex items-start gap-2"
+                style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)", color: "#fbbf24" }}
+                data-testid="notice-preorder"
+              >
+                <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>⏳</span>
+                <span>
+                  <strong>Pre-order:</strong> Pay securely today — your card ships within <strong>4–6 weeks</strong> once production is complete.
+                </span>
+              </div>
+            )}
             <PayPalButton
               sku={effectiveSku ?? selectedSku}
               clientId={clientId}
