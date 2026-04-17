@@ -530,6 +530,19 @@ export async function registerRoutes(
     res.json({ ok: true });
   });
 
+  // === Waitlist (Public) ===
+  app.post("/api/waitlist", async (req, res) => {
+    const schema = z.object({
+      email: z.string().email(),
+      product: z.string().min(1).max(100),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Valid email and product required" });
+    const { email, product } = parsed.data;
+    console.log(`[waitlist] ${email} joined waitlist for: ${product}`);
+    res.json({ ok: true });
+  });
+
   // === Analytics (Authenticated) ===
   app.get("/api/analytics/overview", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
@@ -1592,13 +1605,16 @@ export async function registerRoutes(
       return res.status(503).json({ message: "Payment system not configured" });
     }
 
-    const schema = z.object({ sku: z.string() });
+    const schema = z.object({
+      sku: z.string(),
+      engravingText: z.string().max(60).optional(),
+    });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ message: "SKU is required" });
     }
 
-    const { sku } = parsed.data;
+    const { sku, engravingText } = parsed.data;
     const item = SKU_CATALOG[sku];
     if (!item) {
       return res.status(400).json({ message: "Invalid product SKU" });
@@ -1618,6 +1634,7 @@ export async function registerRoutes(
         sku,
         returnUrl,
         cancelUrl,
+        engravingText,
       );
 
       // Persist draft order

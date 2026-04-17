@@ -37,6 +37,34 @@ export const SKU_CATALOG: Record<
     productType: "physical_card",
     tier: "elite",
   },
+  "KONEX-PREMIUM-BLACK": {
+    name: "KONEX Premium NFC Card — Black",
+    amount: "49.99",
+    currency: "GBP",
+    productType: "physical_card",
+    tier: "premium",
+  },
+  "KONEX-PREMIUM-COPPER": {
+    name: "KONEX Premium NFC Card — Copper",
+    amount: "49.99",
+    currency: "GBP",
+    productType: "physical_card",
+    tier: "premium",
+  },
+  "KONEX-ELITE-GOLD": {
+    name: "KONEX Elite NFC Card — Gold",
+    amount: "79.99",
+    currency: "GBP",
+    productType: "physical_card",
+    tier: "elite",
+  },
+  "KONEX-ELITE-CARBON-GOLD": {
+    name: "KONEX Elite NFC Card — Carbon Gold",
+    amount: "79.99",
+    currency: "GBP",
+    productType: "physical_card",
+    tier: "elite",
+  },
   "KONEX-DIGITAL": {
     name: "KONEX Digital Profile",
     amount: "9.99",
@@ -88,12 +116,17 @@ export async function createPayPalOrder(
   sku: string,
   returnUrl: string,
   cancelUrl: string,
+  engravingText?: string,
 ): Promise<{ orderId: string; approveUrl: string }> {
   const item = SKU_CATALOG[sku];
   if (!item) throw new Error(`Unknown SKU: ${sku}`);
 
   const accessToken = await getAccessToken();
   const requestId = crypto.randomUUID();
+
+  const description = engravingText
+    ? `${item.name} | Engraving: ${engravingText}`
+    : item.name;
 
   const response = await fetch(`${BASE_URL}/v2/checkout/orders`, {
     method: "POST",
@@ -107,7 +140,7 @@ export async function createPayPalOrder(
       purchase_units: [
         {
           reference_id: sku,
-          description: item.name,
+          description,
           amount: {
             currency_code: item.currency,
             value: item.amount,

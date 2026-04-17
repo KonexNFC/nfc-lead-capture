@@ -67,8 +67,16 @@ Users can customize their public profile appearance through an "Appearance" dash
 - **Token System**: `buildThemeCssVars()` in `themes.ts` generates all CSS variables (including Tailwind HSL bridges). Used by both the appearance preview and the public profile page, ensuring preview exactly matches reality.
 - **Live Preview**: The appearance editor uses the actual `ProfilePreview` component wrapped in a CSS-variable scope div — no separate preview renderer. Desktop/mobile viewport toggle.
 - **Workflow**: Draft/publish pattern — save draft to iterate, publish when ready. Status badge shows unsaved/draft/live state.
-- **Premium Gating**: `luxury_black` and `social_hub` require pro plan.
+- **Themes available**: `minimal_corporate` (free), `personal_brand` (free), `luxury_black` (pro), `social_hub` (pro), `rose_gold` (pro), `ocean` (pro), `neon_night` (pro).
+- **Premium Gating**: All except `minimal_corporate` and `personal_brand` require pro plan.
 - **Architecture**: `hexToHslVar()` shared in `themes.ts`. `resolveCustomizations()` merges saved customizations over theme defaults.
+
+### Checkout & Product Catalog
+- **Checkout page** (`/checkout`): Multi-variant product selection with card mockup images, variant swatches (finish/material options), and selected-card live preview.
+- **Engraving**: Two optional fields (name line + title line, 30 chars each) rendered as `PenLine` icon inputs. Text is appended to the PayPal order description via `engravingText` prop on `<PayPalButton>` and passed through `createPayPalOrder()`.
+- **Product SKUs** (in `server/paypal.ts`): `KONEX-BASIC`, `KONEX-PREMIUM-BLACK`, `KONEX-PREMIUM-COPPER`, `KONEX-ELITE-GOLD`, `KONEX-ELITE-CARBON-GOLD` (available now); `KONEX-ECO-BAMBOO`, `KONEX-ECO-STEEL`, `KONEX-EINК` (coming soon).
+- **Coming-soon flow**: Selecting an eco or e-ink SKU hides the PayPal button and shows an email waitlist form instead. Waitlist submissions call `POST /api/waitlist` (logs email + product server-side; no DB storage).
+- **Upcoming cards section**: `<KonexUpcomingCards />` component on `/konex-cards` page shows CSS-styled placeholder visuals for Bamboo, Recycled Steel, and E-Ink cards.
 
 ### Analytics & Conversion Tracking System
 - **`profile_events` table**: Tracks all profile interaction events (view, cta_click, call_click, email_click, whatsapp_click, website_click, social_click, booking_click, save_contact, form_submit, qr_scan, payment_click).

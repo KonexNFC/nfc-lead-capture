@@ -5,6 +5,7 @@ import KonexTierGrid from "@/components/konex/KonexTierGrid";
 import KonexBenefits from "@/components/konex/KonexBenefits";
 import KonexComparisonMini from "@/components/konex/KonexComparisonMini";
 import KonexFinalCTA from "@/components/konex/KonexFinalCTA";
+import KonexUpcomingCards from "@/components/konex/KonexUpcomingCards";
 import KonexFooter from "@/components/konex/KonexFooter";
 
 export default function KonexCardsPage() {
@@ -45,6 +46,7 @@ export default function KonexCardsPage() {
         <KonexTierGrid />
         <KonexBenefits />
         <KonexComparisonMini />
+        <KonexUpcomingCards />
         <KonexFinalCTA />
       </main>
       <KonexFooter />

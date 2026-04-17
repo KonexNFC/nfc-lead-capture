@@ -12,9 +12,10 @@ interface PayPalButtonProps {
   clientId: string;
   onSuccess: (activationToken: string) => void;
   onCancel?: () => void;
+  engravingText?: string;
 }
 
-export function PayPalButton({ sku, clientId, onSuccess, onCancel }: PayPalButtonProps) {
+export function PayPalButton({ sku, clientId, onSuccess, onCancel, engravingText }: PayPalButtonProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [sdkReady, setSdkReady] = useState(false);
   const [sdkError, setSdkError] = useState("");
@@ -64,7 +65,7 @@ export function PayPalButton({ sku, clientId, onSuccess, onCancel }: PayPalButto
           const res = await fetch("/api/paypal/create-order", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sku }),
+            body: JSON.stringify({ sku, ...(engravingText ? { engravingText } : {}) }),
           });
           const data = await res.json();
           if (!res.ok) throw new Error(data.message || "Could not create order");
