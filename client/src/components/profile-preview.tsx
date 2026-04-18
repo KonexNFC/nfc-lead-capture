@@ -17,6 +17,9 @@ import {
   SiGithub,
   SiWhatsapp,
   SiTelegram,
+  SiPinterest,
+  SiDiscord,
+  SiBehance,
 } from "react-icons/si";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -66,16 +69,22 @@ const SOCIAL_CONFIG: Record<string, {
   textColor?: string;
 }> = {
   linkedin:  { icon: SiLinkedin,  color: "#0A66C2", label: "LinkedIn"  },
-  x:         { icon: SiX,         color: "#14171A", label: "X"         },
-  twitter:   { icon: SiX,         color: "#14171A", label: "X"         },
-  instagram: { icon: SiInstagram, color: "#E4405F", label: "Instagram" },
+  x:         { icon: SiX,         color: "#000000", label: "X"         },
+  twitter:   { icon: SiX,         color: "#000000", label: "X"         },
+  instagram: {
+    icon: SiInstagram, color: "#E4405F", label: "Instagram",
+    gradient: "radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%)",
+  },
   facebook:  { icon: SiFacebook,  color: "#1877F2", label: "Facebook"  },
   whatsapp:  { icon: SiWhatsapp,  color: "#25D366", label: "WhatsApp"  },
   telegram:  { icon: SiTelegram,  color: "#2CA5E0", label: "Telegram"  },
   tiktok:    { icon: SiTiktok,    color: "#010101", label: "TikTok"    },
   youtube:   { icon: SiYoutube,   color: "#FF0000", label: "YouTube"   },
   snapchat:  { icon: SiSnapchat,  color: "#FFFC00", label: "Snapchat", textColor: "#000000" },
-  github:    { icon: SiGithub,    color: "#181717", label: "GitHub"    },
+  github:    { icon: SiGithub,    color: "#24292e", label: "GitHub"    },
+  pinterest: { icon: SiPinterest, color: "#E60023", label: "Pinterest" },
+  discord:   { icon: SiDiscord,   color: "#5865F2", label: "Discord"   },
+  behance:   { icon: SiBehance,   color: "#053eff", label: "Behance"   },
   website:   { icon: Globe,       color: "#6366F1", label: "Website"   },
 };
 
@@ -117,25 +126,30 @@ function SectionDividerEl({ type, accent }: { type: SectionDivider; accent: stri
 
 function ContactIconWrap({
   iconStyle,
-  accent,
   bg,
   children,
   size = "md",
   borderRadius = "50%",
 }: {
   iconStyle: IconStyle;
-  accent: string;
   bg: string;
   children: React.ReactNode;
   size?: "sm" | "md" | "lg";
   borderRadius?: string;
 }) {
-  const dim = size === "sm" ? "h-9 w-9" : size === "lg" ? "h-14 w-14" : "h-12 w-12";
+  const dim = size === "sm" ? "h-10 w-10" : size === "lg" ? "h-14 w-14" : "h-12 w-12";
+
   if (iconStyle === "outline") {
+    // Dark luxury themes → rich black circle, white icon, deep shadow
     return (
       <div
-        className={`${dim} flex items-center justify-center transition-all group-hover:opacity-80`}
-        style={{ border: `2px solid ${bg}`, color: bg, backgroundColor: "transparent", borderRadius }}
+        className={`${dim} flex items-center justify-center transition-all group-hover:-translate-y-0.5 group-hover:brightness-125`}
+        style={{
+          backgroundColor: "#111111",
+          color: "#ffffff",
+          borderRadius,
+          boxShadow: "0 6px 18px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35)",
+        }}
       >
         {children}
       </div>
@@ -144,37 +158,71 @@ function ContactIconWrap({
   if (iconStyle === "ghost") {
     return (
       <div
-        className={`${dim} flex items-center justify-center transition-all group-hover:opacity-80`}
-        style={{ backgroundColor: `${bg}22`, color: bg, borderRadius }}
+        className={`${dim} flex items-center justify-center transition-all group-hover:-translate-y-0.5`}
+        style={{
+          backgroundColor: `${bg}28`,
+          color: bg,
+          borderRadius,
+          boxShadow: `0 4px 12px ${bg}30`,
+        }}
       >
         {children}
       </div>
     );
   }
-  // solid — always white icon on brand-colored rounded square
+  // solid — bright brand-colored circle, white icon, coloured drop shadow
   return (
     <div
-      className={`${dim} flex items-center justify-center transition-all group-hover:opacity-90`}
-      style={{ backgroundColor: bg, color: accent, borderRadius }}
+      className={`${dim} flex items-center justify-center transition-all group-hover:-translate-y-0.5 group-hover:brightness-110`}
+      style={{
+        backgroundColor: bg,
+        color: "#ffffff",
+        borderRadius,
+        boxShadow: `0 6px 18px ${bg}70, 0 2px 6px rgba(0,0,0,0.2)`,
+      }}
     >
       {children}
     </div>
   );
 }
 
-/** Renders a social icon tile with gradient or solid brand background */
+/** Renders a social icon tile — colored for light/social themes, black for luxury/dark themes */
 function SocialIconTile({
   config,
   borderRadius,
   size = "md",
+  iconStyle = "solid",
 }: {
   config: { icon: any; color: string; gradient?: string; textColor?: string };
   borderRadius: string;
   size?: "sm" | "md" | "lg";
+  iconStyle?: IconStyle;
 }) {
   const Icon = config.icon;
   const dim = size === "sm" ? "h-10 w-10" : size === "lg" ? "h-14 w-14" : "h-12 w-12";
   const iconSize = size === "sm" ? "h-4 w-4" : size === "lg" ? "h-6 w-6" : "h-5 w-5";
+
+  if (iconStyle === "outline") {
+    // Dark luxury themes → rich black circle, white icon
+    return (
+      <div
+        className={`${dim} flex items-center justify-center group-hover:brightness-125 group-hover:-translate-y-0.5 transition-all`}
+        style={{
+          background: "#111111",
+          color: "#ffffff",
+          borderRadius,
+          boxShadow: "0 6px 18px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35)",
+        }}
+      >
+        <Icon className={iconSize} />
+      </div>
+    );
+  }
+
+  // solid/ghost → full brand-color circle with coloured drop shadow
+  const shadow = config.gradient
+    ? "0 6px 18px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.15)"
+    : `0 6px 18px ${config.color}70, 0 2px 6px rgba(0,0,0,0.15)`;
   return (
     <div
       className={`${dim} flex items-center justify-center group-hover:brightness-110 group-hover:-translate-y-0.5 transition-all`}
@@ -182,6 +230,7 @@ function SocialIconTile({
         background: config.gradient || config.color,
         color: config.textColor || "#fff",
         borderRadius,
+        boxShadow: shadow,
       }}
     >
       <Icon className={iconSize} />
@@ -295,7 +344,7 @@ export function ProfilePreview({
               <div className="flex items-center gap-3 py-2">
                 {links.phone && (
                   <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#25D366" bg="#1a4731" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#25D366" size="sm">
                       <Phone className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">Call</span>
@@ -303,7 +352,7 @@ export function ProfilePreview({
                 )}
                 {(links.sms || links.phone) && (
                   <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#007AFF" size="sm">
                       <MessageSquare className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">Text</span>
@@ -311,7 +360,7 @@ export function ProfilePreview({
                 )}
                 {links.whatsapp && (
                   <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#25D366" bg="#1a4731" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#25D366" size="sm">
                       <SiWhatsapp className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">WA</span>
@@ -319,7 +368,7 @@ export function ProfilePreview({
                 )}
                 {links.email && (
                   <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#F59E0B" size="sm">
                       <Mail className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[9px] text-muted-foreground">Email</span>
@@ -337,7 +386,7 @@ export function ProfilePreview({
                   const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
                   return (
                     <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-2 group">
-                      <SocialIconTile config={config} borderRadius={crPx} size="sm" />
+                      <SocialIconTile config={config} borderRadius={crPx} size="sm" iconStyle={c.iconStyle} />
                       <span className="text-[8px] uppercase tracking-wide font-semibold text-muted-foreground">{config.label}</span>
                     </a>
                   );
@@ -438,7 +487,7 @@ export function ProfilePreview({
               <div className="flex items-center justify-center gap-6 mb-7">
                 {links.phone && (
                   <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#25D366" bg="#1a4731" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#25D366" size="sm">
                       <Phone className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">Call</span>
@@ -446,7 +495,7 @@ export function ProfilePreview({
                 )}
                 {(links.sms || links.phone) && (
                   <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#007AFF" size="sm">
                       <MessageSquare className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">Text</span>
@@ -454,7 +503,7 @@ export function ProfilePreview({
                 )}
                 {links.whatsapp && (
                   <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#25D366" bg="#1a4731" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#25D366" size="sm">
                       <SiWhatsapp className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">WA</span>
@@ -462,7 +511,7 @@ export function ProfilePreview({
                 )}
                 {links.email && (
                   <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1.5 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="sm">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#F59E0B" size="sm">
                       <Mail className="h-4 w-4" />
                     </ContactIconWrap>
                     <span className="text-[8px] uppercase tracking-widest text-muted-foreground">Email</span>
@@ -480,7 +529,7 @@ export function ProfilePreview({
                     const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
                     return (
                       <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-2 group">
-                        <SocialIconTile config={config} borderRadius={crPx === "24px" ? "10px" : crPx} size="sm" />
+                        <SocialIconTile config={config} borderRadius={crPx === "24px" ? "10px" : crPx} size="sm" iconStyle={c.iconStyle} />
                         <span className="text-[7px] uppercase tracking-widest text-muted-foreground">{config.label}</span>
                       </a>
                     );
@@ -613,7 +662,7 @@ export function ProfilePreview({
               <div className="flex items-center justify-center gap-4 mb-5">
                 {links.phone && (
                   <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#25D366" bg="#1a4731" size="lg">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#25D366" size="lg">
                       <Phone className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Call</span>
@@ -621,7 +670,7 @@ export function ProfilePreview({
                 )}
                 {(links.sms || links.phone) && (
                   <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="lg">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#007AFF" size="lg">
                       <MessageSquare className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Text</span>
@@ -629,7 +678,7 @@ export function ProfilePreview({
                 )}
                 {links.whatsapp && (
                   <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#25D366" bg="#1a4731" size="lg">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#25D366" size="lg">
                       <SiWhatsapp className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">WhatsApp</span>
@@ -637,7 +686,7 @@ export function ProfilePreview({
                 )}
                 {links.email && (
                   <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-2 group">
-                    <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="lg">
+                    <ContactIconWrap iconStyle={c.iconStyle} bg="#F59E0B" size="lg">
                       <Mail className="h-6 w-6" />
                     </ContactIconWrap>
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Email</span>
@@ -655,7 +704,7 @@ export function ProfilePreview({
                   const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
                   return (
                     <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-2 group">
-                      <SocialIconTile config={config} borderRadius="14px" size="lg" />
+                      <SocialIconTile config={config} borderRadius="14px" size="lg" iconStyle={c.iconStyle} />
                       <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{config.label}</span>
                     </a>
                   );
@@ -757,7 +806,7 @@ export function ProfilePreview({
             <div className="flex items-center justify-center gap-4 mb-5 mt-2">
               {links.phone && (
                 <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent="#25D366" bg="#1a4731" size="md">
+                  <ContactIconWrap iconStyle={c.iconStyle} bg="#25D366" size="md">
                     <Phone className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">Call</span>
@@ -765,7 +814,7 @@ export function ProfilePreview({
               )}
               {(links.sms || links.phone) && (
                 <a href={`sms:${links.sms || links.phone}`} className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="md">
+                  <ContactIconWrap iconStyle={c.iconStyle} bg="#007AFF" size="md">
                     <MessageSquare className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">Text</span>
@@ -773,7 +822,7 @@ export function ProfilePreview({
               )}
               {links.whatsapp && (
                 <a href={`https://wa.me/${links.whatsapp.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent="#25D366" bg="#1a4731" size="md">
+                  <ContactIconWrap iconStyle={c.iconStyle} bg="#25D366" size="md">
                     <SiWhatsapp className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">WhatsApp</span>
@@ -781,7 +830,7 @@ export function ProfilePreview({
               )}
               {links.email && (
                 <a href={`mailto:${links.email}`} className="flex flex-col items-center gap-1.5 group">
-                  <ContactIconWrap iconStyle={c.iconStyle} accent="#60a5fa" bg="#1a2d4a" size="md">
+                  <ContactIconWrap iconStyle={c.iconStyle} bg="#F59E0B" size="md">
                     <Mail className="h-5 w-5" />
                   </ContactIconWrap>
                   <span className="text-[10px] text-muted-foreground">Email</span>
@@ -799,7 +848,7 @@ export function ProfilePreview({
                 const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
                 return (
                   <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-2 group">
-                    <SocialIconTile config={config} borderRadius={crPx} size="md" />
+                    <SocialIconTile config={config} borderRadius={crPx} size="md" iconStyle={c.iconStyle} />
                     <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{config.label}</span>
                   </a>
                 );
