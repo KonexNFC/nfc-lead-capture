@@ -67,10 +67,11 @@ const SOCIAL_CONFIG: Record<string, {
   label: string;
   gradient?: string;
   textColor?: string;
+  darkTile?: boolean;
 }> = {
   linkedin:  { icon: SiLinkedin,  color: "#0A66C2", label: "LinkedIn"  },
-  x:         { icon: SiX,         color: "#000000", label: "X"         },
-  twitter:   { icon: SiX,         color: "#000000", label: "X"         },
+  x:         { icon: SiX,         color: "#000000", label: "X",        darkTile: true },
+  twitter:   { icon: SiX,         color: "#000000", label: "X",        darkTile: true },
   instagram: {
     icon: SiInstagram, color: "#E4405F", label: "Instagram",
     gradient: "radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%)",
@@ -78,10 +79,10 @@ const SOCIAL_CONFIG: Record<string, {
   facebook:  { icon: SiFacebook,  color: "#1877F2", label: "Facebook"  },
   whatsapp:  { icon: SiWhatsapp,  color: "#25D366", label: "WhatsApp"  },
   telegram:  { icon: SiTelegram,  color: "#2CA5E0", label: "Telegram"  },
-  tiktok:    { icon: SiTiktok,    color: "#010101", label: "TikTok"    },
+  tiktok:    { icon: SiTiktok,    color: "#000000", label: "TikTok",   darkTile: true },
   youtube:   { icon: SiYoutube,   color: "#FF0000", label: "YouTube"   },
   snapchat:  { icon: SiSnapchat,  color: "#FFFC00", label: "Snapchat", textColor: "#000000" },
-  github:    { icon: SiGithub,    color: "#24292e", label: "GitHub"    },
+  github:    { icon: SiGithub,    color: "#24292e", label: "GitHub",   darkTile: true },
   pinterest: { icon: SiPinterest, color: "#E60023", label: "Pinterest" },
   discord:   { icon: SiDiscord,   color: "#5865F2", label: "Discord"   },
   behance:   { icon: SiBehance,   color: "#053eff", label: "Behance"   },
@@ -93,7 +94,7 @@ const CONTACT_CONFIG: Record<string, { icon: any; bg: string; label: string }> =
   phone:    { icon: Phone,         bg: "#25D366", label: "Call"     },
   sms:      { icon: MessageSquare, bg: "#007AFF", label: "Text"     },
   whatsapp: { icon: SiWhatsapp,    bg: "#25D366", label: "WhatsApp" },
-  email:    { icon: Mail,          bg: "#0088CC", label: "Email"    },
+  email:    { icon: Mail,          bg: "#F59E0B", label: "Email"    },
 };
 
 // ─── Derived style helpers ─────────────────────────────────────────────────
@@ -140,15 +141,17 @@ function ContactIconWrap({
   const dim = size === "sm" ? "h-10 w-10" : size === "lg" ? "h-14 w-14" : "h-12 w-12";
 
   if (iconStyle === "outline") {
-    // Dark luxury themes → rich black circle, white icon, deep shadow
+    // Dark luxury themes → elevated dark circle with white rim, white icon
+    // Uses a visible dark-surface circle that stands out against near-black backgrounds
     return (
       <div
-        className={`${dim} flex items-center justify-center transition-all group-hover:-translate-y-0.5 group-hover:brightness-125`}
+        className={`${dim} flex items-center justify-center transition-all group-hover:-translate-y-1 group-hover:brightness-125`}
         style={{
-          backgroundColor: "#111111",
+          backgroundColor: "#1e1e1e",
           color: "#ffffff",
           borderRadius,
-          boxShadow: "0 6px 18px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35)",
+          border: "1.5px solid rgba(255,255,255,0.15)",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.4)",
         }}
       >
         {children}
@@ -156,29 +159,31 @@ function ContactIconWrap({
     );
   }
   if (iconStyle === "ghost") {
+    // Translucent brand-tinted circle, colored icon — subtle but readable
     return (
       <div
         className={`${dim} flex items-center justify-center transition-all group-hover:-translate-y-0.5`}
         style={{
-          backgroundColor: `${bg}28`,
+          backgroundColor: `${bg}22`,
           color: bg,
           borderRadius,
-          boxShadow: `0 4px 12px ${bg}30`,
+          border: `1.5px solid ${bg}50`,
+          boxShadow: `0 4px 14px ${bg}25`,
         }}
       >
         {children}
       </div>
     );
   }
-  // solid — bright brand-colored circle, white icon, coloured drop shadow
+  // solid — full brand-color circle, white icon, colored glow shadow
   return (
     <div
-      className={`${dim} flex items-center justify-center transition-all group-hover:-translate-y-0.5 group-hover:brightness-110`}
+      className={`${dim} flex items-center justify-center transition-all group-hover:-translate-y-1 group-hover:brightness-110`}
       style={{
         backgroundColor: bg,
         color: "#ffffff",
         borderRadius,
-        boxShadow: `0 6px 18px ${bg}70, 0 2px 6px rgba(0,0,0,0.2)`,
+        boxShadow: `0 6px 20px ${bg}65, 0 2px 8px rgba(0,0,0,0.25)`,
       }}
     >
       {children}
@@ -186,14 +191,14 @@ function ContactIconWrap({
   );
 }
 
-/** Renders a social icon tile — colored for light/social themes, black for luxury/dark themes */
+/** Renders a social icon tile — colored for light/social themes, dark-elevated for luxury/dark themes */
 function SocialIconTile({
   config,
   borderRadius,
   size = "md",
   iconStyle = "solid",
 }: {
-  config: { icon: any; color: string; gradient?: string; textColor?: string };
+  config: { icon: any; color: string; gradient?: string; textColor?: string; darkTile?: boolean };
   borderRadius: string;
   size?: "sm" | "md" | "lg";
   iconStyle?: IconStyle;
@@ -203,15 +208,16 @@ function SocialIconTile({
   const iconSize = size === "sm" ? "h-4 w-4" : size === "lg" ? "h-6 w-6" : "h-5 w-5";
 
   if (iconStyle === "outline") {
-    // Dark luxury themes → rich black circle, white icon
+    // Luxury/dark themes → elevated dark surface tile, white rim, white icon
     return (
       <div
-        className={`${dim} flex items-center justify-center group-hover:brightness-125 group-hover:-translate-y-0.5 transition-all`}
+        className={`${dim} flex items-center justify-center group-hover:brightness-125 group-hover:-translate-y-1 transition-all`}
         style={{
-          background: "#111111",
+          background: "#1e1e1e",
           color: "#ffffff",
           borderRadius,
-          boxShadow: "0 6px 18px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35)",
+          border: "1.5px solid rgba(255,255,255,0.15)",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.4)",
         }}
       >
         <Icon className={iconSize} />
@@ -219,13 +225,32 @@ function SocialIconTile({
     );
   }
 
-  // solid/ghost → full brand-color circle with coloured drop shadow
+  // Dark-tile platforms (TikTok, X/Twitter, GitHub) — use elevated dark surface so
+  // the rounded shape is clearly visible against dark backgrounds
+  if (config.darkTile) {
+    return (
+      <div
+        className={`${dim} flex items-center justify-center group-hover:brightness-125 group-hover:-translate-y-1 transition-all`}
+        style={{
+          background: "#1a1a1a",
+          color: "#ffffff",
+          borderRadius,
+          border: "1.5px solid rgba(255,255,255,0.14)",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.3)",
+        }}
+      >
+        <Icon className={iconSize} />
+      </div>
+    );
+  }
+
+  // Colored tiles — full brand color with glow shadow
   const shadow = config.gradient
-    ? "0 6px 18px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.15)"
-    : `0 6px 18px ${config.color}70, 0 2px 6px rgba(0,0,0,0.15)`;
+    ? "0 6px 20px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.15)"
+    : `0 6px 20px ${config.color}65, 0 2px 6px rgba(0,0,0,0.2)`;
   return (
     <div
-      className={`${dim} flex items-center justify-center group-hover:brightness-110 group-hover:-translate-y-0.5 transition-all`}
+      className={`${dim} flex items-center justify-center group-hover:brightness-110 group-hover:-translate-y-1 transition-all`}
       style={{
         background: config.gradient || config.color,
         color: config.textColor || "#fff",
