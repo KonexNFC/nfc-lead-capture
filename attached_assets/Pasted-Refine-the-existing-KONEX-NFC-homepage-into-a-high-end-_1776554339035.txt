@@ -1,0 +1,298 @@
+Refine the existing KONEX NFC homepage into a high-end, premium SaaS + product experience. Do not change layout structure. Focus on visual refinement, spacing, hierarchy, and brand maturity.
+
+⸻
+
+1. BIGGEST ISSUE: INCONSISTENT DESIGN LANGUAGE
+
+Problem:
+
+You currently have:
+
+* Clean white UI (good)
+* But also random blue gradient blocks (bad)
+* Mixed border styles
+* Inconsistent shadows
+* Different “card styles” across sections
+
+Fix:
+
+Create ONE consistent design system
+
+Rules:
+
+* Border radius: 12px everywhere
+* Shadows: very soft, minimal (no glow)
+* Borders: #E5E7EB only
+* Backgrounds:
+    * White (#FFFFFF)
+    * Light grey sections (#F8FAFC)
+
+❌ Remove:
+
+* Heavy blue gradient backgrounds (especially CTA section)
+* Neon-style buttons
+* Thick borders
+
+⸻
+
+2. USE CASE CARDS (HIGH IMPACT FIX)
+
+Current Issue:
+
+Feels like dashboard UI blocks, not premium marketing
+
+Fix:
+
+Each card:
+
+* Background: white
+* Border: 1px solid #E5E7EB
+* Shadow: subtle hover only
+* Reduce padding inside
+* Increase spacing BETWEEN cards
+
+Typography Fix:
+
+* Headline → slightly larger, tighter
+* Body → shorter lines (reduce text length by 15–20%)
+
+Icon Fix:
+
+* Smaller icons
+* Softer background (no heavy color blocks)
+
+⸻
+
+3. PRODUCT CARDS (CRITICAL FOR SALES)
+
+Current Issue:
+
+Feels like:
+
+“basic eCommerce listing”
+
+Needs to feel like:
+
+“premium product showcase”
+
+⸻
+
+Fix Structure:
+
+Each card becomes:
+
+Top:
+
+* Product image (larger, more dominant)
+
+Middle:
+
+* Name (bold)
+* Short descriptor (clean, minimal)
+
+Bottom:
+
+* Price (bigger, more emphasis)
+* CTA button (small, subtle)
+
+⸻
+
+Design Fix:
+
+* Remove thick blue outline around cards
+* Use:
+    * White background
+    * Thin border (#E5E7EB)
+    * Subtle shadow on hover
+
+⸻
+
+Premium Highlight:
+
+For Premium plan ONLY:
+
+* Slight scale (1.03)
+* Add:
+    “Most Popular” badge
+* Very subtle blue tint border
+
+⸻
+
+4. COMPARISON TABLE (LOOKS TOO BASIC)
+
+Issue:
+
+Feels like spreadsheet UI
+
+Fix:
+
+* Add more padding inside cells
+* Increase font size
+* Use:
+    * Light grey row separation
+    * Softer checkmarks
+
+Optional:
+
+* Replace table with card comparison layout (more modern)
+
+⸻
+
+5. METRICS (3x, £0, 88%)
+
+Issue:
+
+Feels like generic startup stats
+
+Fix:
+
+* Make numbers BIGGER (dominant visual)
+* Reduce surrounding box weight
+* Remove heavy borders
+
+New style:
+
+* White background
+* Minimal shadow
+* Focus on typography, not container
+
+⸻
+
+6. CTA SECTION (BIGGEST VISUAL PROBLEM)
+
+Current Issue:
+
+That blue gradient block = cheap SaaS look
+
+⸻
+
+Replace with:
+
+Clean Premium CTA Section:
+
+Background:
+
+* White OR very soft gradient (barely visible)
+
+Layout:
+
+* Centered
+* Large headline
+* Minimal text
+
+⸻
+
+New Version:
+
+Headline:
+Start capturing leads from your next interaction
+
+Sub:
+Set up your KONEX profile in minutes. No app. No friction.
+
+Buttons:
+
+* Primary: solid blue (#2563EB)
+* Secondary: outline
+
+⸻
+
+❌ REMOVE:
+
+* Dark blue gradient block
+* Glow effects
+* Over-styled buttons
+
+⸻
+
+7. TESTIMONIAL SECTION
+
+Issue:
+
+Feels placeholder
+
+Fix:
+
+* Add:
+    * Avatar circle
+    * Role/company
+* Reduce card padding slightly
+* Increase quote size
+
+Make it feel real, not template
+
+⸻
+
+8. REMOVE THIS COMPLETELY (IMPORTANT)
+
+The dark sustainability section at the bottom:
+
+This breaks your entire design system.
+
+It:
+
+* Reintroduces dark UI
+* Feels like a different product
+* Kills brand consistency
+
+👉 Either:
+
+* Rebuild it in white
+* Or remove entirely
+
+⸻
+
+9. GLOBAL TYPOGRAPHY FIX
+
+Across entire site:
+
+* Headings: tighter line-height
+* Reduce text length everywhere
+* Increase whitespace between sections
+
+Rule:
+
+Less words = more premium
+
+⸻
+
+10. FINAL DESIGN PRINCIPLE
+
+Everything should feel:
+
+* Calm
+* Clean
+* Confident
+* Expensive
+
+NOT:
+
+* Busy
+* Over-designed
+* “AI generated”
+
+⸻
+
+END RESULT TARGET
+
+KONEX should feel like:
+
+* Apple product page
+* Stripe-level SaaS
+* Premium hardware + software company
+
+⸻
+
+BRUTAL BUT IMPORTANT NOTE
+
+Right now:
+
+* Your structure = strong
+* Your product = strong
+* Your design = holding you back
+
+Fixing this layer alone will:
+
+* Increase conversion immediately
+* Justify higher pricing
+* Make KONEX feel investable

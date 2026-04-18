@@ -20,7 +20,6 @@ import cardPremium from "@assets/Konex_Premium_Card_1776031961806.png";
 import cardElite from "@assets/Konex_Elite_Card_1776031961806.png";
 import cardInHand from "@assets/IMG_7743_1771669634221.jpeg";
 import cardThreeTiers from "@assets/41A7CAD6-1759-450E-83FE-47CF37A2B9D8_1771669634221.png";
-import forestBg from "@assets/IMG_8384_1773318780793.jpeg";
 
 const fallbackTestimonials = [
   {
@@ -62,30 +61,27 @@ const useCases = [
     icon: TrendingUp,
     color: "text-blue-600",
     bg: "bg-blue-50",
-    border: "border-blue-100",
     title: "Sales Teams",
     headline: "Every rep, every tap, fully tracked.",
-    desc: "Issue NFC cards to your whole team, track who's tapping most, see lead capture rates per rep, and ensure no handshake goes unrecorded.",
+    desc: "Issue cards to your whole team, track tap rates by rep, and ensure no handshake goes unrecorded.",
     bullets: ["Per-rep tap analytics", "Lead capture by team member", "Card assignment dashboard"],
   },
   {
     icon: Building2,
     color: "text-amber-600",
     bg: "bg-amber-50",
-    border: "border-amber-100",
     title: "Real Estate",
     headline: "Turn every showing into a captured lead.",
-    desc: "Never lose a prospect again. Tap your KONEX card at a showing, and every interested buyer instantly becomes a lead in your dashboard.",
+    desc: "Every interested buyer instantly becomes a lead in your dashboard. No paper, no follow-up guesswork.",
     bullets: ["Instant contact capture", "Lead follow-up reminders", "Portfolio & listing links"],
   },
   {
     icon: Globe,
     color: "text-purple-600",
     bg: "bg-purple-50",
-    border: "border-purple-100",
     title: "Founders & Creators",
     headline: "First impressions that close deals.",
-    desc: "Share your entire professional story in a single tap. Bio, portfolio, links, booking page — all live, always updated, always impressive.",
+    desc: "Bio, portfolio, links, booking page — all in one tap. Always live, always current.",
     bullets: ["Live profile, always current", "Booking & payment links", "Social proof & testimonials"],
   },
 ];
@@ -387,8 +383,8 @@ export default function LandingPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {trustStats.map((stat, i) => (
                 <div key={i} data-testid={`trust-stat-${i}`}>
-                  <div className="text-3xl md:text-4xl font-display font-black text-blue-600">{stat.value}</div>
-                  <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
+                  <div className="text-4xl md:text-5xl font-display font-black text-gray-900 tracking-tight">{stat.value}</div>
+                  <div className="text-sm text-gray-400 mt-1.5">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -586,32 +582,32 @@ export default function LandingPage() {
         {/* ── Use Cases ── */}
         <section id="use-cases" className="py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 md:px-6">
-            <div className="text-center max-w-2xl mx-auto mb-16">
+            <div className="text-center max-w-2xl mx-auto mb-14">
               <Badge className="mb-4 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">Use Cases</Badge>
-              <h2 className="text-3xl md:text-5xl font-display font-black mb-4 text-gray-900">
+              <h2 className="text-3xl md:text-5xl font-display font-black mb-4 text-gray-900 leading-tight">
                 Built for people who close deals
               </h2>
               <p className="text-gray-500 text-lg">
-                Whether you're a solo founder or running a team of 50, KONEX scales with you.
+                Solo founder or team of 50 — KONEX scales with you.
               </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-8">
               {useCases.map((uc, i) => (
                 <div
                   key={i}
-                  className={`rounded-3xl border ${uc.border} bg-white p-8 transition-all duration-200 hover:-translate-y-1 hover:shadow-md`}
+                  className="rounded-xl border border-[#E5E7EB] bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
                   data-testid={`use-case-${i}`}
                 >
-                  <div className={`h-12 w-12 rounded-2xl ${uc.bg} flex items-center justify-center mb-6`}>
-                    <uc.icon className={`h-6 w-6 ${uc.color}`} />
+                  <div className={`h-10 w-10 rounded-lg ${uc.bg} flex items-center justify-center mb-5`}>
+                    <uc.icon className={`h-5 w-5 ${uc.color}`} />
                   </div>
-                  <Badge className="mb-3 text-xs bg-gray-100 text-gray-600 border-gray-200">{uc.title}</Badge>
-                  <h3 className="text-xl font-bold mb-3 text-gray-900">{uc.headline}</h3>
-                  <p className="text-gray-500 leading-relaxed mb-6">{uc.desc}</p>
-                  <ul className="space-y-2">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{uc.title}</p>
+                  <h3 className="text-lg font-bold mb-2 text-gray-900 leading-tight">{uc.headline}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed mb-5">{uc.desc}</p>
+                  <ul className="space-y-1.5">
                     {uc.bullets.map((b, bi) => (
                       <li key={bi} className="flex items-center gap-2 text-sm text-gray-500">
-                        <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                        <Check className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                         {b}
                       </li>
                     ))}
@@ -675,25 +671,41 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-display font-bold text-gray-900 mb-2">Three tiers. One mission.</h3>
-              <p className="text-gray-500">Every tier captures leads, tracks taps, and integrates with your team dashboard.</p>
+            <div className="text-center mb-10">
+              <h3 className="text-2xl font-display font-bold text-gray-900 mb-2 leading-tight">Three tiers. One mission.</h3>
+              <p className="text-gray-400 text-sm">Every tier captures leads, tracks taps, and connects to your dashboard.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto items-end">
               {[
-                { img: cardBasic, name: "Basic", price: "£19.99", desc: "Matte black. Clean & professional.", href: "/konex-cards/basic" },
-                { img: cardPremium, name: "Premium", price: "£49.99", desc: "Brushed metal — Silver, Black or Copper.", href: "/konex-cards/premium" },
-                { img: cardElite, name: "Elite", price: "£79.99", desc: "Carbon, Gold or Carbon-Gold edition.", href: "/konex-cards/elite" },
+                { img: cardBasic, name: "Basic", price: "£19.99", desc: "Matte black. Clean & professional.", href: "/konex-cards/basic", popular: false },
+                { img: cardPremium, name: "Premium", price: "£49.99", desc: "Brushed metal — Silver, Black or Copper.", href: "/konex-cards/premium", popular: true },
+                { img: cardElite, name: "Elite", price: "£79.99", desc: "Carbon, Gold or Carbon-Gold edition.", href: "/konex-cards/elite", popular: false },
               ].map((card, i) => (
                 <Link key={i} href={card.href}>
                   <div
-                    className="group rounded-2xl p-4 border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer hover:-translate-y-1"
+                    className={`group rounded-xl bg-white transition-all duration-200 cursor-pointer hover:shadow-md overflow-hidden ${
+                      card.popular
+                        ? "border border-blue-200 scale-[1.03] shadow-sm"
+                        : "border border-[#E5E7EB] hover:-translate-y-0.5"
+                    }`}
                     data-testid={`showcase-card-${card.name.toLowerCase()}`}
                   >
-                    <img src={card.img} alt={`KONEX ${card.name}`} className="w-full rounded-xl mb-4 shadow-sm" data-testid={`img-showcase-${card.name.toLowerCase()}`} />
-                    <h4 className="font-bold text-lg text-gray-900">{card.name}</h4>
-                    <p className="text-sm text-gray-500 mb-1">{card.desc}</p>
-                    <p className="text-blue-600 font-semibold">{card.price}</p>
+                    {card.popular && (
+                      <div className="bg-blue-600 text-white text-xs font-bold text-center py-1.5 tracking-wide">
+                        Most Popular
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <img src={card.img} alt={`KONEX ${card.name}`} className="w-full rounded-lg mb-4" data-testid={`img-showcase-${card.name.toLowerCase()}`} />
+                      <h4 className="font-bold text-base text-gray-900 mb-0.5">{card.name}</h4>
+                      <p className="text-xs text-gray-400 mb-3">{card.desc}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-black text-gray-900">{card.price}</span>
+                        <span className="text-xs font-semibold text-blue-600 border border-blue-200 rounded-md px-2 py-1 hover:bg-blue-50 transition-colors">
+                          View →
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </Link>
               ))}
@@ -714,73 +726,77 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Stats row */}
+            {/* Stats row — dominant typography, no heavy containers */}
             <div className="grid md:grid-cols-3 gap-6 mb-16">
               {[
-                { stat: "88%", label: "of paper cards thrown away within a week", highlight: false },
-                { stat: "3×", label: "more leads captured per event with KONEX", highlight: true },
-                { stat: "£0", label: "extra cost when you update your profile", highlight: true },
+                { stat: "88%", label: "of paper cards discarded within a week", muted: true },
+                { stat: "3×", label: "more leads captured per event", muted: false },
+                { stat: "£0", label: "extra cost when you update your profile", muted: false },
               ].map((item, i) => (
                 <div
                   key={i}
-                  className={`rounded-3xl border p-8 text-center ${item.highlight ? "border-blue-200 bg-blue-50" : "border-gray-200 bg-gray-50"}`}
+                  className="rounded-xl border border-[#E5E7EB] bg-white p-8 text-center"
                   data-testid={`roi-stat-${i}`}
                 >
-                  <div className={`text-6xl font-display font-black mb-3 ${item.highlight ? "text-blue-600" : "text-gray-400"}`}>
+                  <div className={`text-7xl md:text-8xl font-display font-black mb-3 leading-none tracking-tight ${item.muted ? "text-gray-300" : "text-gray-900"}`}>
                     {item.stat}
                   </div>
-                  <p className="text-gray-500 leading-relaxed">{item.label}</p>
+                  <p className="text-gray-400 text-sm leading-relaxed">{item.label}</p>
                 </div>
               ))}
             </div>
 
             {/* Comparison table */}
-            <div className="rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
+            <div className="rounded-xl border border-[#E5E7EB] overflow-hidden">
               {/* Header */}
-              <div className="grid grid-cols-3 bg-gray-50 border-b border-gray-200">
-                <div className="px-6 py-4 text-sm font-semibold text-gray-500">Feature</div>
-                <div className="px-6 py-4 text-sm font-bold text-blue-700 text-center bg-blue-50 border-x border-blue-100">KONEX</div>
-                <div className="px-6 py-4 text-sm font-semibold text-gray-500 text-center">Paper Cards</div>
+              <div className="grid grid-cols-3 bg-[#F8FAFC] border-b border-[#E5E7EB]">
+                <div className="px-6 py-5 text-sm font-semibold text-gray-500">Feature</div>
+                <div className="px-6 py-5 text-sm font-bold text-blue-700 text-center">KONEX</div>
+                <div className="px-6 py-5 text-sm font-semibold text-gray-400 text-center">Paper Cards</div>
               </div>
               {comparisonRows.map((row, i) => (
                 <div
                   key={i}
-                  className={`grid grid-cols-3 border-b last:border-b-0 border-gray-100 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
+                  className="grid grid-cols-3 border-b last:border-b-0 border-[#F1F5F9] bg-white"
                   data-testid={`comparison-row-${i}`}
                 >
-                  <div className="px-6 py-4 text-sm text-gray-700 font-medium">{row.feature}</div>
-                  <div className="px-6 py-4 flex justify-center items-center bg-blue-50/30 border-x border-blue-100/50">
-                    <Check className="h-5 w-5 text-blue-600" />
+                  <div className="px-6 py-5 text-base text-gray-700">{row.feature}</div>
+                  <div className="px-6 py-5 flex justify-center items-center">
+                    <div className="h-6 w-6 rounded-full bg-blue-50 flex items-center justify-center">
+                      <Check className="h-3.5 w-3.5 text-blue-600" />
+                    </div>
                   </div>
-                  <div className="px-6 py-4 flex justify-center items-center">
+                  <div className="px-6 py-5 flex justify-center items-center">
                     {row.paper ? (
-                      <Check className="h-5 w-5 text-green-500" />
+                      <div className="h-6 w-6 rounded-full bg-green-50 flex items-center justify-center">
+                        <Check className="h-3.5 w-3.5 text-green-500" />
+                      </div>
                     ) : (
-                      <X className="h-5 w-5 text-gray-300" />
+                      <div className="h-6 w-6 rounded-full bg-gray-50 flex items-center justify-center">
+                        <X className="h-3.5 w-3.5 text-gray-300" />
+                      </div>
                     )}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* CTA Banner */}
-            <div className="mt-12 rounded-3xl p-8 md:p-14 text-center bg-blue-600 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[60px]" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-[40px]" />
-              <h3 className="text-2xl md:text-4xl font-display font-black mb-4 text-white relative z-10">
-                Ready to stop losing leads at events?
+            {/* Clean white CTA — replacing the heavy blue gradient block */}
+            <div className="mt-16 text-center">
+              <h3 className="text-2xl md:text-4xl font-display font-black mb-4 text-gray-900 leading-tight" data-testid="button-roi-cta">
+                Start capturing leads from your next interaction
               </h3>
-              <p className="text-blue-100 text-lg mb-10 max-w-lg mx-auto relative z-10">
-                Set up your KONEX profile in minutes. Start capturing leads the same day you tap your first card.
+              <p className="text-gray-500 text-lg mb-8 max-w-md mx-auto">
+                Set up your KONEX profile in minutes. No app. No friction.
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
+              <div className="flex flex-col sm:flex-row justify-center gap-3">
                 <Link href="/auth?tab=register">
                   <Button
                     size="lg"
-                    className="h-14 px-10 rounded-xl text-base font-bold bg-white text-blue-600 hover:bg-blue-50 shadow-lg hover:-translate-y-0.5 transition-all"
-                    data-testid="button-roi-cta"
+                    className="h-12 px-8 rounded-xl text-base font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all"
+                    data-testid="button-roi-cta-primary"
                   >
-                    Start Free Today
+                    Get Started Free
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </Link>
@@ -788,10 +804,9 @@ export default function LandingPage() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="h-14 px-10 rounded-xl text-base font-semibold border-white/30 text-white hover:bg-white/10 hover:border-white/50 hover:-translate-y-0.5 transition-all"
+                    className="h-12 px-8 rounded-xl text-base font-semibold border-[#E5E7EB] text-gray-700 hover:bg-gray-50 transition-all"
                     data-testid="button-roi-cards"
                   >
-                    <Nfc className="h-4 w-4 mr-2" />
                     Browse NFC Cards
                   </Button>
                 </Link>
@@ -801,30 +816,34 @@ export default function LandingPage() {
         </section>
 
         {/* ── Testimonials ── */}
-        <section id="testimonials" className="py-24" style={{ background: "#F8F9FB" }}>
+        <section id="testimonials" className="py-24" style={{ background: "#F8FAFC" }}>
           <div className="max-w-7xl mx-auto px-4 md:px-6">
-            <div className="text-center max-w-2xl mx-auto mb-16">
+            <div className="text-center max-w-2xl mx-auto mb-14">
               <Badge className="mb-4 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">Testimonials</Badge>
-              <h2 className="text-3xl md:text-5xl font-display font-black mb-4 text-gray-900">Professionals trust KONEX to grow</h2>
-              <p className="text-gray-500 text-lg">Real results from sales teams, agents, and founders.</p>
+              <h2 className="text-3xl md:text-5xl font-display font-black mb-4 text-gray-900 leading-tight">Professionals trust KONEX to grow</h2>
+              <p className="text-gray-400">Real results from sales teams, agents, and founders.</p>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {displayTestimonials.map((testimonial, i) => (
                 <div
                   key={i}
-                  className="p-8 rounded-3xl border border-gray-200 bg-white flex flex-col transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+                  className="p-6 rounded-xl border border-[#E5E7EB] bg-white flex flex-col transition-all duration-200 hover:shadow-sm"
                   data-testid={`testimonial-card-${i}`}
                 >
-                  <Quote className="h-8 w-8 text-blue-200 mb-4" />
-                  <p className="text-gray-500 leading-relaxed mb-6 flex-1" data-testid={`testimonial-quote-${i}`}>"{testimonial.quote}"</p>
                   <div className="flex items-center gap-1 mb-4" data-testid={`testimonial-rating-${i}`}>
                     {Array.from({ length: testimonial.rating }).map((_, s) => (
-                      <Star key={s} className="h-4 w-4 fill-blue-600 text-blue-600" />
+                      <Star key={s} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
-                  <div>
-                    <p className="font-bold text-gray-900" data-testid={`testimonial-name-${i}`}>{testimonial.name}</p>
-                    <p className="text-sm text-gray-400" data-testid={`testimonial-title-${i}`}>{testimonial.title}</p>
+                  <p className="text-gray-700 text-base leading-relaxed mb-6 flex-1" data-testid={`testimonial-quote-${i}`}>"{testimonial.quote}"</p>
+                  <div className="flex items-center gap-3 pt-4 border-t border-[#F1F5F9]">
+                    <div className="h-9 w-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                      {testimonial.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm" data-testid={`testimonial-name-${i}`}>{testimonial.name}</p>
+                      <p className="text-xs text-gray-400" data-testid={`testimonial-title-${i}`}>{testimonial.title}</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -834,60 +853,44 @@ export default function LandingPage() {
 
       </main>
 
-      {/* ── Final CTA — sustainability (forest photo kept) ── */}
-      <section className="relative overflow-hidden">
-        <img src={forestBg} alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
-        <div className="absolute inset-0 bg-black/65" />
-        <div className="relative z-10 max-w-2xl mx-auto text-center px-6 py-24 space-y-6">
-          <p className="text-xs md:text-sm uppercase tracking-[0.2em] font-bold text-[#b6f542]">
-            Make the sustainable switch
+      {/* ── Final CTA — clean white, consistent with design system ── */}
+      <section className="py-28 bg-white border-t border-[#E5E7EB]">
+        <div className="max-w-2xl mx-auto text-center px-6">
+          <p className="text-xs uppercase tracking-[0.2em] font-bold text-blue-500 mb-5">
+            Make the switch
           </p>
-          <h2 className="text-3xl md:text-5xl font-display font-black text-white leading-[1.1] tracking-tight">
-            Upgrade the Way You Connect
+          <h2 className="text-3xl md:text-5xl font-display font-black text-gray-900 leading-tight mb-5">
+            Upgrade the way you connect
           </h2>
-          <p className="text-base text-white/60 leading-relaxed max-w-lg mx-auto">
-            Over 27 million paper business cards are printed every day.<br className="hidden md:block" />
-            Most are discarded within a week. Replace them with one tap.
+          <p className="text-gray-400 text-lg leading-relaxed mb-10 max-w-lg mx-auto">
+            Over 27 million paper cards are printed every day. Most are thrown away within a week. Replace them with one tap.
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/8 border border-white/15 px-4 py-1.5 text-xs font-medium text-white/70 backdrop-blur-sm">
-              <Star className="h-3 w-3 fill-[#b6f542] text-[#b6f542]" />
-              Trusted by founders, sales teams and creators
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/8 border border-white/15 px-4 py-1.5 text-xs font-medium text-white/70 backdrop-blur-sm">
-              <Nfc className="h-3 w-3 text-[#b6f542]" />
-              Replace thousands of paper cards with one tap
-            </span>
+          <div className="flex flex-col sm:flex-row justify-center gap-3 mb-8">
+            <Link href="/konex-cards">
+              <Button
+                size="lg"
+                className="h-12 px-8 rounded-xl text-base font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all w-full sm:w-auto"
+                data-testid="button-footer-nfc"
+              >
+                <Nfc className="h-4 w-4 mr-2" /> Get Your NFC Card
+              </Button>
+            </Link>
+            <Link href="/auth?tab=register">
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 px-8 rounded-xl text-base font-semibold border-[#E5E7EB] text-gray-700 hover:bg-gray-50 transition-all w-full sm:w-auto"
+                data-testid="button-footer-digital"
+              >
+                <Smartphone className="h-4 w-4 mr-2" /> Create Free Profile
+              </Button>
+            </Link>
           </div>
-          <div className="pt-2">
-            <p className="text-lg md:text-xl font-bold text-white mb-4">Get Started</p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link href="/konex-cards">
-                <Button
-                  size="lg"
-                  className="h-14 px-8 rounded-xl text-base font-bold bg-white text-gray-900 hover:bg-gray-100 shadow-lg hover:-translate-y-0.5 transition-all w-full sm:w-auto"
-                  data-testid="button-footer-nfc"
-                >
-                  <Nfc className="h-4 w-4 mr-2" /> NFC Business Card
-                </Button>
-              </Link>
-              <Link href="/auth?tab=register">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-14 px-8 rounded-xl text-base font-bold border-[#b6f542]/50 text-[#b6f542] hover:bg-[#b6f542]/10 hover:border-[#b6f542]/70 hover:-translate-y-0.5 transition-all w-full sm:w-auto"
-                  data-testid="button-footer-digital"
-                >
-                  <Smartphone className="h-4 w-4 mr-2" /> Digital Profile
-                </Button>
-              </Link>
-            </div>
-          </div>
-          <p className="text-xs text-white/40 pt-1">Works with iPhone &amp; Android — no app required.</p>
+          <p className="text-xs text-gray-400">Works with iPhone &amp; Android — no app required for the recipient.</p>
         </div>
       </section>
 
-      <footer className="py-6 border-t border-gray-800 text-center text-sm" style={{ background: "#0F172A" }}>
+      <footer className="py-6 border-t border-[#E5E7EB] text-center text-sm bg-white">
         <p className="mb-2 text-gray-500">&copy; {new Date().getFullYear()} KONEX. All rights reserved.</p>
         <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-gray-600">
           <Link href="/terms" className="hover:text-gray-400 transition-colors" data-testid="link-landing-footer-terms">Terms of Service</Link>
