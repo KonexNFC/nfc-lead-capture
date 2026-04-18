@@ -209,25 +209,25 @@ export default function LandingPage() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-white border-gray-200">
+              <DropdownMenuContent align="end" className="w-56 bg-white border-gray-200 [&_*]:text-gray-900 [&_svg]:text-gray-500">
                 <Link href="/konex-cards">
-                  <DropdownMenuItem data-testid="menu-konex-cards">
-                    <Nfc className="h-4 w-4 mr-2" /> NFC Cards <ChevronRight className="h-4 w-4 ml-auto" />
+                  <DropdownMenuItem className="text-gray-900 focus:bg-gray-100 focus:text-gray-900" data-testid="menu-konex-cards">
+                    <Nfc className="h-4 w-4 mr-2 text-gray-500" /> NFC Cards <ChevronRight className="h-4 w-4 ml-auto text-gray-400" />
                   </DropdownMenuItem>
                 </Link>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => scrollTo("how-it-works")} data-testid="menu-how-it-works">How It Works</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => scrollTo("use-cases")} data-testid="menu-use-cases">Use Cases</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => scrollTo("features")} data-testid="menu-features">Features</DropdownMenuItem>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-gray-200" />
+                <DropdownMenuItem className="text-gray-900 focus:bg-gray-100 focus:text-gray-900" onClick={() => scrollTo("how-it-works")} data-testid="menu-how-it-works">How It Works</DropdownMenuItem>
+                <DropdownMenuItem className="text-gray-900 focus:bg-gray-100 focus:text-gray-900" onClick={() => scrollTo("use-cases")} data-testid="menu-use-cases">Use Cases</DropdownMenuItem>
+                <DropdownMenuItem className="text-gray-900 focus:bg-gray-100 focus:text-gray-900" onClick={() => scrollTo("features")} data-testid="menu-features">Features</DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-gray-200" />
                 <Link href="/what-is-nfc">
-                  <DropdownMenuItem data-testid="menu-what-is-nfc">
-                    <Nfc className="h-4 w-4 mr-2" /> What is NFC?
+                  <DropdownMenuItem className="text-gray-900 focus:bg-gray-100 focus:text-gray-900" data-testid="menu-what-is-nfc">
+                    <Nfc className="h-4 w-4 mr-2 text-gray-500" /> What is NFC?
                   </DropdownMenuItem>
                 </Link>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-gray-200" />
                 <Link href="/auth">
-                  <DropdownMenuItem data-testid="menu-login">Log in</DropdownMenuItem>
+                  <DropdownMenuItem className="text-gray-900 focus:bg-gray-100 focus:text-gray-900" data-testid="menu-login">Log in</DropdownMenuItem>
                 </Link>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -836,10 +836,8 @@ export default function LandingPage() {
 
       {/* ── Final CTA — sustainability (forest photo kept) ── */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10">
-          <img src={forestBg} alt="" className="w-full h-full object-cover object-center" />
-          <div className="absolute inset-0 bg-black/65" />
-        </div>
+        <img src={forestBg} alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
+        <div className="absolute inset-0 bg-black/65" />
         <div className="relative z-10 max-w-2xl mx-auto text-center px-6 py-24 space-y-6">
           <p className="text-xs md:text-sm uppercase tracking-[0.2em] font-bold text-[#b6f542]">
             Make the sustainable switch
