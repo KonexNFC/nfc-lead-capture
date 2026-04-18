@@ -466,10 +466,10 @@ export function ProfilePreview({
               <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
             )}
             <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60" />
-            {/* Avatar — positioned so ≈60% sits in the banner, 40% bleeds below */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[42%] z-10">
-              <div className="p-[2.5px] rounded-full" style={{ background: `linear-gradient(135deg, ${accent} 0%, ${accent}55 50%, transparent 100%)`, borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
-                <div className="p-[2.5px] bg-background" style={{ borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
+            {/* Avatar — sits mostly inside the banner, just the bottom quarter bleeds below */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[28%] z-10">
+              <div className="p-[3px]" style={{ background: `linear-gradient(135deg, ${accent} 0%, ${accent}80 60%, transparent 100%)`, borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
+                <div className="p-[2px] bg-background" style={{ borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
                   <Avatar className="h-20 w-20" style={{ borderRadius: avatarRadius, overflow: "hidden" }}>
                     <AvatarImage src={resolveAvatarSrc(profile.photoUrl)} alt={profile.name} className="object-cover" style={{ borderRadius: avatarRadius }} />
                     <AvatarFallback className="text-xl font-bold" style={{ borderRadius: avatarRadius, backgroundColor: `${accent}22`, color: accent }}>
@@ -482,7 +482,7 @@ export function ProfilePreview({
           </div>
 
           {/* Identity — compact, centered */}
-          <div className="pt-10 pb-3 px-6 text-center">
+          <div className="pt-7 pb-3 px-6 text-center">
             <h2 className="text-lg font-bold tracking-[0.05em] text-foreground mb-0.5" style={{ fontFamily: headingFont }}>
               {profile.name}
             </h2>
@@ -504,7 +504,7 @@ export function ProfilePreview({
           {/* Content */}
           <div className="px-6 flex-1 flex flex-col overflow-y-auto scrollbar-hide">
             {profile.bio && (
-              <p className="text-xs text-muted-foreground text-center leading-relaxed tracking-wide mb-4 line-clamp-3">{profile.bio}</p>
+              <p className="text-xs text-muted-foreground text-center leading-relaxed tracking-wide mb-4 line-clamp-2">{profile.bio}</p>
             )}
 
             {/* Contact — icon-style aware */}
