@@ -456,23 +456,23 @@ export function ProfilePreview({
           className={`relative overflow-hidden bg-background border border-border/20 min-h-[640px] flex flex-col ${mock ? "scale-90 opacity-90" : ""}`}
           style={{ borderRadius: crPx, boxShadow: "0 24px 80px rgba(0,0,0,0.7)" }}
         >
-          {/* Cinematic header with embedded avatar */}
-          <div className="relative h-48 shrink-0 overflow-hidden">
+          {/* Header banner — tighter on mobile */}
+          <div className="relative h-36 shrink-0 overflow-hidden">
             {coverSrc && (
-              <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
+              <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover object-top" />
             )}
             <div className="absolute inset-0" style={{ background: luxuryBannerBg }} />
             {c.backgroundStyle === "pattern" && (
               <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/70" />
-            {/* Avatar framed with accent gradient ring */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
-              <div className="p-[2px]" style={{ background: `linear-gradient(135deg, ${accent} 0%, transparent 70%)`, borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
-                <div className="p-[2px] bg-background" style={{ borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
-                  <Avatar className="h-24 w-24" style={{ borderRadius: avatarRadius, overflow: "hidden" }}>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60" />
+            {/* Avatar — positioned so ≈60% sits in the banner, 40% bleeds below */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[42%] z-10">
+              <div className="p-[2.5px] rounded-full" style={{ background: `linear-gradient(135deg, ${accent} 0%, ${accent}55 50%, transparent 100%)`, borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
+                <div className="p-[2.5px] bg-background" style={{ borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
+                  <Avatar className="h-20 w-20" style={{ borderRadius: avatarRadius, overflow: "hidden" }}>
                     <AvatarImage src={resolveAvatarSrc(profile.photoUrl)} alt={profile.name} className="object-cover" style={{ borderRadius: avatarRadius }} />
-                    <AvatarFallback className="text-2xl font-bold" style={{ borderRadius: avatarRadius, backgroundColor: `${accent}22`, color: accent }}>
+                    <AvatarFallback className="text-xl font-bold" style={{ borderRadius: avatarRadius, backgroundColor: `${accent}22`, color: accent }}>
                       {profile.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
@@ -481,35 +481,35 @@ export function ProfilePreview({
             </div>
           </div>
 
-          {/* Identity — centered, dramatic */}
-          <div className="pt-16 pb-5 px-8 text-center">
-            <h2 className="text-xl font-bold tracking-[0.05em] text-foreground mb-1" style={{ fontFamily: headingFont }}>
+          {/* Identity — compact, centered */}
+          <div className="pt-10 pb-3 px-6 text-center">
+            <h2 className="text-lg font-bold tracking-[0.05em] text-foreground mb-0.5" style={{ fontFamily: headingFont }}>
               {profile.name}
             </h2>
             {profile.title && (
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{profile.title}</p>
+              <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{profile.title}</p>
             )}
             {profile.company && (
-              <p className="text-sm font-semibold mt-1.5" style={{ color: accent }}>
+              <p className="text-sm font-semibold mt-1" style={{ color: accent }}>
                 {profile.company}
               </p>
             )}
-            <div className="mt-5 flex items-center gap-3">
+            <div className="mt-3 flex items-center gap-3">
               <div className="h-px flex-1 bg-border/30" />
-              <div className="h-[3px] w-6 rounded-full" style={{ backgroundColor: accent }} />
+              <div className="h-[3px] w-5 rounded-full" style={{ backgroundColor: accent }} />
               <div className="h-px flex-1 bg-border/30" />
             </div>
           </div>
 
           {/* Content */}
-          <div className="px-8 flex-1 flex flex-col overflow-y-auto scrollbar-hide">
+          <div className="px-6 flex-1 flex flex-col overflow-y-auto scrollbar-hide">
             {profile.bio && (
-              <p className="text-sm text-muted-foreground text-center leading-loose tracking-wide mb-7">{profile.bio}</p>
+              <p className="text-xs text-muted-foreground text-center leading-relaxed tracking-wide mb-4 line-clamp-3">{profile.bio}</p>
             )}
 
             {/* Contact — icon-style aware */}
             {(links.phone || links.whatsapp || links.sms || links.email) && (
-              <div className="flex items-center justify-center gap-6 mb-7">
+              <div className="flex items-center justify-center gap-5 mb-4">
                 {links.phone && (
                   <a href={`tel:${links.phone}`} className="flex flex-col items-center gap-1.5 group">
                     <ContactIconWrap iconStyle={c.iconStyle} bg="#25D366" size="sm">
@@ -549,11 +549,11 @@ export function ProfilePreview({
             {socialLinks.length > 0 && (
               <>
                 <SectionDividerEl type={c.sectionDivider} accent={accent} />
-                <div className="grid grid-cols-4 gap-4 mb-4 mt-2">
+                <div className="grid grid-cols-4 gap-3 mb-3 mt-1">
                   {socialLinks.map(([key, value]) => {
                     const config = SOCIAL_CONFIG[key] || { icon: LinkIcon, color: "#6B7280", label: key };
                     return (
-                      <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-2 group">
+                      <a key={key} href={socialHandleToUrl(key, value)} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-1.5 group">
                         <SocialIconTile config={config} borderRadius={crPx === "24px" ? "10px" : crPx} size="sm" iconStyle={c.iconStyle} />
                         <span className="text-[7px] uppercase tracking-widest text-muted-foreground">{config.label}</span>
                       </a>
@@ -565,7 +565,7 @@ export function ProfilePreview({
           </div>
 
           {/* CTA — premium */}
-          <div className="px-8 pb-8 pt-3 mt-auto flex flex-col gap-2.5">
+          <div className="px-6 pb-5 pt-2 mt-auto flex flex-col gap-2">
             <button
               className="w-full h-12 text-xs font-semibold tracking-[0.12em] uppercase transition-opacity hover:opacity-90"
               style={buttonSty}
