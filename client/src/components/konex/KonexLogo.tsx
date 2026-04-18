@@ -3,9 +3,10 @@ import konexLogo from "@assets/550C626E-A2A1-4FB3-987B-240D2C74066D_177602418469
 interface KonexLogoProps {
   height?: number;
   className?: string;
+  onLight?: boolean;
 }
 
-export function KonexLogo({ height = 32, className = "" }: KonexLogoProps) {
+export function KonexLogo({ height = 32, className = "", onLight = false }: KonexLogoProps) {
   return (
     <img
       src={konexLogo}
@@ -16,7 +17,8 @@ export function KonexLogo({ height = 32, className = "" }: KonexLogoProps) {
         width: "auto",
         display: "inline-block",
         flexShrink: 0,
-        mixBlendMode: "screen",
+        mixBlendMode: onLight ? "multiply" : "screen",
+        filter: onLight ? "invert(1)" : undefined,
       }}
     />
   );
