@@ -1,0 +1,220 @@
+REPLIT PROMPT — KONEX NFC HOMEPAGE REDESIGN (WHITE / PREMIUM UI)
+
+Prompt
+
+Build a modern, high-converting marketing website for KONEX NFC, transforming the current dark AI-style interface into a clean, bright, premium, Apple-level aesthetic.
+
+Design Direction
+
+* Replace dark backgrounds with white / off-white (#FFFFFF / #F8F9FB)
+* Use subtle greys for structure (#E5E7EB / #F1F5F9)
+* Keep a single strong accent color (electric blue or deep purple) used sparingly for CTAs and highlights
+* Overall feel: minimal, premium, tech-forward, lifestyle + SaaS hybrid
+* Inspiration: Apple, Stripe, Notion, Linear
+
+⸻
+
+Core Principles
+
+* Prioritise clarity over complexity
+* Make it feel like a real product company, not a dev tool
+* Focus on conversion + storytelling
+* Mobile-first design
+* Smooth spacing, large typography, strong hierarchy
+
+⸻
+
+Typography
+
+* Font: Inter or SF Pro style
+* Headings: bold, large, confident
+* Body: clean, readable, high spacing
+* Generous whitespace throughout
+
+⸻
+
+Homepage Structure
+
+1. HERO SECTION
+
+Clean white background with soft gradient accent.
+
+Left:
+
+* Headline:
+    “Turn Every Introduction Into a Contact, Lead, or Opportunity”
+* Subheadline:
+    “One tap. No app. Share your details, capture leads, and convert instantly with KONEX.”
+* CTA Buttons:
+    * Primary: “Get Your KONEX Card”
+    * Secondary: “See How It Works”
+
+Right:
+
+* iPhone mockup showing KONEX profile page UI
+* Subtle floating UI elements (contact save, WhatsApp, links)
+
+⸻
+
+2. TRUST STRIP
+
+Light grey background band
+
+* “No app required”
+* “Works on all smartphones”
+* “NFC + QR enabled”
+* “Instant contact sharing”
+
+⸻
+
+3. HOW IT WORKS (3 STEPS)
+
+Use clean icons + minimal illustrations.
+
+1. Tap or Scan
+2. Share Your Profile
+3. Capture Leads Instantly
+
+Each step should feel simple and visual.
+
+⸻
+
+4. PRODUCT EXPERIENCE (FEATURE GRID)
+
+White background, 2x3 grid layout.
+
+Each card:
+
+* Soft shadow
+* Rounded corners
+* Minimal icon
+
+Features:
+
+* Smart Profile Pages
+* Lead Capture System
+* Real-Time Updates
+* Multi-Link Actions
+* Analytics Dashboard
+* Team Management (future-ready positioning)
+
+⸻
+
+5. LIVE PROFILE PREVIEW SECTION
+
+Show actual KONEX profile UI in a phone frame.
+
+Highlight:
+
+* Contact save button
+* Social links
+* Branding
+* Clean layout
+
+This is critical — show the result of the tap
+
+⸻
+
+6. USE CASES
+
+Grid with icons:
+
+* Individuals
+* Sales Teams
+* Businesses
+* Events
+
+Each with 1-line benefit statement.
+
+⸻
+
+7. PRODUCT (CARDS SECTION)
+
+Bright luxury feel.
+
+* Showcase:
+    * Metal cards
+    * Matte black
+    * Carbon fibre
+
+Minimal shadows, clean reflections.
+
+CTA: “Explore Cards”
+
+⸻
+
+8. WHY KONEX (COMPARISON)
+
+Clean table or card comparison:
+
+KONEX vs Paper Cards
+
+Focus on:
+
+* Editable anytime
+* Lead capture
+* Analytics
+* Sustainability
+
+⸻
+
+9. TESTIMONIAL / SOCIAL PROOF (PLACEHOLDER)
+
+* Clean card layout
+* Space for future logos + reviews
+
+⸻
+
+10. FINAL CTA SECTION
+
+Soft gradient background (white → light accent)
+
+Headline:
+“Upgrade the Way You Connect”
+
+CTA:
+“Get Started”
+
+⸻
+
+UI DETAILS
+
+* Buttons:
+    * Rounded (8–12px radius)
+    * Solid accent color for primary
+    * Ghost style for secondary
+* Cards:
+    * Light shadows
+    * Subtle borders (#E5E7EB)
+* Sections:
+    * Clear spacing (80–120px padding)
+
+⸻
+
+ANIMATIONS (SUBTLE ONLY)
+
+* Fade-in on scroll
+* Slight hover lift on cards
+* Smooth transitions (no flashy effects)
+
+⸻
+
+WHAT TO REMOVE
+
+* Dark/black backgrounds dominating UI
+* Overuse of gradients
+* “AI app” styling
+* Cluttered dashboard-like homepage
+* Excess neon effects
+
+⸻
+
+END GOAL
+
+A clean, bright, premium website that feels like:
+
+* A real tech brand
+* A lifestyle product
+* A scalable SaaS platform
+
+Not a prototype. Not an AI-generated app.
