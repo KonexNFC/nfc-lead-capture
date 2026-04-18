@@ -456,17 +456,20 @@ export function ProfilePreview({
           className={`relative overflow-hidden bg-background border border-border/20 min-h-[640px] flex flex-col ${mock ? "scale-90 opacity-90" : ""}`}
           style={{ borderRadius: crPx, boxShadow: "0 24px 80px rgba(0,0,0,0.7)" }}
         >
-          {/* Header banner — tighter on mobile */}
-          <div className="relative h-36 shrink-0 overflow-hidden">
-            {coverSrc && (
-              <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover object-top" />
-            )}
-            <div className="absolute inset-0" style={{ background: luxuryBannerBg }} />
-            {c.backgroundStyle === "pattern" && (
-              <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60" />
-            {/* Avatar — sits mostly inside the banner, just the bottom quarter bleeds below */}
+          {/* Header banner — inner div clips the image/overlays, outer div allows avatar to bleed below */}
+          <div className="relative h-36 shrink-0">
+            <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: `${crPx} ${crPx} 0 0` }}>
+              {coverSrc && (
+                <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover object-top" />
+              )}
+              {/* Only apply accent gradient when there's no cover photo */}
+              {!coverSrc && <div className="absolute inset-0" style={{ background: luxuryBannerBg }} />}
+              {c.backgroundStyle === "pattern" && !coverSrc && (
+                <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60" />
+            </div>
+            {/* Avatar outside the overflow-hidden wrapper so it's never clipped */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[28%] z-10">
               <div className="p-[3px]" style={{ background: `linear-gradient(135deg, ${accent} 0%, ${accent}80 60%, transparent 100%)`, borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
                 <div className="p-[2px] bg-background" style={{ borderRadius: avatarRadius === "50%" ? "50%" : avatarRadius }}>
@@ -773,17 +776,22 @@ export function ProfilePreview({
         style={{ borderRadius: crPx }}
       >
         {/* Tall expressive gradient header */}
-        <div className="h-44 relative shrink-0">
+        <div className="h-44 relative shrink-0 overflow-hidden">
           {coverSrc ? (
             <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
           ) : null}
-          <div
-            className="absolute inset-0"
-            style={{ background: bgGradient || theme.tokens["--theme-header-gradient"] }}
-          />
-          {c.backgroundStyle === "pattern" && (
+          {/* Accent gradient only when no cover photo — prevents color bleeding on user's own photo */}
+          {!coverSrc && (
+            <div
+              className="absolute inset-0"
+              style={{ background: bgGradient || theme.tokens["--theme-header-gradient"] }}
+            />
+          )}
+          {c.backgroundStyle === "pattern" && !coverSrc && (
             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[size:10px_10px]" />
           )}
+          {/* Neutral dark fade for text readability regardless of whether cover photo is set */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50" />
         </div>
 
         {/* Large avatar */}

@@ -141,9 +141,14 @@ export default function PublicProfile() {
   const brandStyle: Record<string, string> = {
     ...buildThemeCssVars(branding.selectedThemeId, branding.themeCustomizations as ThemeCustomizations),
   };
-  // Direct background/color for the page wrapper itself
-  brandStyle["backgroundColor"] = theme.tokens["--theme-bg"];
-  brandStyle["color"]           = theme.tokens["--theme-text-primary"];
+  // Direct background/color for the page wrapper itself.
+  // Themes with tinted dark backgrounds (rose gold, personal brand, ocean) use a
+  // neutral dark outer background so the accent colour doesn't radiate across the page.
+  const NEUTRAL_BG_THEMES = new Set(["personal_brand", "rose_gold", "ocean"]);
+  brandStyle["backgroundColor"] = NEUTRAL_BG_THEMES.has(theme.id)
+    ? "#0d0d0d"
+    : theme.tokens["--theme-bg"];
+  brandStyle["color"] = theme.tokens["--theme-text-primary"];
   // Optional branding overrides
   if (branding.primaryColor) {
     brandStyle["--brand-primary"] = branding.primaryColor;
