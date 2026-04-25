@@ -199,6 +199,9 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/auth">
+              <Button variant="ghost" className="text-slate-400 hover:text-white hover:bg-slate-800 font-medium" data-testid="button-login">Log in</Button>
+            </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden text-slate-400 hover:text-white hover:bg-slate-800" data-testid="button-nav-menu">
@@ -227,9 +230,6 @@ export default function LandingPage() {
                 </Link>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link href="/auth">
-              <Button variant="ghost" className="text-slate-400 hover:text-white hover:bg-slate-800 font-medium hidden md:inline-flex" data-testid="button-login">Log in</Button>
-            </Link>
             <Link href="/konex-cards">
               <Button
                 size="sm"
