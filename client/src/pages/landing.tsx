@@ -15,11 +15,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Testimonial } from "@shared/schema";
 import { KonexLogo } from "@/components/konex/KonexLogo";
-import cardBasic from "@assets/Konex_Basic_Card_1776031961806.png";
-import cardPremium from "@assets/Konex_Premium_Card_1776031961806.png";
-import cardElite from "@assets/Konex_Elite_Card_1776031961806.png";
 import cardInHand from "@assets/IMG_7743_1771669634221.jpeg";
-import cardThreeTiers from "@assets/41A7CAD6-1759-450E-83FE-47CF37A2B9D8_1771669634221.png";
+
+const cardBasic = "/img/card-basic.webp";
+const cardPremium = "/img/card-premium.webp";
+const cardElite = "/img/card-elite.webp";
+const cardThreeTiers = "/img/card-three-tiers.webp";
 
 const fallbackTestimonials = [
   {
@@ -326,6 +327,7 @@ export default function LandingPage() {
                   src={cardInHand}
                   alt="Hand holding a KONEX NFC Business Card"
                   className="w-full max-w-lg mx-auto rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.5),0_8px_24px_rgba(37,99,235,0.15)]"
+                  decoding="async"
                   data-testid="img-hero-card"
                 />
               </div>
@@ -345,6 +347,8 @@ export default function LandingPage() {
                         src={card.img}
                         alt={`KONEX ${card.label}`}
                         className="w-full rounded-lg"
+                        loading="lazy"
+                        decoding="async"
                         data-testid={`img-hero-tier-${card.label.toLowerCase()}`}
                       />
                       <div className="text-center mt-2 pb-1">
@@ -407,7 +411,7 @@ export default function LandingPage() {
             {/* Video */}
             <div className="mb-16 max-w-3xl mx-auto">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-700/60">
-                <video autoPlay loop muted playsInline className="w-full" data-testid="video-how-it-works">
+                <video autoPlay loop muted playsInline preload="none" className="w-full" data-testid="video-how-it-works">
                   <source src="/videos/nfc-demo.mp4" type="video/mp4" />
                 </video>
               </div>
@@ -628,6 +632,8 @@ export default function LandingPage() {
                   src={cardThreeTiers}
                   alt="KONEX NFC Cards — Basic, Premium, Elite"
                   className="w-full max-w-lg mx-auto rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.4)]"
+                  loading="lazy"
+                  decoding="async"
                   data-testid="img-konex-card"
                 />
               </div>
@@ -696,7 +702,7 @@ export default function LandingPage() {
                       </div>
                     )}
                     <div className="p-4">
-                      <img src={card.img} alt={`KONEX ${card.name}`} className="w-full rounded-lg mb-4" data-testid={`img-showcase-${card.name.toLowerCase()}`} />
+                      <img src={card.img} alt={`KONEX ${card.name}`} className="w-full rounded-lg mb-4" loading="lazy" decoding="async" data-testid={`img-showcase-${card.name.toLowerCase()}`} />
                       <h4 className="font-bold text-base text-white mb-0.5">{card.name}</h4>
                       <p className="text-xs text-slate-500 mb-3">{card.desc}</p>
                       <div className="flex items-center justify-between">
