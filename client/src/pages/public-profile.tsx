@@ -5,7 +5,6 @@ import { ProfilePreview } from "@/components/profile-preview";
 import { ContactCard } from "@/components/contact-card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -13,7 +12,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { leadFormSchema } from "@shared/routes";
 import { useSubmitLead } from "@/hooks/use-leads";
-import { useMediaQuery } from "@/hooks/use-mobile";
 import { Share2, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SiFacebook } from "react-icons/si";
@@ -54,14 +52,7 @@ export default function PublicProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState<{ whatsapp?: string } | null>(null);
-  const isDesktop = useMediaQuery("(min-width: 768px)");
-  // Lock the desktop/mobile layout at the moment the dialog opens so that
-  // virtual keyboard resize events cannot switch between Dialog and Drawer
-  // mid-interaction (which would destroy and remount the form).
-  const [lockedIsDesktop, setLockedIsDesktop] = useState(false);
-
   const handleOpen = () => {
-    setLockedIsDesktop(isDesktop);
     setIsOpen(true);
   };
 
@@ -257,48 +248,29 @@ export default function PublicProfile() {
         </a>
       </div>
 
-      {/* Lead Capture Dialog/Drawer */}
-      {lockedIsDesktop ? (
-        <Dialog open={isOpen} onOpenChange={(open) => open ? handleOpen() : handleClose()}>
-          <DialogContent className="max-w-md sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle data-testid="text-form-title">
-                {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
-              </DialogTitle>
-              <DialogDescription data-testid="text-form-description">
-                {isSubmitted ? "" : "Your details will be sent directly to them."}
-              </DialogDescription>
-            </DialogHeader>
+      {/* Lead Capture Dialog — single implementation for all screen sizes */}
+      <Dialog open={isOpen} onOpenChange={(open) => open ? handleOpen() : handleClose()}>
+        <DialogContent className="w-[calc(100vw-32px)] max-w-lg rounded-2xl flex flex-col max-h-[90svh] gap-0 p-0">
+          {/* Sticky header — close button always visible */}
+          <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
+            <DialogTitle data-testid="text-form-title">
+              {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
+            </DialogTitle>
+            <DialogDescription data-testid="text-form-description">
+              {isSubmitted ? "" : "Your details will be sent directly to them."}
+            </DialogDescription>
+          </DialogHeader>
+          {/* Scrollable body */}
+          <div className="overflow-y-auto px-6 pb-6">
             {FormContent}
             {!isSubmitted && (
               <p className="text-xs text-muted-foreground text-center mt-4 pt-4 border-t" data-testid="text-trust-line">
                 Powered by KONEX · Secure contact exchange
               </p>
             )}
-          </DialogContent>
-        </Dialog>
-      ) : (
-        <Drawer open={isOpen} onOpenChange={(open) => open ? handleOpen() : handleClose()}>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle data-testid="text-form-title">
-                {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
-              </DrawerTitle>
-              <DrawerDescription data-testid="text-form-description">
-                {isSubmitted ? "" : "Your details will be sent directly to them."}
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="p-4 pb-8">
-              {FormContent}
-              {!isSubmitted && (
-                <p className="text-xs text-muted-foreground text-center mt-4 pt-4 border-t" data-testid="text-trust-line">
-                  Powered by KONEX · Secure contact exchange
-                </p>
-              )}
-            </div>
-          </DrawerContent>
-        </Drawer>
-      )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Footer Branding — desktop only */}
       <div className="fixed bottom-4 right-4 hidden md:flex items-center gap-2 text-xs text-muted-foreground/50">
