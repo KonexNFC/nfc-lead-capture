@@ -250,9 +250,8 @@ export default function PublicProfile() {
 
       {/* Lead Capture Dialog — single implementation for all screen sizes */}
       <Dialog open={isOpen} onOpenChange={(open) => open ? handleOpen() : handleClose()}>
-        <DialogContent className="w-[calc(100vw-32px)] max-w-lg rounded-2xl flex flex-col max-h-[90svh] gap-0 p-0">
-          {/* Sticky header — close button always visible */}
-          <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
+        <DialogContent>
+          <DialogHeader>
             <DialogTitle data-testid="text-form-title">
               {isSubmitted ? "Contact Shared!" : `Share your info with ${profile.name}`}
             </DialogTitle>
@@ -260,15 +259,12 @@ export default function PublicProfile() {
               {isSubmitted ? "" : "Your details will be sent directly to them."}
             </DialogDescription>
           </DialogHeader>
-          {/* Scrollable body */}
-          <div className="overflow-y-auto px-6 pb-6">
-            {FormContent}
-            {!isSubmitted && (
-              <p className="text-xs text-muted-foreground text-center mt-4 pt-4 border-t" data-testid="text-trust-line">
-                Powered by KONEX · Secure contact exchange
-              </p>
-            )}
-          </div>
+          {FormContent}
+          {!isSubmitted && (
+            <p className="text-xs text-muted-foreground text-center mt-4 pt-4 border-t" data-testid="text-trust-line">
+              Powered by KONEX · Secure contact exchange
+            </p>
+          )}
         </DialogContent>
       </Dialog>
 
