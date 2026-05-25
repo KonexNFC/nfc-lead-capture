@@ -351,7 +351,7 @@ export function ProfilePreview({
                 </div>
               )}
               {profile.company && (
-                <p className="text-xs font-semibold mt-0.5 truncate" style={{ color: accent }}>{profile.company}</p>
+                <p className="text-sm font-bold mt-0.5 truncate" style={{ color: accent }}>{profile.company}</p>
               )}
             </div>
           </div>
@@ -493,7 +493,7 @@ export function ProfilePreview({
               <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{profile.title}</p>
             )}
             {profile.company && (
-              <p className="text-sm font-semibold mt-1" style={{ color: accent }}>
+              <p className="text-base font-bold mt-1" style={{ color: accent }}>
                 {profile.company}
               </p>
             )}
@@ -638,7 +638,7 @@ export function ProfilePreview({
                     </div>
                   )}
                   {profile.company && (
-                    <p className="text-sm font-semibold drop-shadow" style={{ color: accent }}>{profile.company}</p>
+                    <p className="text-base font-bold drop-shadow" style={{ color: accent }}>{profile.company}</p>
                   )}
                 </div>
               </div>
@@ -673,7 +673,7 @@ export function ProfilePreview({
                     </div>
                   )}
                   {profile.company && (
-                    <p className="text-sm font-semibold" style={{ color: accent }}>{profile.company}</p>
+                    <p className="text-base font-bold" style={{ color: accent }}>{profile.company}</p>
                   )}
                 </div>
               </div>
@@ -822,7 +822,7 @@ export function ProfilePreview({
                 <span>{profile.title}</span>
               </div>
             )}
-            {profile.company && <p className="text-sm font-semibold" style={{ color: accent }}>{profile.company}</p>}
+            {profile.company && <p className="text-base font-bold" style={{ color: accent }}>{profile.company}</p>}
           </div>
         </div>
 
