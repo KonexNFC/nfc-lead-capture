@@ -794,6 +794,28 @@ export default function ModulesPage() {
                   </Button>
                 )}
               </div>
+              {branding.coverUrl && (
+                <div className="mt-3">
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Cover Photo Position</label>
+                  <div className="flex gap-2">
+                    {(["top", "center", "bottom"] as const).map((pos) => (
+                      <button
+                        key={pos}
+                        type="button"
+                        onClick={() => setBranding((b) => ({ ...b, coverPosition: pos }))}
+                        className={`flex-1 py-1.5 rounded-lg border text-xs font-medium capitalize transition-colors ${
+                          (branding.coverPosition || "top") === pos
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border/50 text-muted-foreground hover:border-primary/50"
+                        }`}
+                        data-testid={`button-cover-position-${pos}`}
+                      >
+                        {pos}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium">Hero Image</label>

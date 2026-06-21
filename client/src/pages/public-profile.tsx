@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRoute } from "wouter";
 import { usePublicProfile } from "@/hooks/use-profiles";
 import { ProfilePreview } from "@/components/profile-preview";
@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { leadFormSchema } from "@shared/routes";
 import { useSubmitLead } from "@/hooks/use-leads";
-import { Share2, Loader2 } from "lucide-react";
+import { Share2, Loader2, Download, QrCode } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SiFacebook } from "react-icons/si";
 import { z } from "zod";
@@ -21,6 +21,8 @@ import { KonexLogo } from "@/components/konex/KonexLogo";
 import { socialHandleToUrl } from "@/lib/social-utils";
 import { getTheme, resolveCustomizations, buildThemeCssVars, fontFamilyFromStyle, type ThemeCustomizations } from "@/lib/themes";
 import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/schema";
+import { QRCodeCanvas } from "qrcode.react";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const STORAGE_KEY_PREFIX = "konex_contact_";
 
@@ -72,6 +74,39 @@ export default function PublicProfile() {
       try { localStorage.setItem(`${STORAGE_KEY_PREFIX}${slug}`, JSON.stringify(data)); } catch (e) {}
     }
   };
+
+  // Dynamic page title + OG meta tags (for Google and JS-capable scrapers)
+  useEffect(() => {
+    if (!profile) return;
+    const name = profile.name || "Digital Business Card";
+    const parts = [profile.title, profile.company].filter(Boolean);
+    const titleStr = parts.length ? `${name} | ${parts.join(" @ ")} — KONEX` : `${name} — KONEX`;
+    const desc = profile.bio || `View ${name}'s digital business card on KONEX.`;
+    const photoUrl = profile.photoUrl
+      ? profile.photoUrl.startsWith("http") ? profile.photoUrl
+        : profile.photoUrl.startsWith("/objects/") ? `https://konexnfc.com${profile.photoUrl}`
+        : `https://konexnfc.com/objects/${profile.photoUrl}`
+      : "https://konexnfc.com/favicon.png";
+    const url = `https://konexnfc.com/u/${slug}`;
+
+    document.title = titleStr;
+    const setMeta = (prop: string, content: string, attr = "property") => {
+      let el = document.querySelector(`meta[${attr}="${prop}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.setAttribute(attr, prop); document.head.appendChild(el); }
+      el.setAttribute("content", content);
+    };
+    setMeta("og:title", titleStr);
+    setMeta("og:description", desc);
+    setMeta("og:image", photoUrl);
+    setMeta("og:url", url);
+    setMeta("og:type", "profile");
+    setMeta("twitter:card", "summary_large_image", "name");
+    setMeta("twitter:title", titleStr, "name");
+    setMeta("twitter:description", desc, "name");
+    setMeta("twitter:image", photoUrl, "name");
+    setMeta("description", desc, "name");
+    return () => { document.title = "KONEX - Digital Business Cards"; };
+  }, [profile?.id]);
 
   // Track page view once profile loads
   useEffect(() => {
@@ -223,9 +258,44 @@ export default function PublicProfile() {
         />
       </div>
 
+      {/* QR Code download */}
+      {slug && (
+        <div className="w-full px-4 mt-1">
+          {/* Hidden canvas used for PNG download */}
+          <div style={{ position: "absolute", left: "-9999px", top: "-9999px" }} aria-hidden="true">
+            <QRCodeCanvas
+              id="profile-qr-canvas"
+              value={`${window.location.origin}/u/${slug}`}
+              size={512}
+              level="H"
+              includeMargin
+            />
+          </div>
+          <button
+            className="w-full flex items-center justify-center gap-2 rounded-xl border border-border/50 bg-background/60 hover:bg-muted/60 text-sm font-medium py-2.5 transition-colors"
+            onClick={() => {
+              const canvas = document.getElementById("profile-qr-canvas") as HTMLCanvasElement | null;
+              if (!canvas) return;
+              const link = document.createElement("a");
+              link.download = `${slug}-qrcode.png`;
+              link.href = canvas.toDataURL("image/png");
+              link.click();
+              trackEvent(slug, "qr_scan");
+            }}
+            data-testid="button-download-qr"
+          >
+            <QrCode className="h-4 w-4 shrink-0" />
+            <span>Download QR Code</span>
+            <Download className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          </button>
+        </div>
+      )}
+
       {/* Modules */}
       <div className="w-full px-4">
-        <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
+        <ErrorBoundary>
+          <ProfileModulesRenderer profile={profile} brandColor={branding.primaryColor} />
+        </ErrorBoundary>
       </div>
 
       {/* Order Konex Card CTA */}

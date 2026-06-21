@@ -279,6 +279,7 @@ export function ProfilePreview({
       ? branding.coverUrl
       : `/objects/${branding.coverUrl}`
     : null;
+  const coverObjectPosition = branding.coverPosition === "center" ? "center" : branding.coverPosition === "bottom" ? "bottom" : "top";
 
   const links = (profile.links as Record<string, string>) || {};
   const contactKeys = new Set(["phone", "whatsapp", "sms", "email"]);
@@ -460,7 +461,7 @@ export function ProfilePreview({
           <div className={`relative shrink-0 ${coverSrc ? "h-52" : "h-36"}`}>
             <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: `${crPx} ${crPx} 0 0` }}>
               {coverSrc && (
-                <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover object-top" />
+                <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: coverObjectPosition }} />
               )}
               {!coverSrc && <div className="absolute inset-0" style={{ background: luxuryBannerBg }} />}
               {c.backgroundStyle === "pattern" && !coverSrc && (
@@ -604,7 +605,7 @@ export function ProfilePreview({
           {/* Banner — tall cover image with identity overlaid, or short gradient without */}
           {coverSrc ? (
             <div className="relative w-full overflow-hidden" style={{ height: 300 }}>
-              <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover object-top" />
+              <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: coverObjectPosition }} />
               {/* Gradient: light at top, dark at bottom for identity readability */}
               <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/80" />
               {/* Avatar + identity pinned to the bottom of the banner */}
@@ -777,7 +778,7 @@ export function ProfilePreview({
         {/* Tall expressive gradient header — taller when cover photo is set */}
         <div className={`relative shrink-0 overflow-hidden ${coverSrc ? "h-52" : "h-44"}`}>
           {coverSrc ? (
-            <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover object-top" />
+            <img src={coverSrc} alt="Cover" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: coverObjectPosition }} />
           ) : null}
           {!coverSrc && (
             <div

@@ -232,6 +232,12 @@ async function ensureAdminAccount() {
   }
 }
 
+const BOT_UA = /facebookexternalhit|Twitterbot|LinkedInBot|WhatsApp|Slackbot|TelegramBot|Discordbot|Googlebot|bingbot|Applebot|iframely|embedly|Prerender/i;
+
+function escHtml(s: string): string {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -241,6 +247,46 @@ export async function registerRoutes(
 
   // Register object storage routes
   registerObjectStorageRoutes(app);
+
+  // ── OG meta injection for social crawlers ─────────────────────────────────
+  app.get('/u/:slug', async (req, res, next) => {
+    const ua = req.headers['user-agent'] || '';
+    if (!BOT_UA.test(ua)) return next();
+    try {
+      const profile = await storage.getProfileBySlug(req.params.slug);
+      if (!profile) return next();
+      const name = escHtml(profile.name || 'Digital Business Card');
+      const parts = [profile.title, profile.company].filter(Boolean).map(escHtml);
+      const ogTitle = parts.length ? `${name} | ${parts.join(' @ ')} — KONEX` : `${name} — KONEX`;
+      const bio = escHtml(profile.bio || `View ${name}'s digital business card on KONEX.`);
+      const rawPhoto = profile.photoUrl || '';
+      const image = rawPhoto
+        ? rawPhoto.startsWith('http') ? rawPhoto
+          : rawPhoto.startsWith('/objects/') ? `https://konexnfc.com${rawPhoto}`
+          : `https://konexnfc.com/objects/${rawPhoto}`
+        : 'https://konexnfc.com/favicon.png';
+      const url = `https://konexnfc.com/u/${escHtml(req.params.slug)}`;
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(`<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"/>
+<title>${ogTitle}</title>
+<meta name="description" content="${bio}"/>
+<meta property="og:type" content="profile"/>
+<meta property="og:title" content="${ogTitle}"/>
+<meta property="og:description" content="${bio}"/>
+<meta property="og:image" content="${image}"/>
+<meta property="og:image:width" content="400"/>
+<meta property="og:image:height" content="400"/>
+<meta property="og:url" content="${url}"/>
+<meta property="og:site_name" content="KONEX"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="${ogTitle}"/>
+<meta name="twitter:description" content="${bio}"/>
+<meta name="twitter:image" content="${image}"/>
+<meta http-equiv="refresh" content="0;url=${url}"/>
+</head><body><p>Redirecting to <a href="${url}">${name}'s KONEX profile</a>…</p></body></html>`);
+    } catch (_) { next(); }
+  });
 
   const TIER_PREFIX_MAP: Record<string, string> = {
     basic: "B",
