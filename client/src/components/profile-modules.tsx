@@ -227,11 +227,11 @@ function ReviewsModule({ modules }: { modules: ProfileModules }) {
         Reviews
       </h3>
       <div className="space-y-2">
-        {modules.reviews.map((review) => {
+        {modules.reviews.map((review, i) => {
           if (!review.url) return null;
           return (
             <Button
-              key={review.id}
+              key={review.id ?? i}
               variant="outline"
               className="w-full justify-start gap-2"
               asChild
