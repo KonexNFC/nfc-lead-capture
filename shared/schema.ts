@@ -195,6 +195,17 @@ export const cardTapEvents = pgTable("card_tap_events", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Unknown card taps — real cards tapped in the wild that aren't in the DB
+export const unknownCardTaps = pgTable("unknown_card_taps", {
+  id: serial("id").primaryKey(),
+  cardCode: text("card_code").notNull().unique(),
+  tapCount: integer("tap_count").notNull().default(1),
+  firstTapAt: timestamp("first_tap_at").defaultNow(),
+  lastTapAt: timestamp("last_tap_at").defaultNow(),
+  lastUserAgent: text("last_user_agent"),
+  lastIpAddress: text("last_ip_address"),
+});
+
 export const cardAssignmentsHistory = pgTable("card_assignments_history", {
   id: serial("id").primaryKey(),
   cardId: integer("card_id").notNull(),
@@ -372,6 +383,7 @@ export const insertSiteSettingSchema = createInsertSchema(siteSettings).omit({ i
 export const insertCardSchema = createInsertSchema(cards).omit({ id: true, createdAt: true, updatedAt: true, tapCount: true, qrScanCount: true });
 export const insertCardTapEventSchema = createInsertSchema(cardTapEvents).omit({ id: true, createdAt: true });
 export const insertCardAssignmentSchema = createInsertSchema(cardAssignmentsHistory).omit({ id: true, createdAt: true });
+export const insertUnknownCardTapSchema = createInsertSchema(unknownCardTaps).omit({ id: true, firstTapAt: true, lastTapAt: true });
 export const insertOrganizationSchema = createInsertSchema(organizations).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertOrganizationMemberSchema = createInsertSchema(organizationMembers).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertOrganizationInvitationSchema = createInsertSchema(organizationInvitations).omit({ id: true, createdAt: true });
@@ -394,6 +406,8 @@ export type CardTapEvent = typeof cardTapEvents.$inferSelect;
 export type InsertCardTapEvent = z.infer<typeof insertCardTapEventSchema>;
 export type CardAssignment = typeof cardAssignmentsHistory.$inferSelect;
 export type InsertCardAssignment = z.infer<typeof insertCardAssignmentSchema>;
+export type UnknownCardTap = typeof unknownCardTaps.$inferSelect;
+export type InsertUnknownCardTap = z.infer<typeof insertUnknownCardTapSchema>;
 
 export type Organization = typeof organizations.$inferSelect;
 export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;

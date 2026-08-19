@@ -33,6 +33,16 @@ interface CardItem {
   activatedAt: string | null;
 }
 
+interface UnknownTap {
+  id: number;
+  cardCode: string;
+  tapCount: number;
+  firstTapAt: string | null;
+  lastTapAt: string | null;
+  lastUserAgent: string | null;
+  lastIpAddress: string | null;
+}
+
 interface CardStats {
   total: number;
   activated: number;
@@ -141,6 +151,40 @@ export default function AdminCards() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/cards/stats"] });
       setGenerateOpen(false);
       toast({ title: "Cards generated", description: `${data.count} cards have been created.` });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const { data: unknownTaps, isLoading: unknownLoading } = useQuery<UnknownTap[]>({
+    queryKey: ["/api/admin/unknown-taps"],
+  });
+
+  const registerUnknownMutation = useMutation({
+    mutationFn: async (cardCodes: string[]) => {
+      const res = await apiRequest("POST", "/api/admin/unknown-taps/register", { cardCodes });
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/unknown-taps"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/cards"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/cards/stats"] });
+      const extra = data.alreadyExisted?.length ? ` ${data.alreadyExisted.length} already existed.` : "";
+      toast({ title: "Cards registered", description: `${data.createdCount} card(s) registered as unassigned.${extra}` });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const dismissUnknownMutation = useMutation({
+    mutationFn: async (cardCode: string) => {
+      await apiRequest("DELETE", `/api/admin/unknown-taps/${encodeURIComponent(cardCode)}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/unknown-taps"] });
+      toast({ title: "Dismissed", description: "Unknown card tap removed from the list." });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -375,6 +419,79 @@ export default function AdminCards() {
           </Card>
         ))}
       </div>
+
+      {unknownTaps && unknownTaps.length > 0 && (
+        <Card className="border-amber-500/40 bg-amber-500/5">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2 flex-wrap">
+            <div>
+              <CardTitle className="text-base">Unknown Tapped Cards ({unknownTaps.length})</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Real cards being tapped by customers that aren't registered in the system. Register them so their owners can activate them.
+              </p>
+            </div>
+            <Button
+              onClick={() => registerUnknownMutation.mutate(unknownTaps.map((t) => t.cardCode))}
+              disabled={registerUnknownMutation.isPending}
+              data-testid="button-register-all-unknown"
+            >
+              {registerUnknownMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4 mr-2" />
+              )}
+              Register All ({unknownTaps.length})
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Card Code</TableHead>
+                  <TableHead>Taps</TableHead>
+                  <TableHead>First Tap</TableHead>
+                  <TableHead>Last Tap</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {unknownTaps.map((tap) => (
+                  <TableRow key={tap.id} data-testid={`row-unknown-tap-${tap.cardCode}`}>
+                    <TableCell className="font-mono font-medium">{tap.cardCode}</TableCell>
+                    <TableCell>{tap.tapCount}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {tap.firstTapAt ? new Date(tap.firstTapAt).toLocaleString() : "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {tap.lastTapAt ? new Date(tap.lastTapAt).toLocaleString() : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => registerUnknownMutation.mutate([tap.cardCode])}
+                          disabled={registerUnknownMutation.isPending}
+                          data-testid={`button-register-unknown-${tap.cardCode}`}
+                        >
+                          Register
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => dismissUnknownMutation.mutate(tap.cardCode)}
+                          disabled={dismissUnknownMutation.isPending}
+                          data-testid={`button-dismiss-unknown-${tap.cardCode}`}
+                        >
+                          Dismiss
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-sm">

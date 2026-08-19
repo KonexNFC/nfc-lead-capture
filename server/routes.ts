@@ -25,6 +25,23 @@ import {
   getPayPalClientId,
 } from "./paypal";
 
+async function ensureUnknownCardTapsTable() {
+  // Idempotent startup DDL: the project uses drizzle-kit push (no migrations
+  // directory), so guarantee this table exists in every environment.
+  const { pool } = await import("./db");
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS unknown_card_taps (
+      id serial PRIMARY KEY,
+      card_code text NOT NULL UNIQUE,
+      tap_count integer NOT NULL DEFAULT 1,
+      first_tap_at timestamp DEFAULT now(),
+      last_tap_at timestamp DEFAULT now(),
+      last_user_agent text,
+      last_ip_address text
+    );
+  `);
+}
+
 async function seedDatabase() {
   const existingUser = await storage.getUserByEmail("demo@konex.app");
   if (!existingUser) {
@@ -316,8 +333,11 @@ export async function registerRoutes(
     return null;
   }
 
-  // Seed DB
-  seedDatabase().catch(console.error);
+  // Ensure new tables exist, then seed DB
+  ensureUnknownCardTapsTable()
+    .catch((err) => console.error("[STARTUP] Failed to ensure unknown_card_taps table:", err))
+    .then(() => seedDatabase())
+    .catch(console.error);
 
   // === Profiles ===
 
@@ -885,9 +905,43 @@ export async function registerRoutes(
   });
 
   // === NFC Tap Router (Public) ===
+  // Per-IP rate limit for recording unknown card taps (max 10 distinct records/min/IP)
+  const unknownTapRateLimits = new Map<string, { count: number; resetAt: number }>();
+  setInterval(() => {
+    const now = Date.now();
+    Array.from(unknownTapRateLimits.entries()).forEach(([k, v]) => {
+      if (v.resetAt < now) unknownTapRateLimits.delete(k);
+    });
+  }, 300_000);
+
   app.get("/api/tap/:cardCode", async (req, res) => {
     const card = await storage.getCardByCode(req.params.cardCode);
-    if (!card) return res.status(404).json({ status: "not_found" });
+    if (!card) {
+      // Record unknown card taps so real, in-circulation cards can be re-registered.
+      // Rate-limited per IP and capped in storage to prevent abuse.
+      const code = req.params.cardCode.trim().toUpperCase();
+      if (/^KONEX-[BPEC]-\d{1,6}$/.test(code)) {
+        // req.ip is proxy-aware in production ("trust proxy" set in auth setup)
+        const ip = req.ip || "unknown";
+        const now = Date.now();
+        const entry = unknownTapRateLimits.get(ip);
+        let allowed = true;
+        if (!entry || entry.resetAt < now) {
+          unknownTapRateLimits.set(ip, { count: 1, resetAt: now + 60_000 });
+        } else if (entry.count >= 10) {
+          allowed = false;
+        } else {
+          entry.count++;
+        }
+        if (allowed) {
+          storage.recordUnknownCardTap(code, {
+            userAgent: (req.headers["user-agent"] as string) || null,
+            ipAddress: ip,
+          }).catch((err) => console.error("[UNKNOWN TAP] Failed to record:", err));
+        }
+      }
+      return res.status(404).json({ status: "not_found" });
+    }
 
     if (card.status === "unassigned") {
       return res.json({ status: "unassigned", cardCode: card.cardCode });
@@ -1198,6 +1252,54 @@ export async function registerRoutes(
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", "attachment; filename=konex-encoding-csv.csv");
     res.send(csv.join("\n"));
+  });
+
+  // === Unknown Card Taps (Admin) ===
+
+  app.get("/api/admin/unknown-taps", requireAdmin, async (_req, res) => {
+    const taps = await storage.listUnknownCardTaps();
+    res.json(taps);
+  });
+
+  app.post("/api/admin/unknown-taps/register", requireAdmin, async (req, res) => {
+    const parsed = z.object({
+      cardCodes: z.array(z.string().min(1)).min(1).max(500),
+    }).safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "cardCodes must be a non-empty array of card codes" });
+    }
+
+    const codes = Array.from(new Set(parsed.data.cardCodes.map((c) => c.trim().toUpperCase())));
+    const invalid = codes.filter((c) => !getTierFromCode(c));
+    if (invalid.length > 0) {
+      return res.status(400).json({ message: `Invalid card code format: ${invalid.join(", ")}` });
+    }
+
+    const existing = await storage.getCardsByCodes(codes);
+    const existingCodes = new Set(existing.map((c) => c.cardCode));
+    const toCreate = codes
+      .filter((c) => !existingCodes.has(c))
+      .map((cardCode) => ({
+        cardCode,
+        productTier: getTierFromCode(cardCode)!,
+        status: "unassigned" as const,
+        nickname: null,
+      }));
+
+    const created = toCreate.length > 0 ? await storage.batchCreateCards(toCreate) : [];
+    // Remove from the unknown-taps list (including any that already existed as cards)
+    await storage.deleteUnknownCardTaps(codes);
+
+    res.json({
+      created,
+      createdCount: created.length,
+      alreadyExisted: Array.from(existingCodes),
+    });
+  });
+
+  app.delete("/api/admin/unknown-taps/:cardCode", requireAdmin, async (req, res) => {
+    await storage.deleteUnknownCardTaps([req.params.cardCode.trim().toUpperCase()]);
+    res.json({ message: "Dismissed" });
   });
 
   // ==================== ORGANIZATION ROUTES ====================

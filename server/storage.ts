@@ -1,7 +1,7 @@
 import { db, pool } from "./db";
 import {
   users, profiles, leads, siteSettings, testimonials,
-  cards, cardTapEvents, cardAssignmentsHistory,
+  cards, cardTapEvents, cardAssignmentsHistory, unknownCardTaps,
   organizations, organizationMembers, organizationInvitations, organizationCards,
   profileEvents,
   orders, checkoutActivationTokens, webhookEvents,
@@ -13,6 +13,7 @@ import {
   type Card, type InsertCard,
   type CardTapEvent, type InsertCardTapEvent,
   type CardAssignment, type InsertCardAssignment,
+  type UnknownCardTap,
   type Organization, type InsertOrganization,
   type OrganizationMember, type InsertOrganizationMember,
   type OrganizationInvitation, type InsertOrganizationInvitation,
@@ -95,6 +96,11 @@ export interface IStorage {
   // Card Assignment History
   createAssignmentHistory(entry: InsertCardAssignment): Promise<CardAssignment>;
   getAssignmentHistoryByCardId(cardId: number): Promise<CardAssignment[]>;
+
+  // Unknown Card Taps
+  recordUnknownCardTap(cardCode: string, meta?: { userAgent?: string | null; ipAddress?: string | null }): Promise<void>;
+  listUnknownCardTaps(limit?: number): Promise<UnknownCardTap[]>;
+  deleteUnknownCardTaps(cardCodes: string[]): Promise<void>;
 
   // Organizations
   createOrganization(org: InsertOrganization): Promise<Organization>;
@@ -618,6 +624,48 @@ export class DatabaseStorage implements IStorage {
 
   async getAssignmentHistoryByCardId(cardId: number): Promise<CardAssignment[]> {
     return await db.select().from(cardAssignmentsHistory).where(eq(cardAssignmentsHistory.cardId, cardId)).orderBy(desc(cardAssignmentsHistory.createdAt));
+  }
+
+  async recordUnknownCardTap(cardCode: string, meta?: { userAgent?: string | null; ipAddress?: string | null }): Promise<void> {
+    // Cap total retained rows to prevent storage exhaustion. Updates to
+    // existing rows (repeat taps) are always allowed; new rows only when
+    // under the cap. An advisory transaction lock serializes inserts so
+    // concurrent requests cannot exceed the cap.
+    const MAX_UNKNOWN_ROWS = 1000;
+    await db.transaction(async (tx) => {
+      // Serialize concurrent recorders (arbitrary app-wide lock key)
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(874512001)`);
+      const [existing] = await tx.select({ id: unknownCardTaps.id }).from(unknownCardTaps).where(eq(unknownCardTaps.cardCode, cardCode));
+      if (!existing) {
+        const [{ value: total }] = await tx.select({ value: count() }).from(unknownCardTaps);
+        if (Number(total) >= MAX_UNKNOWN_ROWS) return;
+      }
+      await tx.insert(unknownCardTaps)
+        .values({
+          cardCode,
+          tapCount: 1,
+          lastUserAgent: meta?.userAgent ?? null,
+          lastIpAddress: meta?.ipAddress ?? null,
+        })
+        .onConflictDoUpdate({
+          target: unknownCardTaps.cardCode,
+          set: {
+            tapCount: sql`${unknownCardTaps.tapCount} + 1`,
+            lastTapAt: new Date(),
+            lastUserAgent: meta?.userAgent ?? null,
+            lastIpAddress: meta?.ipAddress ?? null,
+          },
+        });
+    });
+  }
+
+  async listUnknownCardTaps(limit = 1000): Promise<UnknownCardTap[]> {
+    return await db.select().from(unknownCardTaps).orderBy(desc(unknownCardTaps.lastTapAt)).limit(limit);
+  }
+
+  async deleteUnknownCardTaps(cardCodes: string[]): Promise<void> {
+    if (cardCodes.length === 0) return;
+    await db.delete(unknownCardTaps).where(inArray(unknownCardTaps.cardCode, cardCodes));
   }
 
   async createOrganization(org: InsertOrganization): Promise<Organization> {
