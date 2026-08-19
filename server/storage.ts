@@ -22,7 +22,7 @@ import {
   type CheckoutActivationToken, type InsertCheckoutActivationToken,
   type WebhookEvent, type InsertWebhookEvent,
 } from "@shared/schema";
-import { eq, desc, sql, count, gte, and, like, inArray } from "drizzle-orm";
+import { eq, desc, sql, count, gte, and, like, inArray, isNull } from "drizzle-orm";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 
@@ -81,6 +81,7 @@ export interface IStorage {
   getCardsByOwnerId(userId: number): Promise<Card[]>;
   createCard(card: InsertCard): Promise<Card>;
   updateCard(id: number, updates: Partial<Card>): Promise<Card>;
+  activateUnassignedCard(id: number, ownerId: number, profileId: number): Promise<Card | undefined>;
   getCardsByCodes(codes: string[]): Promise<Card[]>;
   batchCreateCards(cardsData: InsertCard[]): Promise<Card[]>;
   listAllCards(filters?: { status?: string; productTier?: string; search?: string }): Promise<Card[]>;
@@ -547,6 +548,25 @@ export class DatabaseStorage implements IStorage {
 
   async updateCard(id: number, updates: Partial<Card>): Promise<Card> {
     const [updated] = await db.update(cards).set({ ...updates, updatedAt: new Date() }).where(eq(cards.id, id)).returning();
+    return updated;
+  }
+
+  async activateUnassignedCard(id: number, ownerId: number, profileId: number): Promise<Card | undefined> {
+    const [updated] = await db
+      .update(cards)
+      .set({
+        ownerId,
+        profileId,
+        status: "active",
+        activatedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(and(
+        eq(cards.id, id),
+        eq(cards.status, "unassigned"),
+        isNull(cards.ownerId),
+      ))
+      .returning();
     return updated;
   }
 

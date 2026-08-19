@@ -992,25 +992,53 @@ export async function registerRoutes(
       return res.status(400).json({ message: `Card data integrity error: ${mismatch}. Contact support.` });
     }
 
-    if (card.ownerId === req.user.id) {
-      return res.json({ message: "Card already belongs to you", card });
-    }
-
     if (card.ownerId && card.ownerId !== req.user.id) {
       return res.status(403).json({ message: "This card is already assigned to another user. Please contact support." });
+    }
+
+    const userProfile = await storage.getProfile(req.user.id);
+    if (!userProfile) {
+      return res.status(409).json({
+        message: "Create a profile before activating this card so people have somewhere to go when they tap it.",
+        code: "PROFILE_REQUIRED",
+      });
+    }
+
+    if (card.ownerId === req.user.id) {
+      if (card.status !== "active") {
+        return res.status(400).json({ message: "This card cannot be activated" });
+      }
+      const linkedCard = card.profileId === userProfile.id
+        ? card
+        : await storage.updateCard(card.id, { profileId: userProfile.id });
+      return res.json({
+        message: "Card already belongs to you",
+        card: linkedCard,
+        hasProfile: true,
+        profileSlug: userProfile.slug,
+      });
     }
 
     if (card.status !== "unassigned") {
       return res.status(400).json({ message: "This card cannot be activated" });
     }
 
-    const userProfile = await storage.getProfile(req.user.id);
-    const updated = await storage.updateCard(card.id, {
-      ownerId: req.user.id,
-      profileId: userProfile?.id || null,
-      status: "active",
-      activatedAt: new Date(),
-    });
+    const updated = await storage.activateUnassignedCard(card.id, req.user.id, userProfile.id);
+    if (!updated) {
+      const currentCard = await storage.getCardById(card.id);
+      if (currentCard?.ownerId === req.user.id && currentCard.status === "active") {
+        return res.json({
+          message: "Card already belongs to you",
+          card: currentCard,
+          hasProfile: true,
+          profileSlug: userProfile.slug,
+        });
+      }
+      return res.status(409).json({
+        message: "This card was activated by another account. Refresh and try again, or contact support.",
+        code: "ACTIVATION_CONFLICT",
+      });
+    }
 
     await storage.createAssignmentHistory({
       cardId: card.id,
@@ -1019,7 +1047,12 @@ export async function registerRoutes(
       note: "User-initiated activation",
     });
 
-    res.json({ message: "Card activated successfully", card: updated, hasProfile: !!userProfile });
+    res.json({
+      message: "Card activated successfully",
+      card: updated,
+      hasProfile: true,
+      profileSlug: userProfile.slug,
+    });
   });
 
   // === User Card Routes ===

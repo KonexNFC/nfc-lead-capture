@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -6,9 +6,9 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, CheckCircle2, CreditCard, AlertTriangle } from "lucide-react";
+import { Loader2, CheckCircle2, CreditCard, AlertTriangle, UserRoundPlus } from "lucide-react";
 
-type ActivationState = "idle" | "input" | "loading" | "success" | "error_forbidden" | "error_not_found" | "error_generic";
+type ActivationState = "idle" | "input" | "loading" | "success" | "profile_required" | "error_conflict" | "error_forbidden" | "error_not_found" | "error_generic";
 
 interface ActivationResult {
   hasProfile?: boolean;
@@ -20,7 +20,6 @@ export default function ActivateCard({ cardCode: initialCardCode }: { cardCode?:
   const [, setLocation] = useLocation();
   const [activationState, setActivationState] = useState<ActivationState>(initialCardCode ? "idle" : "input");
   const [activationResult, setActivationResult] = useState<ActivationResult>({});
-  const [activated, setActivated] = useState(false);
   const [manualCode, setManualCode] = useState("");
   const [codeError, setCodeError] = useState("");
 
@@ -40,7 +39,11 @@ export default function ActivateCard({ cardCode: initialCardCode }: { cardCode?:
     },
     onError: (error: Error) => {
       const msg = error.message;
-      if (msg.startsWith("403")) {
+      if (msg.startsWith("409") && msg.includes("PROFILE_REQUIRED")) {
+        setActivationState("profile_required");
+      } else if (msg.startsWith("409")) {
+        setActivationState("error_conflict");
+      } else if (msg.startsWith("403")) {
         setActivationState("error_forbidden");
       } else if (msg.startsWith("404")) {
         setActivationState("error_not_found");
@@ -51,14 +54,6 @@ export default function ActivateCard({ cardCode: initialCardCode }: { cardCode?:
       }
     },
   });
-
-  useEffect(() => {
-    if (user && !activated && !authLoading && initialCardCode) {
-      setActivated(true);
-      setActivationState("loading");
-      activateMutation.mutate();
-    }
-  }, [user, authLoading, activated, initialCardCode]);
 
   const handleManualActivate = () => {
     const code = manualCode.trim();
@@ -91,7 +86,10 @@ export default function ActivateCard({ cardCode: initialCardCode }: { cardCode?:
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-foreground">Activate Your KONEX Card</h1>
               <p className="text-muted-foreground">
-                Log in or sign up to activate your card and start sharing your profile.
+                We recently had to restore card registrations. Your physical card is recognized, but its previous account and profile connection could not be recovered.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Log in or create a new account to rebuild your profile and securely link this card to you again.
               </p>
             </div>
             <Link href={`/auth?redirect=${encodeURIComponent(redirectPath)}`}>
@@ -99,6 +97,39 @@ export default function ActivateCard({ cardCode: initialCardCode }: { cardCode?:
                 Log In or Sign Up
               </Button>
             </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (activationState === "idle") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="max-w-md w-full border-border/50 shadow-xl">
+          <CardContent className="pt-8 pb-8 text-center space-y-6">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+              <CreditCard className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-foreground">Let’s reconnect your card</h1>
+              <p className="text-muted-foreground">
+                We recently had to restore card registrations. This card is recognized, but it is no longer connected to a customer profile.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                We’ll check for your profile, help you create one if needed, and then link this card to it.
+              </p>
+            </div>
+            <Button
+              className="w-full"
+              onClick={() => {
+                setActivationState("loading");
+                activateMutation.mutate();
+              }}
+              data-testid="button-start-reactivation"
+            >
+              Reactivate My Card
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -212,6 +243,55 @@ export default function ActivateCard({ cardCode: initialCardCode }: { cardCode?:
     );
   }
 
+  if (activationState === "profile_required") {
+    const createProfilePath = `/dashboard/edit?new=1&activate=${encodeURIComponent(activeCode)}`;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="max-w-md w-full border-border/50 shadow-xl">
+          <CardContent className="pt-8 pb-8 text-center space-y-6">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+              <UserRoundPlus className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-foreground">Create your profile first</h1>
+              <p className="text-muted-foreground">
+                Your KONEX card needs a profile to share. Create one now, then we’ll bring you back here to finish linking it.
+              </p>
+            </div>
+            <Link href={createProfilePath}>
+              <Button className="w-full" data-testid="button-create-profile-for-activation">
+                Create My Profile
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (activationState === "error_conflict") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="max-w-md w-full border-border/50 shadow-xl">
+          <CardContent className="pt-8 pb-8 text-center space-y-4">
+            <div className="h-16 w-16 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto">
+              <AlertTriangle className="h-8 w-8 text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-foreground">Card Already Reactivated</h1>
+              <p className="text-muted-foreground" data-testid="text-error-conflict">
+                This card was linked to another account while you were reactivating it. If this is your card, please contact support.
+              </p>
+            </div>
+            <Link href="/dashboard">
+              <Button variant="outline" data-testid="link-dashboard-from-conflict">Go to Dashboard</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (activationState === "error_forbidden") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -250,7 +330,14 @@ export default function ActivateCard({ cardCode: initialCardCode }: { cardCode?:
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              <Button variant="outline" onClick={() => { setActivationState("input"); setManualCode(""); }} data-testid="button-try-again">
+              <Button variant="outline" onClick={() => {
+                if (initialCardCode) {
+                  setLocation("/activate");
+                } else {
+                  setActivationState("input");
+                  setManualCode("");
+                }
+              }} data-testid="button-try-again">
                 Try Another Code
               </Button>
               <Link href="/dashboard/cards">
@@ -278,7 +365,10 @@ export default function ActivateCard({ cardCode: initialCardCode }: { cardCode?:
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              <Button variant="outline" onClick={() => { setActivationState("input"); setManualCode(""); }} data-testid="button-try-again-error">
+              <Button variant="outline" onClick={() => {
+                setActivationState("loading");
+                activateMutation.mutate();
+              }} data-testid="button-try-again-error">
                 Try Again
               </Button>
               <Link href="/">

@@ -44,7 +44,9 @@ export default function EditProfile() {
   const { uploadFile, isUploading: isUploadingPhoto } = useUpload();
   const search = useSearch();
   const [, setLocation] = useLocation();
-  const isNewMode = new URLSearchParams(search).get("new") === "1";
+  const searchParams = new URLSearchParams(search);
+  const isNewMode = searchParams.get("new") === "1";
+  const activationCardCode = searchParams.get("activate");
   const [creatingNew, setCreatingNew] = useState(isNewMode);
 
   const form = useForm<ProfileFormValues>({
@@ -138,7 +140,7 @@ export default function EditProfile() {
         onSuccess: (newProfile) => {
           setActiveProfileId(newProfile.id);
           setCreatingNew(false);
-          setLocation("/dashboard/edit");
+          setLocation(activationCardCode ? `/activate/${encodeURIComponent(activationCardCode)}` : "/dashboard/edit");
         },
       });
       return;
