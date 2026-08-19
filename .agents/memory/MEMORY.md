@@ -1,1 +1,2 @@
 - [DB & auth quirks](db-and-auth-quirks.md) — db:push hangs on rename prompt (use idempotent startup DDL for both dev & prod Neon); login API uses `username` field; public endpoints need req.ip rate limits + atomic caps.
+- [Post-merge safety](post-merge-safety.md) — keep merge setup dependency-only; database migrations require an explicit reviewed step.
