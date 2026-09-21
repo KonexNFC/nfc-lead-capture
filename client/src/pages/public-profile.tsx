@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { leadFormSchema } from "@shared/routes";
 import { useSubmitLead } from "@/hooks/use-leads";
-import { Share2, Loader2, Download, QrCode } from "lucide-react";
+import { Share2, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SiFacebook } from "react-icons/si";
 import { z } from "zod";
@@ -21,7 +21,6 @@ import { KonexLogo } from "@/components/konex/KonexLogo";
 import { socialHandleToUrl } from "@/lib/social-utils";
 import { getTheme, resolveCustomizations, buildThemeCssVars, fontFamilyFromStyle, type ThemeCustomizations } from "@/lib/themes";
 import type { Profile, ProfileBranding, ProfileTextOverrides } from "@shared/schema";
-import { QRCodeCanvas } from "qrcode.react";
 import { ErrorBoundary } from "@/components/error-boundary";
 
 const STORAGE_KEY_PREFIX = "konex_contact_";
@@ -230,39 +229,6 @@ export default function PublicProfile() {
           }
         />
       </div>
-
-      {/* QR Code download */}
-      {slug && (
-        <div className="w-full px-4 mt-1">
-          {/* Hidden canvas used for PNG download */}
-          <div style={{ position: "absolute", left: "-9999px", top: "-9999px" }} aria-hidden="true">
-            <QRCodeCanvas
-              id="profile-qr-canvas"
-              value={`${window.location.origin}/u/${slug}`}
-              size={512}
-              level="H"
-              includeMargin
-            />
-          </div>
-          <button
-            className="w-full flex items-center justify-center gap-2 rounded-xl border border-border/50 bg-background/60 hover:bg-muted/60 text-sm font-medium py-2.5 transition-colors"
-            onClick={() => {
-              const canvas = document.getElementById("profile-qr-canvas") as HTMLCanvasElement | null;
-              if (!canvas) return;
-              const link = document.createElement("a");
-              link.download = `${slug}-qrcode.png`;
-              link.href = canvas.toDataURL("image/png");
-              link.click();
-              trackEvent(slug, "qr_scan");
-            }}
-            data-testid="button-download-qr"
-          >
-            <QrCode className="h-4 w-4 shrink-0" />
-            <span>Download QR Code</span>
-            <Download className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-          </button>
-        </div>
-      )}
 
       {/* Modules */}
       <div className="w-full px-4">
