@@ -159,7 +159,6 @@ export default function PublicProfile() {
   const branding = (profile.branding as ProfileBranding) || {};
   const textOverrides = (profile.textOverrides as ProfileTextOverrides) || {};
   const ctaLabel = textOverrides.ctaLabel || "Exchange Contact";
-  const subtitleText = textOverrides.subheadline || "Share your contact details instantly.";
 
   // Build all theme CSS variables from the shared utility (same logic as the appearance preview)
   const theme = getTheme(branding.selectedThemeId);
@@ -207,35 +206,9 @@ export default function PublicProfile() {
       : branding.heroUrl.startsWith("/objects/") ? branding.heroUrl
       : `/objects/${branding.heroUrl}`
     : null;
-  const logoUrl = branding.logoUrl
-    ? branding.logoUrl.startsWith("http") ? branding.logoUrl
-      : branding.logoUrl.startsWith("/objects/") ? branding.logoUrl
-      : `/objects/${branding.logoUrl}`
-    : null;
 
   return (
-    <div className="min-h-screen flex flex-col items-center pb-10" style={brandStyle}>
-
-      {/* Logo or KONEX Branding */}
-      <div className="w-full flex justify-center pt-4 pb-2 px-4">
-        <a href="/" className="flex items-center gap-2" data-testid="konex-branding-header">
-          {logoUrl ? (
-            <img src={logoUrl} alt="Logo" className="h-10 md:h-14 w-auto" />
-          ) : (
-            <KonexLogo height={40} />
-          )}
-        </a>
-      </div>
-
-      {/* Subtitle */}
-      <div className="text-center mb-3 px-4">
-        {textOverrides.headline && (
-          <h1 className="text-xl font-bold mb-1" data-testid="text-hero-headline">{textOverrides.headline}</h1>
-        )}
-        <p className="text-muted-foreground text-sm md:text-base" data-testid="text-hero-subtitle">
-          {subtitleText}
-        </p>
-      </div>
+    <div className="min-h-screen flex flex-col items-center pt-4 pb-10" style={brandStyle}>
 
       {/* Profile Card — wrapped for link-click event delegation */}
       <div className="w-full px-4" onClick={handleProfileAreaClick}>
@@ -300,8 +273,6 @@ export default function PublicProfile() {
 
       {/* Order Konex Card CTA */}
       <div className="w-full max-w-md mt-4 px-4 rounded-2xl border border-border/40 bg-card px-6 py-5 text-center space-y-3 mx-4" data-testid="section-order-konex">
-        <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">Upgrade your networking</p>
-        <p className="text-sm font-medium">Get your own Konex NFC card</p>
         <a
           href="https://konexnfc.com"
           target="_blank"
