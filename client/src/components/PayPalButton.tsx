@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, AlertCircle, CreditCard, Lock } from "lucide-react";
+import "./paypal-fields.css";
 
 declare global {
   interface Window {
@@ -17,12 +18,14 @@ interface PayPalButtonProps {
 
 const CARD_FIELD_STYLE = {
   input: {
-    "font-size": "14px",
+    "font-size": "16px",
     "font-family": "system-ui, sans-serif",
-    color: "#ffffff",
-    "background-color": "transparent",
+    color: "#10254a",
+    padding: "12px",
+    border: "none",
+    "box-shadow": "none",
   },
-  ".invalid": { color: "#f87171" },
+  ".invalid": { color: "#b91c1c" },
 };
 
 export function PayPalButton({ sku, clientId, onSuccess, onCancel, engravingText }: PayPalButtonProps) {
@@ -32,6 +35,8 @@ export function PayPalButton({ sku, clientId, onSuccess, onCancel, engravingText
   const cardExpiryRef = useRef<HTMLDivElement>(null);
   const cardCvvRef = useRef<HTMLDivElement>(null);
   const cardFieldsRef = useRef<any>(null);
+  const callbacksRef = useRef({ onSuccess, onCancel });
+  callbacksRef.current = { onSuccess, onCancel };
 
   const [sdkReady, setSdkReady] = useState(false);
   const [sdkError, setSdkError] = useState("");
@@ -95,26 +100,32 @@ export function PayPalButton({ sku, clientId, onSuccess, onCancel, engravingText
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.message || "Payment capture failed");
-      if (result.activationToken) onSuccess(result.activationToken);
+      if (result.activationToken) callbacksRef.current.onSuccess(result.activationToken);
     };
 
     // ── PayPal / Pay Later buttons ──────────────────────────────────────────
     paypalContainerRef.current.innerHTML = "";
-    window.paypal
+    const buttons = window.paypal
       .Buttons({
         style: { layout: "vertical", color: "gold", shape: "rect", label: "pay", height: 48 },
         createOrder: createOrderFn,
         onApprove: onApproveFn,
-        onCancel() { onCancel?.(); },
+        onCancel() { callbacksRef.current.onCancel?.(); },
         onError(err: unknown) {
           console.error("[paypal] button error", err);
           setSdkError("Payment was not completed. Please try again.");
         },
-      })
-      .render(paypalContainerRef.current);
+      });
+    buttons.render(paypalContainerRef.current).catch(() => {
+      setSdkError("Could not display PayPal. Please refresh and try again.");
+    });
 
     // ── Card Fields (Debit / Credit Card) ──────────────────────────────────
-    if (!window.paypal.CardFields) return;
+    setCardEligible(false);
+    setCardError("");
+    const fieldContainers = [cardNameRef.current, cardNumberRef.current, cardExpiryRef.current, cardCvvRef.current];
+    fieldContainers.forEach(container => container?.replaceChildren());
+    if (!window.paypal.CardFields) return () => { void buttons.close?.(); };
 
     const cardFields = window.paypal.CardFields({
       style: CARD_FIELD_STYLE,
@@ -130,12 +141,19 @@ export function PayPalButton({ sku, clientId, onSuccess, onCancel, engravingText
 
     if (cardFields.isEligible()) {
       setCardEligible(true);
-      if (cardNameRef.current)   cardFields.NameField({ placeholder: "Name on card" }).render(cardNameRef.current);
-      if (cardNumberRef.current) cardFields.NumberField({ placeholder: "Card number" }).render(cardNumberRef.current);
-      if (cardExpiryRef.current) cardFields.ExpiryField({ placeholder: "MM / YY" }).render(cardExpiryRef.current);
-      if (cardCvvRef.current)    cardFields.CVVField({ placeholder: "CVV" }).render(cardCvvRef.current);
+      Promise.all([
+        cardFields.NameField({ placeholder: "Name on card" }).render(cardNameRef.current),
+        cardFields.NumberField({ placeholder: "Card number" }).render(cardNumberRef.current),
+        cardFields.ExpiryField({ placeholder: "MM / YY" }).render(cardExpiryRef.current),
+        cardFields.CVVField({ placeholder: "CVV" }).render(cardCvvRef.current),
+      ]).catch(() => setCardError("Could not load the card fields. Please refresh or use PayPal."));
     }
-  }, [sdkReady, sku, onSuccess, onCancel, engravingText]);
+    return () => {
+      void buttons.close?.();
+      cardFieldsRef.current = null;
+      fieldContainers.forEach(container => container?.replaceChildren());
+    };
+  }, [sdkReady, sku, engravingText]);
 
   async function handleCardSubmit() {
     if (!cardFieldsRef.current || cardSubmitting) return;
@@ -145,6 +163,7 @@ export function PayPalButton({ sku, clientId, onSuccess, onCancel, engravingText
       await cardFieldsRef.current.submit();
     } catch (err: any) {
       setCardError(err?.message || "Card payment failed. Please check your details and try again.");
+    } finally {
       setCardSubmitting(false);
     }
   }
@@ -172,21 +191,22 @@ export function PayPalButton({ sku, clientId, onSuccess, onCancel, engravingText
   }
 
   const fieldBoxStyle: React.CSSProperties = {
-    background: "#1a1a24",
-    border: "1px solid rgba(255,255,255,0.12)",
+    background: "#ffffff",
+    border: "1px solid #b9c6da",
     borderRadius: 10,
-    padding: "11px 14px",
-    height: 46,
+    padding: 0,
+    height: 60,
+    minWidth: 0,
+    overflow: "hidden",
   };
 
   return (
-    <div className="w-full space-y-3" data-testid="paypal-button-container">
+    <div className="konex-payment w-full space-y-3" data-testid="paypal-button-container">
       {/* PayPal / Pay Later buttons */}
       <div ref={paypalContainerRef} className="w-full" />
 
       {/* Card fields — only shown when eligible */}
-      {cardEligible && (
-        <>
+      <div hidden={!cardEligible}>
           {/* Divider */}
           <div className="flex items-center gap-3 my-1">
             <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.1)" }} />
@@ -197,7 +217,7 @@ export function PayPalButton({ sku, clientId, onSuccess, onCancel, engravingText
           {/* Card form */}
           <div
             className="rounded-2xl p-4 space-y-3"
-            style={{ background: "#13131f", border: "1px solid rgba(255,255,255,0.07)" }}
+            style={{ background: "#f4f6fa", border: "1px solid #d4dce4" }}
           >
             <div className="flex items-center gap-2 mb-1">
               <CreditCard size={14} style={{ color: "#9ca3af" }} />
@@ -263,11 +283,10 @@ export function PayPalButton({ sku, clientId, onSuccess, onCancel, engravingText
 
             <p className="text-center text-xs" style={{ color: "#374151" }}>
               <Lock size={10} className="inline mr-1" style={{ color: "#6b7280" }} />
-              Secured by PayPal · 256-bit SSL
+              Card details are handled securely by PayPal
             </p>
           </div>
-        </>
-      )}
+      </div>
     </div>
   );
 }

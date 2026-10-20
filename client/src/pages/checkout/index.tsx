@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import {
-  CheckCircle, ShoppingCart, Star, Shield, Zap, ArrowRight,
-  Smartphone, Cpu, PenLine, Bell,
+  CheckCircle, ShoppingCart, Shield, ArrowRight,
+  Smartphone, Cpu, PenLine, Bell, Menu, Nfc, LockKeyhole,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import KonexNav from "@/components/konex/KonexNav";
-import KonexFooter from "@/components/konex/KonexFooter";
+import { KonexLogo } from "@/components/konex/KonexLogo";
 import { PayPalButton } from "@/components/PayPalButton";
+import "./checkout.css";
 import cardBasicImg      from "@assets/Konex_Basic_Card_1776031961806.png";
 import cardPremiumSilver from "@assets/Konex_Premium_Card_1776031961806.png";
 import cardPremiumBlack  from "@assets/Konex_Premium_Black_Card_1776031961806.png";
@@ -134,7 +134,7 @@ const COMING_SOON: Product[] = [
     name: "Next-Gen E-ink Card",
     price: "£149.99",
     priceNote: "Pre-order",
-    description: "A world-first: an NFC card with a dynamic e-ink display that updates your details in real time.",
+    description: "An NFC card with a dynamic e-ink display that updates your details in real time.",
     features: ["Dynamic e-ink display", "NFC + QR code", "Wireless charging", "App-controlled content"],
     highlight: true,
     badge: "Next Gen",
@@ -146,45 +146,16 @@ const COMING_SOON: Product[] = [
 ];
 
 function ComingSoonCardVisual({ product }: { product: Product }) {
-  if (product.sku === "KONEX-ECO-BAMBOO") {
-    return (
-      <div style={{ width: "100%", height: 160, background: "#f8f8f8", overflow: "hidden" }}>
-        <img src={cardEcoBamboo} alt="Eco Bamboo Card" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }} />
+  const image = product.sku === "KONEX-ECO-BAMBOO" ? cardEcoBamboo
+    : product.sku === "KONEX-ECO-STEEL" ? cardRecycledSteel : null;
+  return <div className="co-soon-visual">
+    {image ? <img src={image} alt={product.name} loading="lazy" /> : (
+      <div className="co-eink">
+        <div className="co-eink-display"><strong>KONEX</strong><small>Dynamic display</small></div>
+        <small><Cpu size={14} aria-hidden="true" /> E-ink concept</small>
       </div>
-    );
-  }
-
-  if (product.sku === "KONEX-ECO-STEEL") {
-    return (
-      <div style={{ width: "100%", height: 160, background: "#f8f8f8", overflow: "hidden" }}>
-        <img src={cardRecycledSteel} alt="Recycled Steel Card" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }} />
-      </div>
-    );
-  }
-
-  return (
-    <div style={{
-      width: "100%", height: 160,
-      background: "linear-gradient(135deg, #0a0a0f 0%, #12121f 50%, #0a0a18 100%)",
-      display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden",
-    }}>
-      <div style={{
-        position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
-        width: 90, height: 56, borderRadius: 6, background: "#e8e8e8",
-        border: "1px solid #ccc", display: "flex", alignItems: "center", justifyContent: "center",
-        boxShadow: "0 0 30px rgba(100,180,255,0.3), inset 0 0 12px rgba(0,0,0,0.05)",
-      }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 8, color: "#333", fontWeight: 700, letterSpacing: 0.5 }}>KONEX</div>
-          <div style={{ fontSize: 6, color: "#666", marginTop: 2 }}>Dynamic Display</div>
-        </div>
-      </div>
-      <div style={{ position: "absolute", bottom: 12, left: 0, right: 0, textAlign: "center", zIndex: 1 }}>
-        <Cpu size={14} style={{ color: "#60a5fa", display: "inline-block" }} />
-        <div style={{ color: "#60a5fa", fontSize: 9, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", marginTop: 2 }}>E-ink Display</div>
-      </div>
-    </div>
-  );
+    )}
+  </div>;
 }
 
 function WaitlistForm({ product, onDone }: { product: Product; onDone: () => void }) {
@@ -198,11 +169,13 @@ function WaitlistForm({ product, onDone }: { product: Product; onDone: () => voi
     if (!email) return;
     setSubmitting(true);
     try {
-      await fetch("/api/waitlist", {
+      const response = await fetch("/api/waitlist", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, product: product.name }),
       });
+      if (!response.ok) throw new Error("Unable to join waitlist");
       setSubmitted(true);
       toast({ title: "You're on the list!", description: `We'll notify you when ${product.name} launches.` });
     } catch {
@@ -214,46 +187,43 @@ function WaitlistForm({ product, onDone }: { product: Product; onDone: () => voi
 
   if (submitted) {
     return (
-      <div className="text-center py-6">
-        <CheckCircle size={32} className="mx-auto mb-3" style={{ color: "#22c55e" }} />
-        <p className="font-semibold text-white mb-1">You're on the waitlist!</p>
-        <p className="text-sm" style={{ color: "#9ca3af" }}>We'll email you the moment {product.name} launches.</p>
-        <button onClick={onDone} className="mt-4 text-sm underline" style={{ color: "#60a5fa" }}>Back to products</button>
+      <div className="co-waitlist" role="status">
+        <CheckCircle size={32} aria-hidden="true" />
+        <h3>You're on the list.</h3>
+        <p>We'll email you when {product.name} launches.</p>
+        <button onClick={onDone} className="co-link-button">Back to products</button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-sm mx-auto">
-      <div className="flex items-center gap-3 mb-5 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-        <Bell size={20} style={{ color: "#f59e0b", flexShrink: 0 }} />
-        <div>
-          <p className="text-sm font-semibold text-white">{product.name}</p>
-          <p className="text-xs" style={{ color: "#9ca3af" }}>Join the waitlist — be first to know when it launches</p>
-        </div>
-      </div>
-      <form onSubmit={handleSubmit} className="space-y-3">
+    <div className="co-waitlist">
+      <Bell size={24} aria-hidden="true" />
+      <h3>Be first to hear.</h3>
+      <p>Leave your email and we'll let you know when {product.name} is available.</p>
+      <form onSubmit={handleSubmit}>
+        <label className="co-field" htmlFor="waitlist-email">Email address</label>
         <input
+          id="waitlist-email"
           type="email"
           required
+          autoComplete="email"
           placeholder="your@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           data-testid="input-waitlist-email"
-          className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-500"
-          style={{ background: "#1E1E28", border: "1px solid rgba(255,255,255,0.1)" }}
+          className="co-input"
         />
         <button
           type="submit"
           disabled={submitting}
           data-testid="button-waitlist-submit"
-          className="w-full py-3 rounded-xl font-semibold text-sm transition-all"
-          style={{ background: "#3B82F6", color: "#fff", opacity: submitting ? 0.7 : 1 }}
+          className="co-button"
         >
           {submitting ? "Joining…" : "Notify Me When Available"}
         </button>
       </form>
-      <p className="text-center text-xs mt-3" style={{ color: "#4b5563" }}>No spam. Unsubscribe anytime.</p>
+      <p className="co-fine">Product updates only. No payment required.</p>
     </div>
   );
 }
@@ -289,7 +259,7 @@ export default function CheckoutPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const { data: paypalConfig } = useQuery({ queryKey: ["/api/config/paypal"] });
+  const { data: paypalConfig, isLoading: configLoading, isError: configError, refetch: retryConfig } = useQuery({ queryKey: ["/api/config/paypal"] });
   const config = paypalConfig as any;
   const configured: boolean = config?.configured ?? false;
   const clientId: string = config?.clientId ?? "";
@@ -314,331 +284,213 @@ export default function CheckoutPage() {
   const isComingSoon = selectedProduct?.comingSoon === true;
   const isPreOrder = selectedProduct?.preOrder === true;
 
+  function chooseProduct(product: Product) {
+    setSelectedSku(product.sku);
+    setWaitlistProduct(null);
+  }
+
   return (
-    <div className="min-h-screen" style={{ background: "#13131A", color: "#fff" }}>
-      <KonexNav variant="overview" />
-
-      <main className="max-w-5xl mx-auto px-4 py-16">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-4"
-            style={{ background: "rgba(59,130,246,0.15)", color: "#60a5fa", border: "1px solid rgba(59,130,246,0.3)" }}
-          >
-            <ShoppingCart size={12} /> Secure Checkout
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">Choose your KONEX</h1>
-          <p style={{ color: "#9ca3af" }}>One-time purchase. No subscription. Delivered to your door.</p>
+    <div className="kx-checkout">
+      <a href="#checkout-main" className="co-skip">Skip to checkout</a>
+      <header className="co-header">
+        <div className="co-shell co-header-inner">
+          <Link href="/" className="co-logo" aria-label="KONEX home" data-testid="link-logo"><KonexLogo height={36} /></Link>
+          <nav className="co-nav" aria-label="Main navigation">
+            <Link href="/konex-cards#tiers">Cards</Link>
+            <Link href="/konex-cards#benefits">Benefits</Link>
+            <Link href="/konex-cards#compare">Compare</Link>
+            <Link href="/what-is-nfc">What is NFC</Link>
+            <Link href="/auth" data-testid="button-login">Log in</Link>
+            <Link href="/auth?tab=register" className="co-register" data-testid="button-get-started">Sign up free</Link>
+          </nav>
+          <details className="co-mobile-menu">
+            <summary aria-label="Open navigation"><Menu size={22} aria-hidden="true" /></summary>
+            <nav aria-label="Mobile navigation">
+              <Link href="/konex-cards#tiers">Cards</Link>
+              <Link href="/konex-cards#benefits">Benefits</Link>
+              <Link href="/konex-cards#compare">Compare</Link>
+              <Link href="/what-is-nfc">What is NFC</Link>
+              <Link href="/auth">Log in</Link>
+              <Link href="/auth?tab=register">Sign up free</Link>
+            </nav>
+          </details>
         </div>
+      </header>
 
-        {/* Product grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-          {PRODUCTS.map((p) => {
-            const isSelected = selectedSku === p.sku;
-            const activeVariantSku = variantSkus[p.sku] ?? p.sku;
-            const activeVariant = p.variants?.find((v) => v.sku === activeVariantSku);
-            const displayImage = activeVariant?.image ?? p.image;
+      <main id="checkout-main" className="co-shell">
+        <section className="co-intro" aria-labelledby="checkout-title">
+          <div className="co-eyebrow"><LockKeyhole size={15} aria-hidden="true" /> The next introduction starts here</div>
+          <div className="co-intro-row">
+            <h1 id="checkout-title">Choose your KONEX.</h1>
+            <p>A simple tap. A lasting connection. Find the card that feels like you.</p>
+          </div>
+          <div className="co-progress" aria-label="Checkout steps">
+            <strong>01 Choose your card</strong><ArrowRight aria-hidden="true" />
+            <span>02 Make it yours</span><ArrowRight aria-hidden="true" /><span>03 Secure payment</span>
+          </div>
+        </section>
 
-            return (
-              <div
-                key={p.sku}
-                data-testid={`card-product-${p.sku}`}
-                onClick={() => { setSelectedSku(p.sku); setWaitlistProduct(null); }}
-                className="relative rounded-2xl cursor-pointer transition-all overflow-hidden"
-                style={{
-                  background: isSelected ? "rgba(59,130,246,0.08)" : "#1E1E28",
-                  border: isSelected ? "2px solid #3B82F6" : p.highlight ? "2px solid rgba(59,130,246,0.4)" : "2px solid rgba(255,255,255,0.06)",
-                  boxShadow: isSelected ? "0 0 0 3px rgba(59,130,246,0.15)" : undefined,
-                }}
-              >
-                {p.badge && (
-                  <span
-                    className="absolute top-3 left-4 text-xs font-semibold px-3 py-1 rounded-full z-10"
-                    style={{ background: p.highlight ? "#3B82F6" : "#6366f1", color: "#fff" }}
-                    data-testid={`badge-${p.sku}`}
-                  >
-                    {p.badge}
-                  </span>
-                )}
+        <div className="co-layout">
+          <div className="co-catalog">
+            <section id="checkout-products" aria-labelledby="products-title">
+              <div className="co-section-heading"><h2 id="products-title">Your introduction, upgraded.</h2><span>One-time purchase</span></div>
+              <div className="co-products">
+                {PRODUCTS.map((p) => {
+                  const isSelected = selectedSku === p.sku;
+                  const activeVariantSku = variantSkus[p.sku] ?? p.sku;
+                  const activeVariant = p.variants?.find((v) => v.sku === activeVariantSku);
+                  const displayImage = activeVariant?.image ?? p.image;
+                  return (
+                    <article key={p.sku} className={`co-product${isSelected ? " is-selected" : ""}`} data-testid={`card-product-${p.sku}`}>
+                      <div className="co-product-visual">
+                        {p.badge && <span className="co-badge" data-testid={`badge-${p.sku}`}>{p.badge}</span>}
+                        {displayImage ? <img src={displayImage} alt={`${p.name}${activeVariant ? ` — ${activeVariant.label}` : ""}`} data-testid={`img-product-${p.sku}`} /> : (
+                          <div className="co-digital">
+                            <div className="co-digital-icon"><span>KONEX</span><Smartphone size={33} aria-hidden="true" /></div>
+                            <div className="co-digital-copy">Always ready to connect.<small>Your profile. One link.</small></div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="co-product-body">
+                        <h3 data-testid={`text-product-name-${p.sku}`}>{p.name}</h3>
+                        <p className="co-product-description">{p.description}</p>
+                        {p.variants && <div className="co-swatches" role="group" aria-label={`${p.name} finish`}>
+                          {p.variants.map((v) => (
+                            <button key={v.sku} type="button" className="co-swatch" aria-pressed={activeVariantSku === v.sku} data-testid={`swatch-${v.sku}`} onClick={() => {
+                              chooseProduct(p);
+                              setVariantSkus((s) => ({ ...s, [p.sku]: v.sku }));
+                            }}>
+                              <span className="co-swatch-dot" style={{ background: v.swatch }} aria-hidden="true" />{v.label}
+                            </button>
+                          ))}
+                        </div>}
+                        <ul className="co-features">{p.features.map((f) => <li key={f}><CheckCircle size={14} aria-hidden="true" />{f}</li>)}</ul>
+                        <div className="co-price-row">
+                          <span className="co-price" data-testid={`text-price-${p.sku}`}>{p.price}</span>
+                          <span className="co-price-note" data-testid={p.preOrder ? `badge-preorder-${p.sku}` : undefined}>{p.priceNote}</span>
+                        </div>
+                        <button type="button" className="co-button co-select" aria-pressed={isSelected} aria-label={`${isSelected ? "Selected" : "Choose"} ${p.name}`} data-testid={`radio-${p.sku}`} onClick={() => chooseProduct(p)}>
+                          {isSelected ? <><CheckCircle size={17} aria-hidden="true" /> Selected</> : <>Choose {p.name === "Digital Profile" ? "profile" : "card"}<ArrowRight size={17} aria-hidden="true" /></>}
+                        </button>
+                        {isSelected && <a href="#checkout-order" className="co-review-link">Personalise &amp; review order <ArrowRight size={15} aria-hidden="true" /></a>}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
 
-                {/* Card image */}
-                {displayImage ? (
-                  <div className="w-full flex items-center justify-center overflow-hidden" style={{ background: "#f8f8f8", minHeight: 160, padding: "16px 24px 12px" }}>
-                    <img
-                      src={displayImage}
-                      alt={`${p.name}${activeVariant ? ` — ${activeVariant.label}` : ""}`}
-                      style={{ maxHeight: 170, width: "100%", objectFit: "contain", transition: "opacity 0.2s" }}
-                      data-testid={`img-product-${p.sku}`}
-                    />
+            <section className="co-soon" aria-labelledby="coming-soon-title">
+              <div className="co-eyebrow">In the works</div>
+              <h2 id="coming-soon-title">New ways to make your mark.</h2>
+              <p>Our next chapter of cards. Join a waitlist to hear when they arrive.</p>
+              <div className="co-soon-list">
+                {COMING_SOON.map((p) => (
+                  <article key={p.sku} className={`co-product co-soon-product${selectedSku === p.sku ? " is-selected" : ""}`} data-testid={`card-product-${p.sku}`}>
+                    <ComingSoonCardVisual product={p} />
+                    <div className="co-product-body">
+                      <div className="co-eyebrow" data-testid={`badge-${p.sku}`}>Coming soon</div>
+                      <h3 data-testid={`text-product-name-${p.sku}`}>{p.name}</h3>
+                      <p className="co-product-description">{p.description}</p>
+                      <div className="co-price-row"><span className="co-price" data-testid={`text-price-${p.sku}`}>{p.price}</span><span className="co-price-note">{p.priceNote} · Not yet available</span></div>
+                      <button type="button" className="co-button co-select" aria-pressed={selectedSku === p.sku} onClick={() => {
+                        chooseProduct(p);
+                        document.getElementById("checkout-order")?.scrollIntoView({ block: "start" });
+                      }} aria-label={`View waitlist for ${p.name}`}><Bell size={15} aria-hidden="true" />{selectedSku === p.sku ? "Selected for waitlist" : "View waitlist"}</button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <aside id="checkout-order" className="co-order" aria-labelledby="order-title">
+            <div className="co-order-heading"><h2 id="order-title">{isComingSoon ? "Stay in the loop." : "Make it yours."}</h2><ShoppingCart size={21} aria-hidden="true" /></div>
+            {!selectedSku ? (
+              <div className="co-order-empty">
+                <Nfc size={36} aria-hidden="true" />
+                <h3>One card. More possibilities.</h3>
+                <p>Select a profile or card to review your order and add your personal touch.</p>
+                <a href="#checkout-products" className="co-button">Explore the collection <ArrowRight size={17} aria-hidden="true" /></a>
+              </div>
+            ) : (
+              <>
+                <div className="co-order-item" aria-live="polite">
+                  {selectedVariantImage ? <img src={selectedVariantImage} alt={selectedProduct?.name} /> : isComingSoon ? <Bell size={30} aria-hidden="true" /> : <Smartphone size={30} aria-hidden="true" />}
+                  <div><h3>{selectedProduct?.name}</h3>
+                    <p>{selectedProduct?.variants ? `${selectedProduct.variants.find((v) => v.sku === effectiveSku)?.label} finish` : isComingSoon ? "Coming soon" : "One-time purchase"}</p>
                   </div>
+                </div>
+                {isPhysicalCard && !isComingSoon && (
+                  <fieldset className="co-engraving" data-testid="section-engraving">
+                    <legend><PenLine size={15} aria-hidden="true" />Custom engraving <span className="co-optional">Optional</span></legend>
+                    <p className="co-help">Your name. Your title. Your card. Leave blank if you prefer no engraving.</p>
+                    <div className="co-field">
+                      <label htmlFor="engraving-name">Name to engrave</label>
+                      <input id="engraving-name" type="text" maxLength={30} autoComplete="name" placeholder="e.g. Alex Rivera" value={engravingName} onChange={(e) => setEngravingName(e.target.value)} data-testid="input-engraving-name" className="co-input" aria-describedby="engraving-name-count" />
+                      <span id="engraving-name-count" className="co-counter">{engravingName.length}/30</span>
+                    </div>
+                    <div className="co-field">
+                      <label htmlFor="engraving-title">Title / Position</label>
+                      <input id="engraving-title" type="text" maxLength={30} autoComplete="organization-title" placeholder="e.g. Product Designer" value={engravingTitle} onChange={(e) => setEngravingTitle(e.target.value)} data-testid="input-engraving-title" className="co-input" aria-describedby="engraving-title-count" />
+                      <span id="engraving-title-count" className="co-counter">{engravingTitle.length}/30</span>
+                    </div>
+                    {engravingText && <div className="co-preview">Engraving preview<br /><strong>{engravingText}</strong></div>}
+                  </fieldset>
+                )}
+                {isComingSoon ? (
+                  waitlistProduct?.sku === selectedSku ? (
+                    <WaitlistForm key={selectedSku} product={selectedProduct!} onDone={() => { setWaitlistProduct(null); setSelectedSku(null); }} />
+                  ) : (
+                    <div className="co-waitlist">
+                      <p>This product is not yet available for purchase. Be first to hear when it launches.</p>
+                      <button className="co-button" onClick={() => setWaitlistProduct(selectedProduct!)} data-testid="button-join-waitlist"><Bell size={16} aria-hidden="true" />Join the waitlist</button>
+                      <p className="co-fine">No payment required.</p>
+                    </div>
+                  )
                 ) : (
-                  <div className="w-full flex items-center justify-center" style={{ height: 160, background: "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(59,130,246,0.08))" }}>
-                    <Smartphone size={48} style={{ color: "#6366f1", opacity: 0.6 }} />
-                  </div>
-                )}
-
-                {/* Variant swatches */}
-                {p.variants && p.variants.length > 1 && (
-                  <div className="flex items-center gap-2 px-5 pt-3" onClick={(e) => e.stopPropagation()}>
-                    {p.variants.map((v) => (
-                      <button
-                        key={v.sku}
-                        title={v.label}
-                        data-testid={`swatch-${v.sku}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedSku(p.sku);
-                          setVariantSkus((s) => ({ ...s, [p.sku]: v.sku }));
-                          setWaitlistProduct(null);
-                        }}
-                        style={{
-                          width: 18, height: 18, borderRadius: "50%", background: v.swatch,
-                          border: (variantSkus[p.sku] ?? p.sku) === v.sku ? "2px solid #fff" : "2px solid rgba(255,255,255,0.2)",
-                          outline: (variantSkus[p.sku] ?? p.sku) === v.sku ? "2px solid rgba(255,255,255,0.4)" : "none",
-                          cursor: "pointer", padding: 0, flexShrink: 0, transition: "all 0.15s",
-                        }}
+                  <>
+                    <div className="co-total"><span>Product total</span><strong>{selectedProduct?.price}</strong></div>
+                    {isPreOrder && <div className="co-notice" data-testid="notice-preorder"><strong>Pre-order</strong><br />Pay securely today — your card ships within <strong>4–6 weeks</strong> once production is complete.</div>}
+                    {configLoading ? <div className="co-loading" role="status" aria-label="Loading payment options" /> : configError ? (
+                      <div className="co-notice co-error" role="alert">We couldn't load payment options. Your selection is saved here.<br /><button className="co-link-button" onClick={() => void retryConfig()}>Try again</button></div>
+                    ) : !configured ? (
+                      <div className="co-notice co-error" role="status">Payment system is not yet configured. Please contact us to complete your order.</div>
+                    ) : (
+                      <PayPalButton
+                        sku={effectiveSku ?? selectedSku}
+                        clientId={clientId}
+                        onSuccess={handlePayPalSuccess}
+                        onCancel={handlePayPalCancel}
+                        engravingText={engravingText || undefined}
                       />
-                    ))}
-                    <span className="text-xs ml-1" style={{ color: "#9ca3af" }}>{activeVariant?.label}</span>
-                  </div>
-                )}
-
-                {/* Card body */}
-                <div className="p-5">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="text-lg font-bold" data-testid={`text-product-name-${p.sku}`}>{p.name}</h3>
-                      <p className="text-sm mt-1" style={{ color: "#9ca3af" }}>{p.description}</p>
-                    </div>
-                    <div
-                      className="ml-4 shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                      style={{ borderColor: isSelected ? "#3B82F6" : "#374151", background: isSelected ? "#3B82F6" : "transparent" }}
-                      data-testid={`radio-${p.sku}`}
-                    >
-                      {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
-                    </div>
-                  </div>
-                  <ul className="space-y-1.5 mb-4">
-                    {p.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm" style={{ color: "#d1d5db" }}>
-                        <CheckCircle size={13} style={{ color: "#3B82F6", flexShrink: 0 }} /> {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex items-center flex-wrap gap-2">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-bold" data-testid={`text-price-${p.sku}`}>{p.price}</span>
-                      <span className="text-sm" style={{ color: "#6b7280" }}>{p.priceNote}</span>
-                    </div>
-                    {p.preOrder && (
-                      <span
-                        className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                        style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}
-                        data-testid={`badge-preorder-${p.sku}`}
-                      >
-                        Pre-order
-                      </span>
                     )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Coming soon row */}
-        <div className="mb-4">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.08)" }} />
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#6b7280" }}>Coming Soon</span>
-            <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.08)" }} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {COMING_SOON.map((p) => {
-              const isSelected = selectedSku === p.sku;
-              return (
-                <div
-                  key={p.sku}
-                  data-testid={`card-product-${p.sku}`}
-                  onClick={() => { setSelectedSku(p.sku); setWaitlistProduct(null); }}
-                  className="relative rounded-2xl cursor-pointer transition-all overflow-hidden"
-                  style={{
-                    background: isSelected ? "rgba(245,158,11,0.06)" : "#1A1A22",
-                    border: isSelected ? "2px solid rgba(245,158,11,0.6)" : "2px solid rgba(255,255,255,0.05)",
-                    boxShadow: isSelected ? "0 0 0 3px rgba(245,158,11,0.1)" : undefined,
-                  }}
-                >
-                  <span
-                    className="absolute top-2 left-3 text-xs font-semibold px-2.5 py-0.5 rounded-full z-10"
-                    style={{ background: p.highlight ? "rgba(245,158,11,0.2)" : "rgba(107,114,128,0.3)", color: p.highlight ? "#f59e0b" : "#9ca3af", border: `1px solid ${p.highlight ? "rgba(245,158,11,0.3)" : "rgba(107,114,128,0.3)"}` }}
-                    data-testid={`badge-${p.sku}`}
-                  >
-                    {p.badge}
-                  </span>
-                  <ComingSoonCardVisual product={p} />
-                  <div className="p-4">
-                    <h3 className="text-base font-bold mb-1" data-testid={`text-product-name-${p.sku}`}>{p.name}</h3>
-                    <p className="text-xs mb-3" style={{ color: "#6b7280" }}>{p.description}</p>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-lg font-bold" data-testid={`text-price-${p.sku}`}>{p.price}</span>
-                      <span className="text-xs" style={{ color: "#6b7280" }}>{p.priceNote}</span>
+                    <div className="co-legal">
+                      <p className="co-fine" data-testid="text-refund-acknowledgement">By completing your purchase, you agree to our <Link href="/refund-policy" data-testid="link-refund-policy">Refund &amp; Return Policy</Link>.</p>
+                      <p className="co-fine">By purchasing you agree to our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  </>
+                )}
+              </>
+            )}
+            <ul className="co-assurances">
+              <li><Shield size={15} aria-hidden="true" />Secure PayPal checkout</li>
+              <li><CheckCircle size={15} aria-hidden="true" />One-time purchase. No subscription.</li>
+              <li><Nfc size={15} aria-hidden="true" />Built for your next introduction.</li>
+            </ul>
+          </aside>
         </div>
-
-        {/* Engraving field for physical cards */}
-        {isPhysicalCard && selectedSku && !isComingSoon && (
-          <div
-            className="mb-6 p-5 rounded-2xl"
-            style={{ background: "#1E1E28", border: "1px solid rgba(255,255,255,0.08)" }}
-            data-testid="section-engraving"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <PenLine size={16} style={{ color: "#a78bfa" }} />
-              <span className="text-sm font-semibold text-white">Custom Engraving</span>
-              <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(167,139,250,0.15)", color: "#a78bfa" }}>Optional</span>
-            </div>
-            <p className="text-xs mb-4" style={{ color: "#6b7280" }}>
-              Add your name and/or title to be laser-engraved on your card. Leave blank to skip.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: "#9ca3af" }}>Name to engrave</label>
-                <input
-                  type="text"
-                  maxLength={30}
-                  placeholder="e.g. Alex Rivera"
-                  value={engravingName}
-                  onChange={(e) => setEngravingName(e.target.value)}
-                  data-testid="input-engraving-name"
-                  className="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:ring-2 focus:ring-purple-500/50"
-                  style={{ background: "#13131A", border: "1px solid rgba(255,255,255,0.1)" }}
-                />
-                <p className="text-right text-xs mt-1" style={{ color: "#374151" }}>{engravingName.length}/30</p>
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: "#9ca3af" }}>Title / Position</label>
-                <input
-                  type="text"
-                  maxLength={30}
-                  placeholder="e.g. Product Designer"
-                  value={engravingTitle}
-                  onChange={(e) => setEngravingTitle(e.target.value)}
-                  data-testid="input-engraving-title"
-                  className="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:ring-2 focus:ring-purple-500/50"
-                  style={{ background: "#13131A", border: "1px solid rgba(255,255,255,0.1)" }}
-                />
-                <p className="text-right text-xs mt-1" style={{ color: "#374151" }}>{engravingTitle.length}/30</p>
-              </div>
-            </div>
-            {engravingText && (
-              <div className="mt-3 px-3 py-2 rounded-lg text-xs" style={{ background: "rgba(167,139,250,0.08)", border: "1px solid rgba(167,139,250,0.15)", color: "#c4b5fd" }}>
-                Preview: <strong>{engravingText}</strong>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Trust badges */}
-        <div className="flex flex-wrap justify-center gap-6 mb-10 text-sm" style={{ color: "#6b7280" }}>
-          <span className="flex items-center gap-2"><Shield size={14} style={{ color: "#3B82F6" }} /> Secure PayPal Checkout</span>
-          <span className="flex items-center gap-2"><Star size={14} style={{ color: "#f59e0b" }} /> 5-Star Rated</span>
-          <span className="flex items-center gap-2"><Zap size={14} style={{ color: "#a78bfa" }} /> Instant Digital Delivery</span>
-        </div>
-
-        {/* Payment area */}
-        {!selectedSku ? (
-          <div className="text-center py-8">
-            <p className="text-base mb-4" style={{ color: "#6b7280" }}>Select a product above to continue</p>
-            <ArrowRight size={20} className="mx-auto" style={{ color: "#374151" }} />
-          </div>
-        ) : isComingSoon ? (
-          waitlistProduct?.sku === selectedSku ? (
-            <WaitlistForm product={selectedProduct!} onDone={() => { setWaitlistProduct(null); setSelectedSku(null); }} />
-          ) : (
-            <div className="max-w-sm mx-auto text-center">
-              <div className="mb-4 p-4 rounded-xl" style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)" }}>
-                <p className="text-sm font-semibold" style={{ color: "#f59e0b" }}>{selectedProduct?.name}</p>
-                <p className="text-xs mt-1" style={{ color: "#9ca3af" }}>This product is not yet available for purchase.</p>
-              </div>
-              <button
-                onClick={() => setWaitlistProduct(selectedProduct!)}
-                data-testid="button-join-waitlist"
-                className="w-full py-3 rounded-xl font-semibold text-sm transition-all"
-                style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}
-              >
-                <Bell size={14} className="inline mr-2" />
-                Join Waitlist — Be First to Know
-              </button>
-            </div>
-          )
-        ) : !configured ? (
-          <div className="text-center py-6 rounded-xl" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)" }}>
-            <p style={{ color: "#fca5a5" }}>Payment system is not yet configured. Please contact us to complete your order.</p>
-          </div>
-        ) : (
-          <div className="max-w-sm mx-auto">
-            {selectedVariantImage && (
-              <div className="flex items-center gap-3 mb-5 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <img src={selectedVariantImage} alt={selectedProduct?.name} className="rounded-lg" style={{ width: 72, height: 46, objectFit: "cover", flexShrink: 0 }} />
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{selectedProduct?.name}</p>
-                  {selectedProduct?.variants && (
-                    <p className="text-xs" style={{ color: "#9ca3af" }}>
-                      {selectedProduct.variants.find((v) => v.sku === effectiveSku)?.label} finish
-                    </p>
-                  )}
-                  {engravingText && <p className="text-xs mt-0.5" style={{ color: "#a78bfa" }}>Engraving: {engravingText}</p>}
-                  <p className="text-sm font-bold" style={{ color: "#60a5fa" }}>{selectedProduct?.price}</p>
-                </div>
-              </div>
-            )}
-            <p className="text-center text-sm mb-4" style={{ color: "#9ca3af" }}>
-              Paying for: <strong style={{ color: "#fff" }}>{selectedProduct?.name}</strong>
-            </p>
-            {isPreOrder && (
-              <div
-                className="mb-4 px-4 py-3 rounded-xl text-sm flex items-start gap-2"
-                style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)", color: "#fbbf24" }}
-                data-testid="notice-preorder"
-              >
-                <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>⏳</span>
-                <span>
-                  <strong>Pre-order:</strong> Pay securely today — your card ships within <strong>4–6 weeks</strong> once production is complete.
-                </span>
-              </div>
-            )}
-            <PayPalButton
-              sku={effectiveSku ?? selectedSku}
-              clientId={clientId}
-              onSuccess={handlePayPalSuccess}
-              onCancel={handlePayPalCancel}
-              engravingText={engravingText || undefined}
-            />
-          </div>
-        )}
-
-        {selectedSku && !isComingSoon && (
-          <p className="text-center text-xs mt-4" style={{ color: "#6b7280" }} data-testid="text-refund-acknowledgement">
-            By completing your purchase, you agree to our{" "}
-            <Link href="/refund-policy" className="underline hover:text-white transition-colors" data-testid="link-refund-policy">
-              Refund &amp; Return Policy
-            </Link>.
-          </p>
-        )}
-
-        <p className="text-center text-xs mt-3" style={{ color: "#4b5563" }}>
-          By purchasing you agree to our{" "}
-          <Link href="/terms" className="underline">Terms</Link>{" "}
-          and <Link href="/privacy" className="underline">Privacy Policy</Link>.
-        </p>
       </main>
-
-      <KonexFooter />
+      <footer className="co-footer">
+        <div className="co-shell co-footer-inner">
+          <p>&copy; {new Date().getFullYear()} KONEX. All rights reserved.</p>
+          <nav aria-label="Legal">
+            <Link href="/terms" data-testid="link-footer-terms">Terms of Service</Link>
+            <Link href="/privacy" data-testid="link-footer-privacy">Privacy Policy</Link>
+            <Link href="/refund-policy" data-testid="link-footer-refund">Refund &amp; Return Policy</Link>
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }

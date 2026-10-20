@@ -2,3 +2,4 @@
 - [Post-merge safety](post-merge-safety.md) — keep merge setup dependency-only; database migrations require an explicit reviewed step.
 - [Dependency remediation](dependency-security.md) — avoid forcing styling migrations for unpatched advisories; preserve storage dependency compatibility.
 - [Marketing evidence](marketing-evidence.md) — public claims need evidence; approved demo records are not genuine customer endorsements.
+- [PayPal hosted fields](paypal-fields.md) — SDK styling is restricted; verify layout separately from sandbox payment capture.
